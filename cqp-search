@@ -2,17 +2,20 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib);
 
 # TODO:
+# MOVE TO QUERY (with Search as additional option)
+# result forms to readable: tabulated of the Z form from Query
 # add to search form:
+#  keep last search
 #  select corpus->reload
-#  populate form with available attributes by parsing the registry
-# limit results
+#  populate form with available attributes using CWB::CL
+# limit results (diff Search/Query)
 # config handler
 # corpus setup
 # peek at CWB::CQP
 
 use Mojolicious::Lite;
-#use CWB::Web::Search;
-use CWB::Web::Query;
+use CWB::Web::Search;
+#use CWB::Web::Query;
 use CWB::CL;
 
 if ( $ENV{CORPUS_REGISTRY} ) {
@@ -28,19 +31,21 @@ get 'style.css' => 'style';
 
 get '/search' => sub {
   my $self = shift;
-  my $search = new CWB::Web::Query 'DICKENS';
+  my $search = new CWB::Web::Search 'DICKENS';
   die "Error accessing corpus.\n" unless ref $search;
 
   $self->app->log->info("Query was: " . $self->param('query'));
   warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
 
   # window and context size are specified in CQP syntax
-#  $search->context("1 s", "1 s");  # match context returned as HTML
-  $search->context("40", "40");  # match context returned as HTML
-  $search->attributes("word", "pos");
-  $search->structures("novel_title", "chapter_title");
-  #$search->reduce()              #ony return a sample of results
-  $search->on_error(sub{grep {print "<h2>$_</h2>\n"} @_});
+  $search->window("2 s");        # search window
+  $search->context("s");         # match context returned as HTML
+  #$search->data("url", "date"); # values of s-attributes are returned
+  $search->ignore_case('auto');  # search defaults - add options
+  $search->ignore_diacritics('auto');
+  #$search->cull('after');       # remove duplicate documents (context)??
+  $search->highlight('<sep class="hit">'); # HTML highlighting tag
+
   $self->render( template=>'search',
 	       search=>$search,  # stash them!
 	       query=>$self->param('query') );
@@ -55,32 +60,34 @@ __DATA__
 
 @@ form.html.ep
   <form action="/search" method="GET">
-    <input name="query" type="text" size="60" value="<%= $query ? $query : ''%>"></input>
+    <input name="query" type="text" size="60"></input>
     <input type="submit" value="CQP search">
   </form>
 
 @@ search.html.ep
 % layout 'main', title=>"for $query" ;
 <%= include 'form' %>
-% my @matches = $search->query($query);
-% my $nr_matches = @matches;
+% my $nr_matches = $search->query($query);
   <div class="report">
    <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%= $query %></sep>.</p>
   </div>
 % if ($nr_matches) {
   <div class="matches">
-  <table>
 %  for (my $i = 0; $i < $nr_matches; $i++) {
-%   my $nr = $i + 1;         # match number
-%   my $m = $matches[$i];    # returns result struct without 'context'
-    <tr>
-     <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep></td>
-     <td class="left"><%== $m->{'kwic'}->{'left'}; %></td>
-     <td class="match"><sep class="match"><%== $m->{'kwic'}->{'match'}; %></sep></td>
-     <td class="right"><%== $m->{'kwic'}->{'right'}; %></td>
-    </tr>
+%   my $nr = $i + 1;               # match number
+%   my $m = $search->match($i);    # returns result struct without 'context'
+    <p><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %> <%= $m->{'quality'} %></sep>
+%#  summary of match (HTML encoded)
+    <sep class="match"><%== $m->{'summary'} %></sep>
+%#  $m->{'data'}->{'url'}  # requested data values
+%#  $m->{'data'}->{'date'},
+%#   if ($want_context) {
+%#     $m = $search->match($i, 'context');
+%## match with context (HTML encoded)
+%#    <%== $m->{'context'} %>
+%#%   }
+    </p>
 % }
-  </table>
   </div>
 %}
 
@@ -101,6 +108,3 @@ sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 sep.hit { color: red; font-weight: bold; }
 sep.no { font-weight: bold; }
 sep.sd { font-family: sans-serif; font-size: 60%; }
-td.left { text-align: right; }
-td.right { text-align: left; }
-td.match { padding-left: .5em; padding-right: .5em; color: red; font-weight: bold; }
