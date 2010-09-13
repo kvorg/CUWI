@@ -101,6 +101,7 @@ get '/search' => sub {
   if ( $query =~ m/"/ ) {
     $self->app->log->info("Passing as a CQP-formatted query.")
   } else  {
+    $query =~ s/(?<!\\)[*]/.*/m; $query =~ s/(?<!\\)[?]/./m;
     $query = join(' ',
 		   map {
 		   '['
