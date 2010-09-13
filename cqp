@@ -2,16 +2,15 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib);
 
 # TODO:
-# add on search form:
-#  query compositing: ittp://nl2.ijs.si/fpj.html
-#  select corpus+ update form?
-# limit results - seriously
-# peek at CWB::CQP
-# pararaph, wordlist viewsf
-# fix url->html encoding in queries
 # add title, corpus name, corpus title
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
+# limit results - seriously
 # enable CWB registry location setting in config
+# add on search form:
+#  select corpus+ update form?
+#  query compositing: http://nl2.ijs.si/fpj.html
+# pararaph, wordlist views
+# fix url->html encoding in queries
 
 # Deployment:
 # beta + utf test && deploy in parallel on mantra
@@ -102,15 +101,22 @@ get '/search' => sub {
   if ( $query =~ m/"/ ) {
     $self->app->log->info("Passing as a CQP-formatted query.")
   } else  {
-    $query = '[' 
-      . (defined $self->param('search') ? $self->param('search') : 'word')
-      . '="' . $query . '"]';
+    $query = join(' ',
+		   map {
+		   '['
+		     . (defined $self->param('search') ?
+			$self->param('search') : 'word')
+		       . '="' . $_ . '"]'
+		     } split('\s+', $query)
+		  );
     $self->app->log->info("Passing query as $query.")
   }
 
   $self->render( template=>'search',
 	       search=>$search,  # stash them!
-	       query=>$query );
+	       query=>$self->param('query'),
+	       qquery=>$query,
+	       );
 };
 
 app->start;
@@ -129,22 +135,28 @@ __DATA__
 % }
     <br>
     Search:
+% my $qs = Mojo::ByteStream->new($query);
 % $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
      <input type="radio" name="search" value="<%= $att %>"<%== $checked++ ? '' : ' checked="1"' %> ><%= $att %></input>
 % }
     <br>
-    Query: <input name="query" type="text" size="60" value="<%= $query ? $query : ''%>"></input>
+    Query: <input name="query" type="text" size="60" value='<%== $query ? $qs->encode('UTF-8')->to_string : ''%>'></input>
     <input type="submit" value="CQP search">
   </form>
 
 @@ search.html.ep
 % layout 'main', title=>"for $query" ;
 <%= include 'form' %>
-% my @matches = $search->query($query);
+% my $qs = Mojo::ByteStream->new($query);
+% my $qqs = Mojo::ByteStream->new($qquery);
+% my @matches = $search->query($qquery);
 % my $nr_matches = @matches;
   <div class="report">
-   <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%= $query %></sep>.</p>
+   <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%== $qs->encode('UTF-8') %></sep>.</p>
+% unless ( $query eq $qquery ) {
+   <p>Executed as <sep class="querytext"><%== $qqs->encode('UTF-8') %></sep>.</p>
+% }
   </div>
 % if ($nr_matches) {
   <div class="matches">
@@ -176,6 +188,7 @@ __DATA__
 </html>
 
 @@ style.css.ep
+body { font-family: Palatino, Times, serif; font-size: 120%;}
 sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 sep.hit  { color: red; font-weight: bold; }
 sep.no   { font-weight: bold; }
