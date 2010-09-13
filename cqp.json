@@ -1,0 +1,5 @@
+{
+        "corpus"       : "DICKENS",
+	"attributes-no":  : ["word", "pos"],
+	"structures":  : ["novel_title", "chapter_title"],
+}

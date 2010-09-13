@@ -2,16 +2,30 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib);
 
 # TODO:
-# add to search form:
-#  select corpus->reload
-#  populate form with available attributes by parsing the registry
-# limit results
-# config handler
-# corpus setup
+# add on search form:
+#  query compositing: ittp://nl2.ijs.si/fpj.html
+#  select corpus+ update form?
+# limit results - seriously
 # peek at CWB::CQP
+# pararaph, wordlist viewsf
+# fix url->html encoding in queries
+# add title, corpus name, corpus title
+# fix attribute printing as per http://nl2.ijs.si/fpj.html
+# enable CWB registry location setting in config
+
+# Deployment:
+# beta + utf test && deploy in parallel on mantra
+
+#WISH LIST:
+#rezultati: levo znamka o viru, na besedo klik v kontekst
+#po vseh rezultatih, sortiranje po levem, desnem kontekstu, mogoče odzadnje po zadetku (odzadnji slovar princip)
+#izpiše samo sample - default opcija, a velika (cut 1000)
+#kolokacije
+#v bodočnosti tudi vzporedni korpusi, npr. http://nl2.ijs.si/index-bi.html
 
 use Mojolicious::Lite;
 #use CWB::Web::Search;
+use IO::File;
 use CWB::Web::Query;
 use CWB::CL;
 
@@ -20,30 +34,83 @@ if ( $ENV{CORPUS_REGISTRY} ) {
 } else {
     my @REG = qw( /usr/local/share/cwb/registry /usr/local/cwb/registry /home/jona/Projects-ijs/CQP/DemoCorpus/registry/ );
     $CWB::CL::Registry = join (':', grep { ($_ and -r $_) ? $_ : undef } @REG);
+    $ENV{CORPUS_REGISTRY}=$CWB::CL::Registry;
 }
 warn "Registry at $CWB::CL::Registry.\n";
 
+my $config = plugin json_config => {
+#        file      => '/etc/cqp.conf',
+        stash_key => 'config',
+#        default   => {corpus => 'DICKENS'},
+    };
+warn "Corpus $config->{corpus}.\n";
+
+#get registry
+my @reg = split (':', $CWB::CL::Registry);
+my $file = lc($config->{corpus});
+@reg = grep {  s{(.*)/$}{$1}; -e "$_/$file" } @reg;
+my $reg = shift @reg;
+die "No registry file for $config->{corpus} found in $CWB::CL::Registry.\n"
+  unless $reg;
+$reg = "$reg/$file";
+warn "Registry file at $reg.\n";
+
+#get registry info
+my @attribute; my @structure;
+my $fh = new IO::File;
+$fh->open($reg, '<') or die "Could not open $reg for reading.\n";
+while (<$fh>) {
+  m/^(?:NAME\s+     ([^#]*) (?{ my $x = $^N; chomp $x; $config->{corpus_name} = $x; }) )
+    |(?:ATTRIBUTE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @attribute, $x; }) )
+    |(?:STRUCTURE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @structure, $x; }) )
+      /x;
+}
+$fh->close;
+
+$config->{attributes} = \@attribute;
+$config->{structures} = \@structure;
+
 get '/' => 'index';
+
 get 'style.css' => 'style';
 
 get '/search' => sub {
   my $self = shift;
-  my $search = new CWB::Web::Query 'DICKENS';
-  die "Error accessing corpus.\n" unless ref $search;
-
   $self->app->log->info("Query was: " . $self->param('query'));
+  $self->app->log->info("Redirecting.")
+    and $self->redirect_to('index')
+      and return
+	unless $self->param('query');
+  my $search = new CWB::Web::Query $config->{corpus};
+  die "Error accessing corpus.\n" unless ref $search;
   warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
+  warn $self->helper(dumper=> $self->param);
 
   # window and context size are specified in CQP syntax
 #  $search->context("1 s", "1 s");  # match context returned as HTML
   $search->context("40", "40");  # match context returned as HTML
-  $search->attributes("word", "pos");
-  $search->structures("novel_title", "chapter_title");
-  #$search->reduce()              #ony return a sample of results
+# $search->attributes(@{$self->param('attributes')}) ;
+  $search->attributes(scalar $self->param('show') ?
+		      $self->param('show') : 'word' );
+#  $search->structures(@{$config->{structures}}) if $config->{structures};
+  $search->reduce(50);              #ony return a sample of results
   $search->on_error(sub{grep {print "<h2>$_</h2>\n"} @_});
+  
+  # fix query
+
+  my $query = $self->param('query');
+  if ( $query =~ m/"/ ) {
+    $self->app->log->info("Passing as a CQP-formatted query.")
+  } else  {
+    $query = '[' 
+      . (defined $self->param('search') ? $self->param('search') : 'word')
+      . '="' . $query . '"]';
+    $self->app->log->info("Passing query as $query.")
+  }
+
   $self->render( template=>'search',
 	       search=>$search,  # stash them!
-	       query=>$self->param('query') );
+	       query=>$query );
 };
 
 app->start;
@@ -51,11 +118,23 @@ __DATA__
 
 @@ index.html.ep
 % layout 'main', title=>'Form';
-<%= include 'form' %>
+<%= include 'form', query=>undef %>
 
 @@ form.html.ep
   <form action="/search" method="GET">
-    <input name="query" type="text" size="60" value="<%= $query ? $query : ''%>"></input>
+    Show:
+% my $checked = 0;
+% foreach my $att (@{$config->{attributes}}) {
+     <input type="checkbox" name="show" value="<%= $att %>"<%== $checked++ ? '' : ' checked="1"' %> ><%= $att %></input>
+% }
+    <br>
+    Search:
+% $checked = 0;
+% foreach my $att (@{$config->{attributes}}) {
+     <input type="radio" name="search" value="<%= $att %>"<%== $checked++ ? '' : ' checked="1"' %> ><%= $att %></input>
+% }
+    <br>
+    Query: <input name="query" type="text" size="60" value="<%= $query ? $query : ''%>"></input>
     <input type="submit" value="CQP search">
   </form>
 
@@ -98,9 +177,10 @@ __DATA__
 
 @@ style.css.ep
 sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
-sep.hit { color: red; font-weight: bold; }
-sep.no { font-weight: bold; }
-sep.sd { font-family: sans-serif; font-size: 60%; }
-td.left { text-align: right; }
-td.right { text-align: left; }
-td.match { padding-left: .5em; padding-right: .5em; color: red; font-weight: bold; }
+sep.hit  { color: red; font-weight: bold; }
+sep.no   { font-weight: bold; }
+sep.sd   { font-family: sans-serif; font-size: 60%; }
+td.left  { text-align: right; vertical-align: text-bottom;}
+td.right { text-align: left;  vertical-align: text-top;}
+td.match { text-align: center; padding-left: .5em; padding-right: .5em;
+           color: red; font-weight: bold; vertical-align: middle;}
