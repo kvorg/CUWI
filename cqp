@@ -11,6 +11,7 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib);
 #  query compositing: http://nl2.ijs.si/fpj.html
 # pararaph, wordlist views
 # fix url->html encoding in queries
+# promote errors to the renderer somehow
 
 # Deployment:
 # beta + utf test && deploy in parallel on mantra
@@ -27,6 +28,8 @@ use Mojolicious::Lite;
 use IO::File;
 use CWB::Web::Query;
 use CWB::CL;
+
+app->secret('re9phoothieX4dah4chi');
 
 if ( $ENV{CORPUS_REGISTRY} ) {
     $CWB::CL::Registry = $ENV{CORPUS_REGISTRY} ;
@@ -93,8 +96,8 @@ get '/search' => sub {
 		      $self->param('show') : 'word' );
 #  $search->structures(@{$config->{structures}}) if $config->{structures};
   $search->reduce(50);              #ony return a sample of results
-  $search->on_error(sub{grep {print "<h2>$_</h2>\n"} @_});
-  
+  $search->on_error( sub { warn join("\n", @_) . "\n"; } );
+
   # fix query
 
   my $query = $self->param('query');
@@ -110,17 +113,25 @@ get '/search' => sub {
 		       . '="' . $_ . '"]'
 		     } split('\s+', $query)
 		  );
-    $self->app->log->info("Passing query as $query.")
+    $self->app->log->info("Passing query as $query.");
   }
 
+  my @matches;
+  eval { @matches = $search->query($query); } ;
+  $self->app->log->info("Query errors: $@") if $@;
+  $self->app->log->info("Query processed.");
+
   $self->render( template=>'search',
-	       search=>$search,  # stash them!
-	       query=>$self->param('query'),
-	       qquery=>$query,
+		 search=>$search,  # stash them!
+		 query=>$self->param('query'),
+		 qquery=>$query,
+		 matches=>\@matches,
 	       );
 };
 
 app->start;
+
+
 __DATA__
 
 @@ index.html.ep
@@ -151,8 +162,7 @@ __DATA__
 <%= include 'form' %>
 % my $qs = Mojo::ByteStream->new($query);
 % my $qqs = Mojo::ByteStream->new($qquery);
-% my @matches = $search->query($qquery);
-% my $nr_matches = @matches;
+% my $nr_matches = @{$matches};
   <div class="report">
    <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%== $qs->encode('UTF-8') %></sep>.</p>
 % unless ( $query eq $qquery ) {
@@ -164,7 +174,7 @@ __DATA__
   <table>
 %  for (my $i = 0; $i < $nr_matches; $i++) {
 %   my $nr = $i + 1;         # match number
-%   my $m = $matches[$i];    # returns result struct without 'context'
+%   my $m = $matches->[$i];    # returns result struct without 'context'
     <tr>
      <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep></td>
      <td class="left"><%== $m->{'kwic'}->{'left'}; %></td>
