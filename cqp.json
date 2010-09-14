@@ -1,5 +1,5 @@
 {
-        "corpus"       : "DICKENS",
-	"attributes-no":  : ["word", "pos"],
-	"structures":  : ["novel_title", "chapter_title"],
+  "registry" : "/home/jona/Projects-ijs/CQP/DemoCorpus/registry/",
+  "corpus"   : "DICKENS",
+  "root"     : "/dickens/cqp",
 }

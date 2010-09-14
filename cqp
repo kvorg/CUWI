@@ -2,7 +2,6 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib);
 
 # TODO:
-# add title, corpus name, corpus title
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
 # limit results - seriously
 # enable CWB registry location setting in config
@@ -31,21 +30,15 @@ use CWB::CL;
 
 app->secret('re9phoothieX4dah4chi');
 
-if ( $ENV{CORPUS_REGISTRY} ) {
-    $CWB::CL::Registry = $ENV{CORPUS_REGISTRY} ;
-} else {
-    my @REG = qw( /usr/local/share/cwb/registry /usr/local/cwb/registry /home/jona/Projects-ijs/CQP/DemoCorpus/registry/ );
-    $CWB::CL::Registry = join (':', grep { ($_ and -r $_) ? $_ : undef } @REG);
-    $ENV{CORPUS_REGISTRY}=$CWB::CL::Registry;
-}
-warn "Registry at $CWB::CL::Registry.\n";
-
 my $config = plugin json_config => {
 #        file      => '/etc/cqp.conf',
         stash_key => 'config',
-#        default   => {corpus => 'DICKENS'},
+        default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
     };
-warn "Corpus $config->{corpus}.\n";
+app->log->info("Corpus $config->{corpus}.");
+
+$ENV{CORPUS_REGISTRY} = $CWB::CL::Registry =  $ENV{CORPUS_REGISTRY} ||= $config->{registry};
+app->log->info("Registry at $CWB::CL::Registry.");
 
 #get registry
 my @reg = split (':', $CWB::CL::Registry);
@@ -55,7 +48,7 @@ my $reg = shift @reg;
 die "No registry file for $config->{corpus} found in $CWB::CL::Registry.\n"
   unless $reg;
 $reg = "$reg/$file";
-warn "Registry file at $reg.\n";
+app->log->info("Registry file at $reg.");
 
 #get registry info
 my @attribute; my @structure;
@@ -69,6 +62,7 @@ while (<$fh>) {
 }
 $fh->close;
 
+$config->{corpus_name} =~ s/^\"(.*)\"/$1/;
 $config->{attributes} = \@attribute;
 $config->{structures} = \@structure;
 
@@ -195,6 +189,7 @@ __DATA__
   <link href="style.css" rel="stylesheet" type="text/css">
  </head>
  <body>
+<h2>CQP Search on <%= $config->{corpus_name} %></h2>
 <%== content %> </body>
 </html>
 
