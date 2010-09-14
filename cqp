@@ -35,6 +35,8 @@ my $config = plugin json_config => {
         stash_key => 'config',
         default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
     };
+$config->{root} =~ s{^(.*)/$}{$1};
+app->log->info("App web root: '$config->{root}'.");
 app->log->info("Corpus $config->{corpus}.");
 
 $ENV{CORPUS_REGISTRY} = $CWB::CL::Registry =  $ENV{CORPUS_REGISTRY} ||= $config->{registry};
@@ -66,11 +68,11 @@ $config->{corpus_name} =~ s/^\"(.*)\"/$1/;
 $config->{attributes} = \@attribute;
 $config->{structures} = \@structure;
 
-get '/' => 'index';
+get "$config->{root}/" => 'index';
 
-get 'style.css' => 'style';
+get "$config->{root}/style.css" => 'style';
 
-get '/search' => sub {
+get "$config->{root}/search" => sub {
   my $self = shift;
   $self->app->log->info("Query was: " . $self->param('query'));
   $self->app->log->info("Redirecting.")
