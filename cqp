@@ -2,7 +2,8 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib);
 
 # TODO:
-# properly limit results
+# properly limit results, add context controls
+# persistent options and checkboxes
 # paragraph, wordlist views
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
 # query compositing: http://nl2.ijs.si/fpj.html
@@ -29,7 +30,7 @@ use CWB::CL;
 app->secret('re9phoothieX4dah4chi');
 
 my $config = plugin json_config => {
-#        file      => '/etc/cqp.conf',
+#       file      => '/etc/cqp.conf',
         stash_key => 'config',
         default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
     };
@@ -66,33 +67,39 @@ $config->{corpus_name} =~ s/^\"(.*)\"/$1/;
 $config->{attributes} = \@attribute;
 $config->{structures} = \@structure;
 
+app->log->info("Registry file $reg/$file processed.");
+app->log->info("Ready to serve requests.");
+
 get "$config->{root}/" => 'index';
 
 get "$config->{root}/style.css" => 'style';
 
 get "$config->{root}/search" => sub {
   my $self = shift;
+# warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
+# warn $self->helper(dumper=> $self->param);
+
   $self->app->log->info("Query was: " . $self->param('query'));
+
   $self->app->log->info("Redirecting.")
     and $self->redirect_to('index')
       and return
 	unless $self->param('query');
-  my $search = new CWB::Web::Query $config->{corpus};
+
+  $self->app->log->info("CWB::Web::Query init on $config->{corpus}.")
+  my $search = new CWB::Web::Query $config->{corpus}
   die "Error accessing corpus.\n" unless ref $search;
-  warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
-  warn $self->helper(dumper=> $self->param);
 
   # window and context size are specified in CQP syntax
 #  $search->context("1 s", "1 s");  # match context returned as HTML
   $search->context("40", "40");  # match context returned as HTML
-# $search->attributes(@{$self->param('attributes')}) ;
   $search->attributes(scalar $self->param('show') ?
 		      $self->param('show') : 'word' );
 #  $search->structures(@{$config->{structures}}) if $config->{structures};
   $search->reduce(50);              #ony return a sample of results
   $search->on_error( sub { warn join("\n", @_) . "\n"; } );
 
-  # fix query
+  # fix-up query string
 
   my $query = $self->param('query');
   if ( $query =~ m/"/ ) {
@@ -124,7 +131,6 @@ get "$config->{root}/search" => sub {
 };
 
 app->start;
-
 
 __DATA__
 
