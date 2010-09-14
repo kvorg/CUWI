@@ -2,14 +2,12 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib);
 
 # TODO:
+# properly limit results
+# paragraph, wordlist views
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
-# limit results - seriously
-# enable CWB registry location setting in config
-# add on search form:
-#  select corpus+ update form?
-#  query compositing: http://nl2.ijs.si/fpj.html
-# pararaph, wordlist views
-# fix url->html encoding in queries
+# query compositing: http://nl2.ijs.si/fpj.html
+# better fix for url->html encoding in queries
+# show structural attributes
 # promote errors to the renderer somehow
 
 # Deployment:
