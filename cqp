@@ -86,11 +86,13 @@ $config->{structures} = \@structure;
 app->log->info("Registry file $reg/$file processed.");
 app->log->info("Ready to serve requests.");
 
-get "$config->{root}/" => sub { $sanitize->(shift); } =>'index';
+under ( $config->{root} );
 
-get "$config->{root}/style.css" => 'style';
+get "/" => sub { $sanitize->(shift); } =>'index';
 
-get "$config->{root}/search" => sub {
+get "/style.css" => 'style';
+
+get "/search" => sub {
   my $self = shift;
 # warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
 # warn $self->helper(dumper=> $self->param);
