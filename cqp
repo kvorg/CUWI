@@ -1,8 +1,11 @@
 #!/usr/bin/env perl
-use lib qw(/home/jona/Projects-ijs/CQP/lib);
+use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
+
+# Bugs: checkboxes + checked
 
 # TODO:
-# properly limit results, add context controls
+# properly limit results: fix prev/next limits
+# add context controls
 # persistent options and checkboxes
 # paragraph, wordlist views
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
@@ -21,13 +24,26 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib);
 #kolokacije
 #v bodočnosti tudi vzporedni korpusi, npr. http://nl2.ijs.si/index-bi.html
 
+# Production:
+#MOJO_MODE=production ./myapp.pl
+#mkdir log/
+
+#my $p = $self->req->params->to_hash;
+#while( my ( $k, $v ) = each( %$p ) ) { ...  }
+
 use Mojolicious::Lite;
 #use CWB::Web::Search;
 use IO::File;
 use CWB::Web::Query;
 use CWB::CL;
 
+plugin 'charset' => {charset => 'utf-8'};
+plugin 'tag_helpers_extra';
+
 app->secret('re9phoothieX4dah4chi');
+my $maxsize = 5000;
+
+my $sanitize; # param sanitization callback
 
 my $config = plugin json_config => {
 #       file      => '/etc/cqp.conf',
@@ -70,7 +86,7 @@ $config->{structures} = \@structure;
 app->log->info("Registry file $reg/$file processed.");
 app->log->info("Ready to serve requests.");
 
-get "$config->{root}/" => 'index';
+get "$config->{root}/" => sub { $sanitize->(shift); } =>'index';
 
 get "$config->{root}/style.css" => 'style';
 
@@ -86,21 +102,33 @@ get "$config->{root}/search" => sub {
       and return
 	unless $self->param('query');
 
-  $self->app->log->info("CWB::Web::Query init on $config->{corpus}.")
-  my $search = new CWB::Web::Query $config->{corpus}
+  $self->app->log->info("CWB::Web::Query init on $config->{corpus}.");
+  my $search = new CWB::Web::Query $config->{corpus};
   die "Error accessing corpus.\n" unless ref $search;
+  $search->on_error( sub { warn join("\n", @_) . "\n"; } );
+
+  $sanitize->($self); # sanitize parameters, set defaults
+
+  #only return a sample of results
+  if ($self->param('listing') eq 'cut') {
+    #shifting in the list if using the cut method and more
+    $search->cut($self->param('startfrom') + $self->param('size'));
+  } else {
+    $self->param('listing', 'reduce');
+    $search->reduce($self->param('size'));
+  }
 
   # window and context size are specified in CQP syntax
-#  $search->context("1 s", "1 s");  # match context returned as HTML
-  $search->context("40", "40");  # match context returned as HTML
+  # $search->context("1 s", "1 s");  # for sentence display
+  $search->context('' . $self->param('contextsize'),
+		   '' . $self->param('contextsize'));
   $search->attributes(scalar $self->param('show') ?
 		      $self->param('show') : 'word' );
 #  $search->structures(@{$config->{structures}}) if $config->{structures};
-  $search->reduce(50);              #ony return a sample of results
-  $search->on_error( sub { warn join("\n", @_) . "\n"; } );
+#  would give $m->{structures}{$struct}
+
 
   # fix-up query string
-
   my $query = $self->param('query');
   if ( $query =~ m/"/ ) {
     $self->app->log->info("Passing as a CQP-formatted query.")
@@ -122,57 +150,96 @@ get "$config->{root}/search" => sub {
   $self->app->log->info("Query errors: $@") if $@;
   $self->app->log->info("Query processed.");
 
+  $self->param('startfrom', 0)
+    unless $self->param('startfrom') < scalar @matches;
+
   $self->render( template=>'search',
-		 search=>$search,  # stash them!
+		 size=>$self->param('size'), #stash them!
+		 startfrom=>$self->param('startfrom'),
+		 listing=>$self->param('listing'),
+		 contextsize=>$self->param('contextsize'),
 		 query=>$self->param('query'),
 		 qquery=>$query,
+		 corpus=>$config->{corpus},
+		 search=>$search,
 		 matches=>\@matches,
 	       );
+} => 'search';
+
+$sanitize = sub {
+  my $self = shift;
+
+  $self->param('contextsize', 40)
+    unless $self->param('contextsize')
+      and '' . $self->param('contextsize') =~ m{[0-9]+};
+  $self->param('size', 50)
+    unless $self->param('size')
+      and '' . $self->param('size') =~ m{[0-9]+}
+      and $self->param('size') <= $maxsize;
+  $self->param('startfrom', 0)
+    unless $self->param('startfrom')
+      and '' . $self->param('startfrom') =~ m{[0-9]+}
+      and $self->param('startfrom') <= $maxsize;
+
 };
 
 app->start;
+
+#  <%= link_to url_for('search')->query(Mojo::Parameters->new([query => param 'query', contextsize=> param 'contextsize', size => param 'size', listing=> param 'listing'])) => begin %>Next<% end %>
 
 __DATA__
 
 @@ index.html.ep
 % layout 'main', title=>'Form';
-<%= include 'form', query=>undef %>
+%= include 'form', query=>undef, contextsize=>40, size=>50, startfrom=>0, listing=>'reduce'
 
 @@ form.html.ep
-  <form action="/search" method="GET">
+  <%= form_for 'search', ( method => "get") => begin %>
     Show:
 % my $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
-     <input type="checkbox" name="show" value="<%= $att %>"<%== $checked++ ? '' : ' checked="1"' %> ><%= $att %></input>
+     <%= multi_check_box 'show', value=> $att, $checked++ ? () : (checked => 'checked') %><%= $att %>
 % }
     <br>
     Search:
-% my $qs = Mojo::ByteStream->new($query);
 % $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
-     <input type="radio" name="search" value="<%= $att %>"<%== $checked++ ? '' : ' checked="1"' %> ><%= $att %></input>
+     <%= radio_button_x 'search', value=> $att, $checked++ ? () : (checked => 'checked') %><%= $att %>
 % }
     <br>
-    Query: <input name="query" type="text" size="60" value='<%== $query ? $qs->encode('UTF-8')->to_string : ''%>'></input>
-    <input type="submit" value="CQP search">
-  </form>
+    Query: <%= text_field 'query', size=>60 %>
+    <br>
+    Context: <%= text_field 'contextsize', size=>2, value=>40 %>
+    Display: <%= select_field 'listing', [qw/reduce cut/] %>
+    Results: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %>
+    <%= hidden_field 'startfrom', value => 0 %>
+    <%= submit_button 'CQP search' %>
+  <% end %>
 
 @@ search.html.ep
-% layout 'main', title=>"for $query" ;
+% layout 'main', title=>"in $corpus for $query" ;
 <%= include 'form' %>
-% my $qs = Mojo::ByteStream->new($query);
-% my $qqs = Mojo::ByteStream->new($qquery);
 % my $nr_matches = @{$matches};
   <div class="report">
-   <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%== $qs->encode('UTF-8') %></sep>.</p>
 % unless ( $query eq $qquery ) {
-   <p>Executed as <sep class="querytext"><%== $qqs->encode('UTF-8') %></sep>.</p>
+   <br>Executed as <sep class="querytext"><%= $qquery %></sep>.</p>
+% }
+% if ($nr_matches < $size) {
+   <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%= $query %></sep>.
+% } else {
+   <p><b>Matches <%= $startfrom + 1 %></b> to <b><%= $nr_matches %></b> displayed for <sep class="querytext"><%= $query %></sep>.
 % }
   </div>
+%  if ($nr_matches >= $size) {
+  <div class="nav">
+  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') - param('size')) => (class=>'prev') => begin %>Previous<% end %>
+  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') + $self->param('size')) => (class=>'next') => begin %>Next<% end %>
+ </div>
+% }
 % if ($nr_matches) {
   <div class="matches">
   <table>
-%  for (my $i = 0; $i < $nr_matches; $i++) {
+%  for (my $i = $startfrom; $i < $nr_matches; $i++) {
 %   my $nr = $i + 1;         # match number
 %   my $m = $matches->[$i];    # returns result struct without 'context'
     <tr>
@@ -183,7 +250,13 @@ __DATA__
     </tr>
 % }
   </table>
-  </div>
+ </div>
+%  if ($nr_matches >= $size) {
+  <div class="nav">
+  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') - param('size')) => (class=>'prev') => begin %>Previous<% end %>
+  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') + $self->param('size')) => (class=>'next') => begin %>Next<% end %>
+ </div>
+% }
 %}
 
 
@@ -195,7 +268,9 @@ __DATA__
   <link href="style.css" rel="stylesheet" type="text/css">
  </head>
  <body>
-<h2>CQP Search on <%= $config->{corpus_name} %></h2>
+  <%= link_to 'index' => begin %>
+  <h2>CQP Search on <%= $config->{corpus_name} %></h2>
+  <% end %>
 <%== content %> </body>
 </html>
 

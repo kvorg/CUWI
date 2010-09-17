@@ -1,5 +1,5 @@
 {
   "registry" : "/home/jona/Projects-ijs/CQP/DemoCorpus/registry",
   "corpus"   : "DICKENS",
-  "root"     : "",
+  "root"     : "/dickens/",
 }
