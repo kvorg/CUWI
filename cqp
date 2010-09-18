@@ -95,7 +95,7 @@ get "/style.css" => 'style';
 get "/search" => sub {
   my $self = shift;
 # warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
-# warn $self->helper(dumper=> $self->param);
+warn $self->helper(dumper=> $self->param);
 
   $self->app->log->info("Query was: " . $self->param('query'));
 
@@ -200,13 +200,13 @@ __DATA__
     Show:
 % my $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
-     <%= multi_check_box 'show', value=> $att, $checked++ ? () : (checked => 'checked') %><%= $att %>
+     <%= multi_check_box 'show' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
 % }
     <br>
     Search:
 % $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
-     <%= radio_button_x 'search', value=> $att, $checked++ ? () : (checked => 'checked') %><%= $att %>
+     <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
 % }
     <br>
     Query: <%= text_field 'query', size=>60 %>
@@ -234,8 +234,8 @@ __DATA__
   </div>
 %  if ($nr_matches >= $size) {
   <div class="nav">
-  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') - param('size')) => (class=>'prev') => begin %>Previous<% end %>
-  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') + $self->param('size')) => (class=>'next') => begin %>Next<% end %>
+  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size')} => (class=>'prev') => begin %>Prev<% end %>
+  <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
  </div>
 % }
 % if ($nr_matches) {
@@ -255,8 +255,8 @@ __DATA__
  </div>
 %  if ($nr_matches >= $size) {
   <div class="nav">
-  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') - param('size')) => (class=>'prev') => begin %>Previous<% end %>
-  <%= link_to url_for('search')->query(query => $self->param('query'), contextsize => $self->param('contextsize'), size => $self->param('size'), listing=> $self->param('listing'), startfrom=>$self->param('startfrom') + $self->param('size')) => (class=>'next') => begin %>Next<% end %>
+  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size')} => (class=>'prev') => begin %>Prev<% end %>
+  <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
  </div>
 % }
 %}
