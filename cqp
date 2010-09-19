@@ -133,7 +133,7 @@ warn $self->helper(dumper=> $self->param);
   if ( $query =~ m/"/ ) {
     $self->app->log->info("Passing as a CQP-formatted query.")
   } else  {
-    $query =~ s/(?<!\\)[*]/.*/m; $query =~ s/(?<!\\)[?]/./m;
+    $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
     $query = join(' ',
 		   map {
 		   '['
