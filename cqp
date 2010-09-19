@@ -1,18 +1,18 @@
 #!/usr/bin/env perl
 use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 
-# Bugs: checkboxes + checked
+# bug: sanitize can't work (readonly)
 
 # TODO:
 # properly limit results: fix prev/next limits
-# add context controls
-# persistent options and checkboxes
 # paragraph, wordlist views
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
+# display structural attributes
 # query compositing: http://nl2.ijs.si/fpj.html
-# better fix for url->html encoding in queries
-# show structural attributes
 # promote errors to the renderer somehow
+# sorted queries
+# collocations and macros with views
+# parallel corpora
 
 # Deployment:
 # beta + utf test && deploy in parallel on mantra
@@ -28,9 +28,6 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 #MOJO_MODE=production ./myapp.pl
 #mkdir log/
 
-#my $p = $self->req->params->to_hash;
-#while( my ( $k, $v ) = each( %$p ) ) { ...  }
-
 use Mojolicious::Lite;
 #use CWB::Web::Search;
 use IO::File;
@@ -45,6 +42,7 @@ my $maxsize = 5000;
 
 my $sanitize; # param sanitization callback
 
+# config
 my $config = plugin json_config => {
 #       file      => '/etc/cqp.conf',
         stash_key => 'config',
@@ -67,7 +65,7 @@ die "No registry file for $config->{corpus} found in $CWB::CL::Registry.\n"
 $reg = "$reg/$file";
 app->log->info("Registry file at $reg.");
 
-#get registry info
+# get registry info
 my @attribute; my @structure;
 my $fh = new IO::File;
 $fh->open($reg, '<') or die "Could not open $reg for reading.\n";
@@ -78,14 +76,14 @@ while (<$fh>) {
       /x;
 }
 $fh->close;
-
 $config->{corpus_name} =~ s/^\"(.*)\"/$1/;
 $config->{attributes} = \@attribute;
 $config->{structures} = \@structure;
-
 app->log->info("Registry file $reg/$file processed.");
+
 app->log->info("Ready to serve requests.");
 
+# routes and controllers
 under ( $config->{root} );
 
 get "/" => sub { $sanitize->(shift); } =>'index';
@@ -187,7 +185,6 @@ $sanitize = sub {
 
 app->start;
 
-#  <%= link_to url_for('search')->query(Mojo::Parameters->new([query => param 'query', contextsize=> param 'contextsize', size => param 'size', listing=> param 'listing'])) => begin %>Next<% end %>
 
 __DATA__
 
@@ -243,7 +240,7 @@ __DATA__
   <table>
 %  for (my $i = $startfrom; $i < $nr_matches; $i++) {
 %   my $nr = $i + 1;         # match number
-%   my $m = $matches->[$i];    # returns result struct without 'context'
+%   my $m = $matches->[$i];  # returns result struct without 'context'
     <tr>
      <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep></td>
      <td class="left"><%== $m->{'kwic'}->{'left'}; %></td>
@@ -260,7 +257,6 @@ __DATA__
  </div>
 % }
 %}
-
 
 @@ layouts/main.html.ep
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -279,6 +275,10 @@ __DATA__
 @@ style.css.ep
 body { font-family: Palatino, Times, serif; font-size: 120%;}
 sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
+div.nav   { font-weight: bold; font-size: 60%; }
+div.nav > a.prev   { float: left; }
+div.nav > a.next   { float: right; }
+div.matches   { clear: both; }
 sep.hit  { color: red; font-weight: bold; }
 sep.no   { font-weight: bold; }
 sep.sd   { font-family: sans-serif; font-size: 60%; }
