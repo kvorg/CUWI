@@ -40,7 +40,8 @@ plugin 'tag_helpers_extra';
 app->secret('re9phoothieX4dah4chi');
 my $maxsize = 5000;
 
-my $sanitize; # param sanitization callback
+my $sanitize;  # param sanitization callback
+my $tabulator; # multi attribute tabulator callback
 
 # config
 my $config = plugin json_config => {
@@ -124,9 +125,8 @@ warn $self->helper(dumper=> $self->param);
 		   '' . $self->param('contextsize'));
   $search->attributes(scalar $self->param('show') ?
 		      $self->param('show') : 'word' );
-#  $search->structures(@{$config->{structures}}) if $config->{structures};
-#  would give $m->{structures}{$struct}
-
+  $search->structures($self->param('struct'))
+    if $config->{structures} and $self->param('struct') ;
 
   # fix-up query string
   my $query = $self->param('query');
@@ -163,9 +163,11 @@ warn $self->helper(dumper=> $self->param);
 		 corpus=>$config->{corpus},
 		 search=>$search,
 		 matches=>\@matches,
+		 tc=>$tabulator,
 	       );
 } => 'search';
 
+# use this to redirect
 $sanitize = sub {
   my $self = shift;
 
@@ -183,6 +185,18 @@ $sanitize = sub {
 
 };
 
+$tabulator = sub {
+  my $string = shift;
+  return $string unless $string =~ m{/};
+  my $o = '<sep class="part">'; my $c = '</sep>';
+  my @tokens = split(/\s+/, $string);
+  @tokens = map {
+    my @parts = split('/', $_);
+    '<sep class="token">' . $o . join("$c$o", @parts) . $c . '</sep>';
+  } @tokens;
+  return join(' ', @tokens);
+};
+
 app->start;
 
 
@@ -197,13 +211,21 @@ __DATA__
     Show:
 % my $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
-     <%= multi_check_box 'show' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
+     <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
 % }
     <br>
     Search:
 % $checked = 0;
 % foreach my $att (@{$config->{attributes}}) {
      <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
+% }
+% if (@{$config->{structures}}) {
+    <br>
+    Structures:
+%   foreach my $att (@{$config->{structures}}) {
+%   next unless $att =~ m/_/;
+       <%= check_box_x 'struct' => $att => begin %><%= $att %><% end %>
+%   }
 % }
     <br>
     Query: <%= text_field 'query', size=>60 %>
@@ -242,10 +264,12 @@ __DATA__
 %   my $nr = $i + 1;         # match number
 %   my $m = $matches->[$i];  # returns result struct without 'context'
     <tr>
-     <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep></td>
-     <td class="left"><%== $m->{'kwic'}->{'left'}; %></td>
-     <td class="match"><sep class="match"><%== $m->{'kwic'}->{'match'}; %></sep></td>
-     <td class="right"><%== $m->{'kwic'}->{'right'}; %></td>
+     <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep><sep clss="struct">
+
+     </sep></td>
+     <td class="left"><%== $tc->($m->{'kwic'}->{'left'}); %></td>
+     <td class="match"><sep class="match"><%== $tc->($m->{'kwic'}->{'match'}); %></sep></td>
+     <td class="right"><%== $tc->($m->{'kwic'}->{'right'}); %></td>
     </tr>
 % }
   </table>
@@ -286,3 +310,9 @@ td.left  { text-align: right; vertical-align: text-bottom;}
 td.right { text-align: left;  vertical-align: text-top;}
 td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
+sep.token { display: inline-block }
+sep.part { display: block; text-align: center; }
+sep.part:nth-child(4n+1) { color: navy; }
+sep.part:nth-child(4n+2) { color: green; }
+sep.part:nth-child(4n+3) { color: maroon; }
+sep.part:nth-child(4n+4) { color: purple; }
