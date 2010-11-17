@@ -218,7 +218,9 @@ $tabulator = sub {
 };
 
 $utfizator = sub {
-  return Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
+  my $string = Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
+  $string =~ s/.&frac34;/&#x017E;/g;
+  return $string;
 } ;
 
 app->start;
