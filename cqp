@@ -7,25 +7,21 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 # context: to words OK
 # tables: no wrap OK
 # reduce: no next/prev OK
-# properly limit results: fix prev/next limits
-# add case insensitive option
+# properly limit results: fix prev/next limits OK (more intuitive Next)
+# add case insensitive option: default?
+# paragraph, wordlist views OK - sentences
 # macro cases: frekvenčni leksikon (po query, cel korpus :-) 
 #   s search/display options
-# paragraph, wordlist views
-# paragraph mode (odstavek ali po besednem kontekstu, če ni odstavkov)
-# add invisible slashes to parts ... NO
 # logika soritranja
 # sort po cqp opcijah -- predlagaj interface
 # dokumentacija v mouse-over balonih
 # cwb-scan-corpus support?
 
 # TODO:
-# fix attribute printing as per http://nl2.ijs.si/fpj.html
-# display structural attributes
+# fix attribute printing as per http://nl2.ijs.si/fpj.html DONE
+# display structural attributes DONE (with caveats - pending)
 # query compositing: http://nl2.ijs.si/fpj.html
-# promote errors to the renderer somehow
-# sorted queries
-# collocations and macros with views
+# promote errors to the renderer somehow PARTIAL, need fixes
 # parallel corpora
 
 # Deployment:
@@ -139,6 +135,7 @@ warn $self->helper(dumper=> $self->param);
   # $search->context("1 s", "1 s");  # for sentence display
   $search->context('' . $self->param('contextsize') . ' words',
 		   '' . $self->param('contextsize') . ' words');
+  $search->context('1 s', '1 s') if $self->param('display') eq 'sentences';
   $search->attributes(scalar $self->param('show') ?
 		      $self->param('show') : 'word' );
   $search->structures($self->param('struct'))
@@ -283,12 +280,13 @@ __DATA__
   </div>
 %  if ($nr_matches >= $size and $self->param('listing') eq 'cut') {
   <div class="nav">
-  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size')} => (class=>'prev') => begin %>Prev<% end %>
+  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size') >= 1 ? $self->param('startfrom') - $self->param('size') : 0 } => (class=>'prev') => begin %>Prev<% end %>
   <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
  </div>
 % }
 % if ($nr_matches) {
   <div class="matches">
+% if ($self->param('display') eq 'context') {
   <table>
 %  for (my $i = $startfrom; $i < $nr_matches; $i++) {
 %   my $nr = $i + 1;         # match number
@@ -304,12 +302,29 @@ __DATA__
      <td class="match"><sep class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></sep></td>
      <td class="right"><%== $tc->($utf->($m->{'kwic'}->{'right'})); %></td>
     </tr>
-% }
+%  }
   </table>
+% } elsif ($self->param('display') eq 'sentences') {
+%  for (my $i = $startfrom; $i < $nr_matches; $i++) {
+%   my $nr = $i + 1;         # match number
+%   my $m = $matches->[$i];  # returns result struct without 'context'
+    <p>
+     <sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep><sep class="structs">
+%   foreach my $struct (keys %{$m->{data}}) {
+    <sep class="struct"><%= $m->{data}{$struct} %></sep>
+%   }
+%   warn "$m->{'kwic'}->{'left'}\n";
+     </sep>
+     <%== $tc->($utf->($m->{'kwic'}->{'left'})); %>
+     <sep class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></sep>
+     <%== $tc->($utf->($m->{'kwic'}->{'right'})); %>
+    </p>
+%  }
+% }
  </div>
 %  if ($nr_matches >= $size and $self->param('listing') eq 'cut') {
   <div class="nav">
-  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size')} => (class=>'prev') => begin %>Prev<% end %>
+  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size') >= 1 ? $self->param('startfrom') - $self->param('size') : 0 } => (class=>'prev') => begin %>Prev<% end %>
   <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
  </div>
 % }
@@ -340,6 +355,7 @@ div.nav > a.prev   { float: left; }
 div.nav > a.next   { float: right; }
 div.matches   { clear: both; }
 sep.hit  { color: red; font-weight: bold; }
+sep.match  { color: red; font-weight: bold; }
 sep.no   { font-weight: bold; }
 sep.sd   { font-family: sans-serif; font-size: 60%; }
 sep.structs { display: inline-block }
@@ -350,6 +366,7 @@ td.left  { text-align: right; vertical-align: text-bottom;}
 td.right { text-align: left;  vertical-align: text-top;}
 td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
+tr:nth-child(2n+1) { background-color: #F2F2F2; }
 sep.token { display: inline-block }
 sep.part { display: block; text-align: center; }
 sep.part:nth-child(4n+1) { color: navy; }
