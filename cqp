@@ -314,17 +314,16 @@ __DATA__
 <html>
  <head>
   <title>CQP Search <%= $title ? " $title" : '' =%></title>
-  <%= stylesheet 'public/style.css' %>
+  <link href="style.css" rel="stylesheet" type="text/css">
  </head>
  <body>
   <%= link_to 'index' => begin %>
   <h2>CQP Search on <%= $config->{corpus_name} %></h2>
   <% end %>
-<%== content %>
- </body>
+<%== content %> </body>
 </html>
 
-@@ public/style.css
+@@ style.css.ep
 body { font-family: Palatino, Times, serif; font-size: 120%;}
 sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.nav   { font-weight: bold; font-size: 60%; }
