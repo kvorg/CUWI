@@ -2,4 +2,5 @@
   "registry" : "/home/jona/Projects-ijs/CQP/DemoCorpus/registry",
   "corpus"   : "JOS100K-EN",
   "root"     : "cqp",
+  "blurb"     : "Concordances over <a href='http://nl.ijs.si/jos/'>Jos100K</a> with English tag names. Jos100K is a manually-revised annotated corpus. It conatains 100.000 words and si derived from <a href='http://www.fidaplus.net/'>FidaPLUS</a>. This versions is using English annotation tags. The search query can contain simple words with optional . and * place-holders, or <a href='http://cogsci.uni-osnabrueck.de/~korpora/ws/CWBdoc/CQP_Tutorial/'>CQP query language statements</a>.",
 }
