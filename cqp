@@ -4,6 +4,20 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 # bug: sanitize can't work (readonly)
 
 # TODO:
+# context: to words
+# tables: no wrap
+# reduce: no next/prev
+# add case insensitive option
+# macro cases: frekvenčni leksikon (po query, cel korpus :-) 
+#   s search/display options
+# paragraph mode (odstavek ali po besednem kontekstu, če ni odstavkov)
+# add invisible slashes to parts ...
+# logika soritranja
+# sort po cqp opcijah -- predlagaj interface
+# dokumentacija v mouse-over balonih
+# cwb-scan-corpus support?
+
+# TODO:
 # properly limit results: fix prev/next limits
 # paragraph, wordlist views
 # fix attribute printing as per http://nl2.ijs.si/fpj.html
@@ -33,6 +47,7 @@ use Mojolicious::Lite;
 use IO::File;
 use CWB::Web::Query;
 use CWB::CL;
+use Encode 'decode';
 
 plugin 'charset' => {charset => 'utf-8'};
 plugin 'tag_helpers_extra';
@@ -42,6 +57,7 @@ my $maxsize = 5000;
 
 my $sanitize;  # param sanitization callback
 my $tabulator; # multi attribute tabulator callback
+my $utfizator; # fix utf8 misencoding from html callback
 
 # config
 my $config = plugin json_config => {
@@ -153,6 +169,8 @@ warn $self->helper(dumper=> $self->param);
   $self->param('startfrom', 0)
     unless $self->param('startfrom') < scalar @matches;
 
+  my @structs = $self->param('structs');
+
   $self->render( template=>'search',
 		 size=>$self->param('size'), #stash them!
 		 startfrom=>$self->param('startfrom'),
@@ -164,6 +182,8 @@ warn $self->helper(dumper=> $self->param);
 		 search=>$search,
 		 matches=>\@matches,
 		 tc=>$tabulator,
+		 utf=>$utfizator,
+		 structures=>\@structs,
 	       );
 } => 'search';
 
@@ -196,6 +216,10 @@ $tabulator = sub {
   } @tokens;
   return join(' ', @tokens);
 };
+
+$utfizator = sub {
+  return Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
+} ;
 
 app->start;
 
@@ -264,12 +288,15 @@ __DATA__
 %   my $nr = $i + 1;         # match number
 %   my $m = $matches->[$i];  # returns result struct without 'context'
     <tr>
-     <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep><sep clss="struct">
-
+     <td><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep><sep class="structs">
+%   foreach my $struct (keys %{$m->{data}}) {
+    <sep class="struct"><%= $m->{data}{$struct} %></sep>
+%   }
+%   warn "$m->{'kwic'}->{'left'}\n";
      </sep></td>
-     <td class="left"><%== $tc->($m->{'kwic'}->{'left'}); %></td>
-     <td class="match"><sep class="match"><%== $tc->($m->{'kwic'}->{'match'}); %></sep></td>
-     <td class="right"><%== $tc->($m->{'kwic'}->{'right'}); %></td>
+     <td class="left"><%== $tc->($utf->($m->{'kwic'}->{'left'})); %></td>
+     <td class="match"><sep class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></sep></td>
+     <td class="right"><%== $tc->($utf->($m->{'kwic'}->{'right'})); %></td>
     </tr>
 % }
   </table>
@@ -287,16 +314,17 @@ __DATA__
 <html>
  <head>
   <title>CQP Search <%= $title ? " $title" : '' =%></title>
-  <link href="style.css" rel="stylesheet" type="text/css">
+  <%= stylesheet 'public/style.css' %>
  </head>
  <body>
   <%= link_to 'index' => begin %>
   <h2>CQP Search on <%= $config->{corpus_name} %></h2>
   <% end %>
-<%== content %> </body>
+<%== content %>
+ </body>
 </html>
 
-@@ style.css.ep
+@@ public/style.css
 body { font-family: Palatino, Times, serif; font-size: 120%;}
 sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.nav   { font-weight: bold; font-size: 60%; }
@@ -306,6 +334,8 @@ div.matches   { clear: both; }
 sep.hit  { color: red; font-weight: bold; }
 sep.no   { font-weight: bold; }
 sep.sd   { font-family: sans-serif; font-size: 60%; }
+sep.structs { display: inline-block }
+sep.struct   { display: block; font-family: sans-serif; font-size: 50%; }
 td.left  { text-align: right; vertical-align: text-bottom;}
 td.right { text-align: left;  vertical-align: text-top;}
 td.match { text-align: center; padding-left: .5em; padding-right: .5em;
