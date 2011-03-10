@@ -2,7 +2,6 @@ package Mojolicious::Plugin::TagHelpersExtra;
 
 use strict;
 use warnings;
-
 use base 'Mojolicious::Plugin';
 
 our $VERSION = '0.0001';
