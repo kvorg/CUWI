@@ -1,9 +1,23 @@
 #!/usr/bin/env perl
 use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 
-# bug: sanitize can't work (readonly)
+#glej: corpus.leeds.ac.uk./ serge cqp search
+#spredi zadi, beseda lemi
+#+ reverse sorts
+#parallel corpora
+#
+# context link: one hit with metainfo, wider context (paragraph mode)
+# and all tags
+# structural attributes: searchable? -> enega za link na document metadata
+# generic id documenta, source id cca ena beseda za izpis
+# metapodatki & paragraph mode
 
+# bug: sanitize can't work (readonly)
+# sort: zadnja levega, prva desnega etc. --- glej primere iz maila
 # TODO:
+# corpus browser with permalinks
+# sentences-> to paragraphs
+# tags in paragraphs: colors and /
 # context: to words OK
 # tables: no wrap OK
 # reduce: no next/prev OK
@@ -47,6 +61,7 @@ use Encode 'decode';
 
 plugin 'charset' => {charset => 'utf-8'};
 plugin 'tag_helpers_extra';
+plugin 'pod_renderer';
 
 app->secret('re9phoothieX4dah4chi');
 my $maxsize = 5000;
@@ -106,7 +121,7 @@ get "/style.css" => 'style';
 get "/search" => sub {
   my $self = shift;
 # warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
-warn $self->helper(dumper=> $self->param);
+warn $self->dumper($self->param);
 
   $self->app->log->info("Query was: " . $self->param('query'));
 
@@ -217,6 +232,7 @@ $tabulator = sub {
 $utfizator = sub {
   my $string = Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
   $string =~ s/.&frac34;/&#x017E;/g;
+  $string =~ s/.&frac12;/&Zcaron;/g;
   return $string;
 } ;
 
@@ -252,7 +268,7 @@ __DATA__
 %#%   }
 % }
     <br>
-    Search query: <%= text_field 'query', size=>60 %>
+    <span class="hlp">Search query<span class="hlptxt">Yada yada.</span></span>: <%= text_field 'query', size=>60 %>
     <br>
     Context words: <%= text_field 'contextsize', size=>2, value=>40 %>
     Display mode: <%= select_field 'display', [qw/context sentences wordlist/] %>
@@ -284,7 +300,7 @@ __DATA__
   <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
  </div>
 % }
-% if ($nr_matches) {
+% if ($nr_matchess) {
   <div class="matches">
 % if ($self->param('display') eq 'context') {
   <table>
@@ -320,6 +336,8 @@ __DATA__
      <%== $tc->($utf->($m->{'kwic'}->{'right'})); %>
     </p>
 %  }
+% } elsif ($self->param('display') eq 'sentences') {
+<p>Not implemented.</p>
 % }
  </div>
 %  if ($nr_matches >= $size and $self->param('listing') eq 'cut') {
@@ -373,3 +391,5 @@ sep.part:nth-child(4n+1) { color: navy; }
 sep.part:nth-child(4n+2) { color: green; }
 sep.part:nth-child(4n+3) { color: maroon; }
 sep.part:nth-child(4n+4) { color: purple; }
+span.hlp span.hlptxt { display: none; }
+span.hlp:hover span.helptxt { display: block; }
