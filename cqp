@@ -55,6 +55,7 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 use Mojolicious::Lite;
 #use CWB::Web::Search;
 use IO::File;
+use IO::Dir;
 use CWB::Web::Query;
 use CWB::CL;
 use Encode 'decode';
@@ -84,30 +85,43 @@ $ENV{CORPUS_REGISTRY} = $CWB::CL::Registry =  $ENV{CORPUS_REGISTRY} ||= $config-
 app->log->info("Registry at $CWB::CL::Registry.");
 
 #get registry
+#change this to parse all registries and build a list of corpora
 my @reg = split (':', $CWB::CL::Registry);
-my $file = lc($config->{corpus});
-@reg = grep {  s{(.*)/$}{$1}; -e "$_/$file" } @reg;
-my $reg = shift @reg;
-die "No registry file for $config->{corpus} found in $CWB::CL::Registry.\n"
-  unless $reg;
-$reg = "$reg/$file";
-app->log->info("Registry file at $reg.");
+my @corpora =
+  grep {
+    -f $_  and not ( m{/[#]} or m {[#~]$});
+  } map {
+    my $dirname = $_;
+    map { "$dirname/$_" } IO::Dir->new($dirname)->read;
+  } @reg;
+app->log->info("Corpora: " . join (", ", @corpora) );
 
-# get registry info
-my @attribute; my @structure;
-my $fh = new IO::File;
-$fh->open($reg, '<') or die "Could not open $reg for reading.\n";
-while (<$fh>) {
-  m/^(?:NAME\s+     ([^#]*) (?{ my $x = $^N; chomp $x; $config->{corpus_name} = $x; }) )
-    |(?:ATTRIBUTE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @attribute, $x; }) )
-    |(?:STRUCTURE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @structure, $x; }) )
+$config->{corpora} = {};
+
+foreach my $reg (@corpora) {
+  $reg =~ m{.*/([^/]+)$};  my $corpus = uc($1);
+  app->log->info("Scanning registry file at $reg for $corpus.");
+  $config->{corpora}{$corpus} = {};
+  my @attribute = (); my @structure = ();
+  my $fh = new IO::File;
+  $fh->open($reg, '<') or die "Could not open $reg for reading.\n";
+  while (<$fh>) {
+   m/^
+     (?:NAME\s+     ([^#]*) (?{ my $x = $^N; chomp $x; $config->{corpora}{$corpus}{name} = $x; }) ) |
+    (?:ATTRIBUTE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @attribute, $x; }) ) |
+    (?:STRUCTURE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @structure, $x; }) )
       /x;
+  }
+  $fh->close;
+  if ($config->{corpora}{$corpus}{name} ) {
+    $config->{corpora}{$corpus}{name} =~ s/^\"(.*)\"/$1/
+  } else {
+    $config->{corpora}{$corpus}{name} = '';
+  }
+  $config->{corpora}{$corpus}{attributes} = \@attribute;
+  $config->{corpora}{$corpus}{structures} = \@structure;
+  app->log->info("Registry file $reg processed as $corpus ($config->{corpora}{$corpus}{name}).");
 }
-$fh->close;
-$config->{corpus_name} =~ s/^\"(.*)\"/$1/;
-$config->{attributes} = \@attribute;
-$config->{structures} = \@structure;
-app->log->info("Registry file $reg/$file processed.");
 
 app->log->info("Ready to serve requests.");
 
