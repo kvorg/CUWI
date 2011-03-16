@@ -15,7 +15,8 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 # bug: sanitize can't work (readonly)
 # sort: zadnja levega, prva desnega etc. --- glej primere iz maila
 # TODO:
-# corpus browser with permalinks
+# corpus browser with permalinks DONE
+# add corpus info link from registry ?
 # sentences-> to paragraphs
 # tags in paragraphs: colors and /
 # context: to words OK
@@ -79,7 +80,6 @@ my $config = plugin json_config => {
     };
 $config->{root} =~ s{^(.*)/$}{$1};
 app->log->info("App web root: '$config->{root}'.");
-app->log->info("Corpus $config->{corpus}.");
 
 $ENV{CORPUS_REGISTRY} = $CWB::CL::Registry =  $ENV{CORPUS_REGISTRY} ||= $config->{registry};
 app->log->info("Registry at $CWB::CL::Registry.");
@@ -96,30 +96,27 @@ my @corpora =
   } @reg;
 app->log->info("Corpora: " . join (", ", @corpora) );
 
-$config->{corpora} = {};
-
 foreach my $reg (@corpora) {
   $reg =~ m{.*/([^/]+)$};  my $corpus = uc($1);
   app->log->info("Scanning registry file at $reg for $corpus.");
-  $config->{corpora}{$corpus} = {};
-  my @attribute = (); my @structure = ();
+  $config->{corpora}{$corpus} = {
+				 name => '',
+				 attributes => [],
+				 structures => [],
+				};
   my $fh = new IO::File;
   $fh->open($reg, '<') or die "Could not open $reg for reading.\n";
   while (<$fh>) {
-   m/^
-     (?:NAME\s+     ([^#]*) (?{ my $x = $^N; chomp $x; $config->{corpora}{$corpus}{name} = $x; }) ) |
-    (?:ATTRIBUTE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @attribute, $x; }) ) |
-    (?:STRUCTURE\s+([^# ]*)(?{ my $x = $^N; chomp $x; push @structure, $x; }) )
-      /x;
+    $config->{corpora}{$corpus}{name} = $1
+      if m/NAME\s+"([^#]*)"/ ;
+    push @{$config->{corpora}{$corpus}{attributes}}, $1
+      if m/ATTRIBUTE\s+([^# \n]*)/ ;
+      push @{$config->{corpora}{$corpus}{structures}}, $1
+	if m/STRUCTURE\s+([^# \n]*)/ ;
   }
   $fh->close;
-  if ($config->{corpora}{$corpus}{name} ) {
-    $config->{corpora}{$corpus}{name} =~ s/^\"(.*)\"/$1/
-  } else {
-    $config->{corpora}{$corpus}{name} = '';
-  }
-  $config->{corpora}{$corpus}{attributes} = \@attribute;
-  $config->{corpora}{$corpus}{structures} = \@structure;
+  $config->{corpora}{$corpus}{name} = ucfirst(lc($corpus)) unless $config->{corpora}{$corpus}{name};
+  app->log->info( "Corpus name is: $config->{corpora}{$corpus}{name} with " . scalar @{$config->{corpora}{$corpus}{attributes}} . " attributes:" . (join ', ', @{$config->{corpora}{$corpus}{attributes}}) . '.' );
   app->log->info("Registry file $reg processed as $corpus ($config->{corpora}{$corpus}{name}).");
 }
 
@@ -132,20 +129,28 @@ get "/" => sub { $sanitize->(shift); } =>'index';
 
 get "/style.css" => 'style';
 
-get "/search" => sub {
+get "/:corpus" => sub {
+  my $self = shift;
+  $self->stash(corpus => uc($self->param('corpus')) );
+} => 'corpus';
+
+
+get "/:corpus/search" => sub {
   my $self = shift;
 # warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
-warn $self->dumper($self->param);
+  warn $self->dumper($self->param);
 
   $self->app->log->info("Query was: " . $self->param('query'));
+  my $corpus = uc($self->param('corpus'));
 
   $self->app->log->info("Redirecting.")
     and $self->redirect_to('index')
       and return
-	unless $self->param('query');
+	unless $self->param('query')
+	  and $config->{corpora}{$corpus};
 
-  $self->app->log->info("CWB::Web::Query init on $config->{corpus}.");
-  my $search = new CWB::Web::Query $config->{corpus};
+  $self->app->log->info("CWB::Web::Query init on $corpus.");
+  my $search = new CWB::Web::Query $corpus;
   die "Error accessing corpus.\n" unless ref $search;
   $search->on_error( sub { warn join("\n", @_) . "\n"; } );
 
@@ -168,7 +173,7 @@ warn $self->dumper($self->param);
   $search->attributes(scalar $self->param('show') ?
 		      $self->param('show') : 'word' );
   $search->structures($self->param('struct'))
-    if $config->{structures} and $self->param('struct') ;
+    if $config->{corpora}{$corpus}{structures} and $self->param('struct') ;
 
   # fix-up query string
   my $query = $self->param('query');
@@ -204,7 +209,7 @@ warn $self->dumper($self->param);
 		 contextsize=>$self->param('contextsize'),
 		 query=>$self->param('query'),
 		 qquery=>$query,
-		 corpus=>$config->{corpus},
+		 corpus=>uc($corpus),
 		 search=>$search,
 		 matches=>\@matches,
 		 tc=>$tabulator,
@@ -234,11 +239,11 @@ $sanitize = sub {
 $tabulator = sub {
   my $string = shift;
   return $string unless $string =~ m{/};
-  my $o = '<sep class="part">'; my $c = '</sep>';
+  my $o = '<span class="part">'; my $c = '</span>';
   my @tokens = split(/\s+/, $string);
   @tokens = map {
     my @parts = split('/', $_);
-    '<sep class="token">' . $o . join("$c$o", @parts) . $c . '</sep>';
+    '<span class="token">' . $o . join("$c$o", @parts) . $c . '</span>';
   } @tokens;
   return join(' ', @tokens);
 };
@@ -246,7 +251,7 @@ $tabulator = sub {
 $utfizator = sub {
   my $string = Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
   $string =~ s/.&frac34;/&#x017E;/g;
-  $string =~ s/.&frac12;/&Zcaron;/g;
+  $string =~ s/.&frac12;/&#x017D;/g;
   return $string;
 } ;
 
@@ -257,30 +262,45 @@ __DATA__
 
 @@ index.html.ep
 % layout 'main', title=>'Form';
-%= include 'form', query=>undef, contextsize=>40, size=>50, startfrom=>0, listing=>'reduce'
+
+<div class="corpora">
+ <p>Available corpora:</p>
+ <ul>
+% foreach my $corpus ( sort keys %{$config->{corpora}} ) {
+   <li><a href="<%= $config->{root} . '/' . lc($corpus) %>"><b><%= $corpus %></b>: <%= $config->{corpora}{$corpus}{name} %></a>
+%= dumper $config->{corpora}{uc($corpus)};
+   </li>
+% }
+ </ul>
+
+
+@@ corpus.html.ep
+% layout 'main', title=>'Form';
+%= include 'form', query=>undef, contextsize=>10, size=>50, startfrom=>0, listing=>'reduce'
+
 
 @@ form.html.ep
   <div class="form">
-  <%= form_for 'search', ( method => "get") => begin %>
+  <%= form_for "/$config->{root}/" . lc($corpus) . "/search", ( method => "get") => begin %>
     Show:
 % my $checked = 0;
-% foreach my $att (@{$config->{attributes}}) {
+% foreach my $att (@{$config->{corpora}{$corpus}{attributes}}) {
      <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
 % }
     <br>
     Search:
 % $checked = 0;
-% foreach my $att (@{$config->{attributes}}) {
+% foreach my $att (@{$config->{corpora}{$corpus}{attributes}}) {
      <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
 % }
-% if (@{$config->{structures}}) {
+%# if (@{$config->{corpora}{$corpus}{structures}}) {
 %#    <br>
 %#    Structures:
-%#%   foreach my $att (@{$config->{structures}}) {
+%#%   foreach my $att (@{$config->{corpora}{$corpus}{structures}}) {
 %#%   next unless $att =~ m/_/;
 %#       <%= check_box_x 'struct' => $att => begin %><%= $att %><% end %>
 %#%   }
-% }
+%# }
     <br>
     <span class="hlp">Search query<span class="hlptxt">Yada yada.</span></span>: <%= text_field 'query', size=>60 %>
     <br>
@@ -300,12 +320,12 @@ __DATA__
 % my $nr_matches = @{$matches};
   <div class="report">
 % unless ( $query eq $qquery ) {
-   <br>Executed as <sep class="querytext"><%= $qquery %></sep>.</p>
+   <br>Executed as <span class="querytext"><%= $qquery %></span>.</p>
 % }
 % if ($nr_matches < $size) {
-   <p><b><%= $nr_matches %></b> matches found for <sep class="querytext"><%= $query %></sep>.
+   <p><b><%= $nr_matches %></b> matches found for <span class="querytext"><%= $query %></span>.
 % } else {
-   <p><b>Matches <%= $startfrom + 1 %></b> to <b><%= $nr_matches %></b> displayed for <sep class="querytext"><%= $query %></sep>.
+   <p><b>Matches <%= $startfrom + 1 %></b> to <b><%= $nr_matches %></b> displayed for <span class="querytext"><%= $query %></span>.
 % }
   </div>
 %  if ($nr_matches >= $size and $self->param('listing') eq 'cut') {
@@ -314,7 +334,7 @@ __DATA__
   <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
  </div>
 % }
-% if ($nr_matchess) {
+% if ($nr_matches) {
   <div class="matches">
 % if ($self->param('display') eq 'context') {
   <table>
@@ -322,14 +342,14 @@ __DATA__
 %   my $nr = $i + 1;         # match number
 %   my $m = $matches->[$i];  # returns result struct without 'context'
     <tr>
-     <td class="head"><sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep><sep class="structs">
+     <td class="head"><span class="no">[<%= $nr %>]</sep> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
 %   foreach my $struct (keys %{$m->{data}}) {
-    <sep class="struct"><%= $m->{data}{$struct} %></sep>
+    <span class="struct"><%= $m->{data}{$struct} %></span>
 %   }
 %   warn "$m->{'kwic'}->{'left'}\n";
-     </sep></td>
+     </span></td>
      <td class="left"><%== $tc->($utf->($m->{'kwic'}->{'left'})); %></td>
-     <td class="match"><sep class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></sep></td>
+     <td class="match"><span class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></span></td>
      <td class="right"><%== $tc->($utf->($m->{'kwic'}->{'right'})); %></td>
     </tr>
 %  }
@@ -339,14 +359,14 @@ __DATA__
 %   my $nr = $i + 1;         # match number
 %   my $m = $matches->[$i];  # returns result struct without 'context'
     <p>
-     <sep class="no">[<%= $nr %>]</sep> <sep class="sd"><%= $m->{'cpos'} %></sep><sep class="structs">
+     <span class="no">[<%= $nr %>]</span> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
 %   foreach my $struct (keys %{$m->{data}}) {
-    <sep class="struct"><%= $m->{data}{$struct} %></sep>
+    <span class="struct"><%= $m->{data}{$struct} %></span>
 %   }
 %   warn "$m->{'kwic'}->{'left'}\n";
-     </sep>
+     </span>
      <%== $tc->($utf->($m->{'kwic'}->{'left'})); %>
-     <sep class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></sep>
+     <span class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></span>
      <%== $tc->($utf->($m->{'kwic'}->{'right'})); %>
     </p>
 %  }
@@ -367,12 +387,13 @@ __DATA__
 <html>
  <head>
   <title>CQP Search <%= $title ? " $title" : '' =%></title>
-  <link href="style.css" rel="stylesheet" type="text/css">
+  <link href="<%= '/' . $config->{root} . '/' . 'style.css' %>" rel="stylesheet" type="text/css">
  </head>
  <body>
-  <%= link_to 'index' => begin %>
-  <h2>CQP Search on <%= $config->{corpus_name} %></h2>
+  <h2><%= link_to 'index' => begin %>
+    CQP Search
   <% end %>
+ <%= param('corpus') ? ' on ' . $config->{corpora}{uc(param('corpus'))}{name} : '' %></h2>
   % if ($config->{blurb}) {
     <p><%== $config->{blurb} %></p>
   % }
@@ -381,17 +402,17 @@ __DATA__
 
 @@ style.css.ep
 body { font-family: Palatino, Times, serif; font-size: 120%;}
-sep.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
+span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.nav   { font-weight: bold; font-size: 60%; }
 div.nav > a.prev   { float: left; }
 div.nav > a.next   { float: right; }
 div.matches   { clear: both; }
-sep.hit  { color: red; font-weight: bold; }
-sep.match  { color: red; font-weight: bold; }
-sep.no   { font-weight: bold; }
-sep.sd   { font-family: sans-serif; font-size: 60%; }
-sep.structs { display: inline-block }
-sep.struct   { display: block; font-family: sans-serif; font-size: 50%; }
+span.hit  { color: red; font-weight: bold; }
+span.match  { color: red; font-weight: bold; }
+span.no   { font-weight: bold; }
+span.sd   { font-family: sans-serif; font-size: 60%; }
+span.structs { display: inline-block }
+span.struct   { display: block; font-family: sans-serif; font-size: 50%; }
 td  { white-space: nowrap;}
 td.head  { white-space: nowrap;}
 td.left  { text-align: right; vertical-align: text-bottom;}
@@ -399,11 +420,11 @@ td.right { text-align: left;  vertical-align: text-top;}
 td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
 tr:nth-child(2n+1) { background-color: #F2F2F2; }
-sep.token { display: inline-block }
-sep.part { display: block; text-align: center; }
-sep.part:nth-child(4n+1) { color: navy; }
-sep.part:nth-child(4n+2) { color: green; }
-sep.part:nth-child(4n+3) { color: maroon; }
-sep.part:nth-child(4n+4) { color: purple; }
+span.token { display: inline-block }
+span.part { display: block; text-align: center; }
+td span.part:nth-child(4n+1) { color: navy; }
+td span.part:nth-child(4n+2) { color: green; }
+td span.part:nth-child(4n+3) { color: maroon; }
+td span.part:nth-child(4n+4) { color: purple; }
 span.hlp span.hlptxt { display: none; }
 span.hlp:hover span.helptxt { display: block; }
