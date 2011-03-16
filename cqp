@@ -329,7 +329,7 @@ __DATA__
    <p><b>Matches <%= $startfrom + 1 %></b> to <b><%= $nr_matches %></b> displayed for <span class="querytext"><%= $query %></span>.
 % }
   </div>
-%  if ($nr_matches >= $size and $self->param('listing') eq 'cut') {
+%  if ($nr_matches >= $size and $self->param('listing') eq 'cut' and $self->param('display') ne 'wordlist') {
   <div class="nav">
   <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size') >= 1 ? $self->param('startfrom') - $self->param('size') : 0 } => (class=>'prev') => begin %>Prev<% end %>
   <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
@@ -371,11 +371,11 @@ __DATA__
      <%== $tc->($utf->($m->{'kwic'}->{'right'})); %>
     </p>
 %  }
-% } elsif ($self->param('display') eq 'sentences') {
+% } elsif ($self->param('display') eq 'wordlist') {
 <p>Not implemented.</p>
 % }
  </div>
-%  if ($nr_matches >= $size and $self->param('listing') eq 'cut') {
+%  if ($nr_matches >= $size and $self->param('listing') eq 'cut' and $self->param('display') ne 'wordlist') {
   <div class="nav">
   <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size') >= 1 ? $self->param('startfrom') - $self->param('size') : 0 } => (class=>'prev') => begin %>Prev<% end %>
   <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
@@ -410,6 +410,9 @@ span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.nav   { font-weight: bold; font-size: 60%; }
 div.nav > a.prev   { float: left; }
 div.nav > a.next   { float: right; }
+div.nav > a { padding: .5em; padding-left: 1.5em; padding-right: 1.5em;
+              background-color: #3E3E3E; color: white;
+}
 div.matches   { clear: both; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
@@ -443,7 +446,7 @@ div.form { margin-left: auto; margin-right: auto; width: 36em;
 	   border-right: solid 2px gray;
 }
 span.submit { float: right; }
-div.matches { background-color: white;
+div.matches { background-color: white; width: 100%;
               padding: .5em;
 }
 div.corpora > li {
