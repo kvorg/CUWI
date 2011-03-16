@@ -269,7 +269,7 @@ __DATA__
  <ul>
 % foreach my $corpus ( sort keys %{$config->{corpora}} ) {
    <li><a href="<%= $config->{root} . '/' . lc($corpus) %>"><b><%= $corpus %></b>: <%= $config->{corpora}{$corpus}{name} %></a>
-%= dumper $config->{corpora}{uc($corpus)};
+%#= dumper $config->{corpora}{uc($corpus)};
    </li>
 % }
  </ul>
@@ -311,7 +311,7 @@ __DATA__
     Listing mode: <%= select_field 'listing', [qw/reduce cut/] %>
     Results: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %>
     <%= hidden_field 'startfrom', value => 0 %>
-    <%= submit_button 'CQP search' %>
+    <span class="submit"><%= submit_button 'CQP search' %></span>
   <% end %>
   </div>
 
@@ -402,7 +402,10 @@ __DATA__
 </html>
 
 @@ style.css.ep
-body { font-family: Palatino, Times, serif; font-size: 120%;}
+body { font-family: Palatino, Times, serif;
+       font-size: 120%; 
+       background-color: #F0F0F0;
+}
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.nav   { font-weight: bold; font-size: 60%; }
 div.nav > a.prev   { float: left; }
@@ -429,3 +432,21 @@ span.token span.part:nth-child(4n+3) { color: maroon; }
 span.token span.part:nth-child(4n+4) { color: purple; }
 span.hlp span.hlptxt { display: none; }
 span.hlp:hover span.helptxt { display: block; }
+h2 { margin-left: 2em; margin-right: 2em; text-align: center ; }
+h2 + p, div.report, div.corpora { margin-left: 4em; margin-right: 4em; }
+div.form { margin-left: auto; margin-right: auto; width: 36em;
+	   background-color: white;
+	   padding: .4em; padding-bottom: .6em; padding-left: .6em;
+	   border-left: solid 2px black;
+	   border-top: solid 2px black;
+	   border-bottom: solid 2px gray;
+	   border-right: solid 2px gray;
+}
+span.submit { float: right; }
+div.matches { background-color: white;
+              padding: .5em;
+}
+div.corpora > li {
+  margin-bottom: .2ex;
+  margin-top: .2ex;
+}
