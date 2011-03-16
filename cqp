@@ -222,7 +222,7 @@ get "/:corpus/search" => sub {
 $sanitize = sub {
   my $self = shift;
 
-  $self->param('contextsize', 40)
+  $self->param('contextsize', 10)
     unless $self->param('contextsize')
       and '' . $self->param('contextsize') =~ m{[0-9]+};
   $self->param('size', 50)
@@ -252,6 +252,7 @@ $utfizator = sub {
   my $string = Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
   $string =~ s/.&frac34;/&#x017E;/g;
   $string =~ s/.&frac12;/&#x017D;/g;
+  $string =~ s/D.&frac14;/&#272;/g;
   return $string;
 } ;
 
@@ -304,7 +305,7 @@ __DATA__
     <br>
     <span class="hlp">Search query<span class="hlptxt">Yada yada.</span></span>: <%= text_field 'query', size=>60 %>
     <br>
-    Context words: <%= text_field 'contextsize', size=>2, value=>40 %>
+    Context words: <%= text_field 'contextsize', size=>2, value=>10 %>
     Display mode: <%= select_field 'display', [qw/context sentences wordlist/] %>
     <br>
     Listing mode: <%= select_field 'listing', [qw/reduce cut/] %>
@@ -422,9 +423,9 @@ td.match { text-align: center; padding-left: .5em; padding-right: .5em;
 tr:nth-child(2n+1) { background-color: #F2F2F2; }
 span.token { display: inline-block }
 span.part { display: block; text-align: center; }
-td span.part:nth-child(4n+1) { color: navy; }
-td span.part:nth-child(4n+2) { color: green; }
-td span.part:nth-child(4n+3) { color: maroon; }
-td span.part:nth-child(4n+4) { color: purple; }
+span.token span.part:nth-child(4n+1) { color: navy; }
+span.token span.part:nth-child(4n+2) { color: green; }
+span.token span.part:nth-child(4n+3) { color: maroon; }
+span.token span.part:nth-child(4n+4) { color: purple; }
 span.hlp span.hlptxt { display: none; }
 span.hlp:hover span.helptxt { display: block; }
