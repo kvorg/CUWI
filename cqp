@@ -156,24 +156,31 @@ get "/:corpus/search" => sub {
 
   $sanitize->($self); # sanitize parameters, set defaults
 
-  #only return a sample of results
-  if ($self->param('listing') eq 'cut') {
-    #shifting in the list if using the cut method and more
-    $search->cut($self->param('startfrom') + $self->param('size'));
-  } else {
-    $self->param('listing', 'reduce');
-    $search->reduce($self->param('size'));
-  }
+  unless ($self->param('display') eq 'wordlist') {
 
-  # window and context size are specified in CQP syntax
-  # $search->context("1 s", "1 s");  # for sentence display
-  $search->context('' . $self->param('contextsize') . ' words',
-		   '' . $self->param('contextsize') . ' words');
-  $search->context('1 s', '1 s') if $self->param('display') eq 'sentences';
-  $search->attributes(scalar $self->param('show') ?
-		      $self->param('show') : 'word' );
-  $search->structures($self->param('struct'))
-    if $config->{corpora}{$corpus}{structures} and $self->param('struct') ;
+    #only return a sample of results
+    if ($self->param('listing') eq 'cut') {
+      #shifting in the list if using the cut method and more
+      $search->cut($self->param('startfrom') + $self->param('size'));
+    } else {
+      $self->param('listing', 'reduce');
+      $search->reduce($self->param('size'));
+    }
+
+    # window and context size are specified in CQP syntax
+    # $search->context("1 s", "1 s");  # for sentence display
+    $search->context('' . $self->param('contextsize') . ' words',
+		     '' . $self->param('contextsize') . ' words');
+    $search->context('1 s', '1 s') if $self->param('display') eq 'sentences';
+    $search->attributes(scalar $self->param('show') ?
+			$self->param('show') : 'word' );
+    $search->structures($self->param('struct'))
+      if $config->{corpora}{$corpus}{structures} and $self->param('struct') ;
+  } else { #wordlist
+    $search->context('0 words', '0 words');
+    $search->attributes('wordlist');
+    $self->app->log->info("Passed wordlist as attribute parameter.");
+  }
 
   # fix-up query string
   my $query = $self->param('query');
@@ -372,7 +379,14 @@ __DATA__
     </p>
 %  }
 % } elsif ($self->param('display') eq 'wordlist') {
-<p>Not implemented.</p>
+  % my $total = 0; my $wordcount = 0;
+  <table>
+  %  foreach my $match (@{$matches}) {
+    % $wordcount++; $total += $match->[1];
+    <tr><td><%= $match->[0] %></td><td class="count"><%= Encode::decode('utf8', $match->[1]) %></td></tr>
+%  }
+    <tr class="total"><td><%= $wordcount %></td><td class="count"><%= $total %></td></tr>
+  </table>
 % }
  </div>
 %  if ($nr_matches >= $size and $self->param('listing') eq 'cut' and $self->param('display') ne 'wordlist') {
@@ -426,6 +440,8 @@ td.left  { text-align: right; vertical-align: text-bottom;}
 td.right { text-align: left;  vertical-align: text-top;}
 td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
+td.count  { text-align: right; padding-left: 1em;}
+tr.total  { font-weight: bold;}
 tr:nth-child(2n+1) { background-color: #F2F2F2; }
 span.token { display: inline-block }
 span.part { display: block; text-align: center; }
@@ -446,10 +462,12 @@ div.form { margin-left: auto; margin-right: auto; width: 36em;
 	   border-right: solid 2px gray;
 }
 span.submit { float: right; }
-div.matches { background-color: white; width: 100%;
+div.matches { background-color: white; width: 98%;
               padding: .5em;
+	      margin-left: auto; margin-right: auto;
 }
 div.corpora > li {
   margin-bottom: .2ex;
   margin-top: .2ex;
+
 }
