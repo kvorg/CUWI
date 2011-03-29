@@ -183,7 +183,6 @@ sub structures {
   $self->{'structures'} = \%structures;
 }
 
-
 # execute query & post-process results; returns list of $line structs
 sub query {
   croak 'Usage: $q->query($command);'
@@ -206,6 +205,22 @@ sub query {
     unless $cqp->ok;
   if ($size == 0) {
     return ();                  # query produced no results
+  }
+  # 3j: added for wordcounts and whatnot
+  elsif ($self->{'attributes'}[0] eq 'wordlist') {
+    carp "CQP: got word process request via attributes";
+    my @kwic = $cqp->exec("cat Last");
+    my %counts;
+    foreach my $kwic (@kwic) {
+      $kwic =~ m{-::-::- (.*) -::-::-}
+	or $self->error("Can't parse CQP kwic output [step wordcount], line:", $kwic);
+      $match = lc($1);
+      #encode_entities($match);
+      $counts{$match} = 0 unless exists $counts{$match};
+      $counts{$match}++ ;
+    }
+    return map { [$_, $counts{$_}] }
+      reverse sort {$counts{$a} <=> $counts{$b}}  keys %counts;
   }
   else {
     $cqp->exec("reduce Last to ".$self->{'reduce'})
