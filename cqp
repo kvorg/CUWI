@@ -1,5 +1,37 @@
 #!/usr/bin/env perl
 use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
+#use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/usr/cwb/share/perl5 /home/jona/usr/cwb/lib64/perl5 /home/jona/usr/cwb/lib64/perl5/auto );
+
+# TODO 2011-03-24
+# Evo, tole:
+# - Preuredit iskalno maslo da je query na začetku
+# - Help pop ups in navodila
+# - wordlist da tudi podpira prikaz anotacij
+# - wordlist totals na vrhu
+# - reduce preimenovati v sample; context preimenovati v kwic; cut
+# preimenovati v all
+# - usposobit UTF-8, podpirat tudi 8bit encoding
+# - simple search . gre v ?
+# - css bug z ozadjem
+# - ignoriranje velikih črk
+# - export v tabeli
+# - metadata: prikaz info fileta
+# - prikaz iz katerega besedila je posamezen hit (structural attributes)
+
+# Sortiranje:
+# - po hit string, en token levo, en token desno
+# - ascending, descending, od spredaj, a tergo
+# - po besedi oz. poljubnem drugem positional attribute
+# - 2 ali trije ključi
+
+# Further work:
+# - paralelni korpusi
+# - kolokacije
+# - izbira podkorpusa glede na structural attributes // glej spook
+
+# SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
+# Para corpora: http://nl2.ijs.si/index-bi.html
+
 
 #glej: corpus.leeds.ac.uk./ serge cqp search
 #spredi zadi, beseda lemi
@@ -73,6 +105,7 @@ my $tabulator; # multi attribute tabulator callback
 my $utfizator; # fix utf8 misencoding from html callback
 
 # config
+# possibly use the config helper?
 my $config = plugin json_config => {
 #       file      => '/etc/cqp.conf',
         stash_key => 'config',
