@@ -1,5 +1,5 @@
 {
   "registry" : "/home/jona/Projects-ijs/CQP/DemoCorpus/registry",
   "root"     : "cqp",
-  "blurb"     : "Concordance browser using CQP from Corpus WorkBench. A corpus for the search can be selected from the list of available copora on the main page. Search is then perfomed using the search form. The search query can contain simple words with optional ? and * place-holders, or <a href='http://cogsci.uni-osnabrueck.de/~korpora/ws/CWBdoc/CQP_Tutorial/'>CQP query language statements</a>. Explanations for search options in the form are available on mouse-over."
+  "blurb"     : "Concordance browser using CQP from Corpus WorkBench. A corpus for the search can be selected from the list of available copora on the main page. Search is then perfomed using the search form. The search query can contain simple words with optional ? and * place-holders, or <a href='http://cogsci.uni-osnabrueck.de/~korpora/ws/CWBdoc/CQP_Tutorial/'>CQP query language statements</a>. Explanations for search options in the form are available on mouse-over in the search form."
 }
