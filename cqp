@@ -180,7 +180,9 @@ foreach my $reg (@corpora) {
 	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }
     app->log->info("Info file $config->{corpora}{$corpus}{info} for $corpus processed.");
-    $config->{corpora}{$corpus}{encoding} //= 'UTF-8';
+    $config->{corpora}{$corpus}{encoding} //= 'utf8';
+    $config->{corpora}{$corpus}{encoding} = 'utf8'
+      if $config->{corpora}{$corpus}{encoding} eq 'UTF-8';
     app->log->info("Encoding for $corpus set to $config->{corpora}{$corpus}{encoding}.");
     $fh->close;
   }
