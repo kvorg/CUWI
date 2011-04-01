@@ -3,9 +3,10 @@ use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/usr/cwb/share/perl5 /home/jona/usr/cwb/lib64/perl5 /home/jona/usr/cwb/lib64/perl5/auto );
 
 # TODO 2011-03-30
-# - link iz imena korpusa na info file
-# - tooltipe na link na register corpusov in info o corpusu
-# - encoding v info file
+# - link iz imena korpusa na info file DONE (differently)
+# - tooltipe na link na register corpusov in info o corpusu DONE
+# - encoding v info file DONE
+# - use encoding
 
 # TODO 2011-03-24
 # Evo, tole:
@@ -175,13 +176,12 @@ foreach my $reg (@corpora) {
 	if ($description);
       $config->{corpora}{$corpus}{encoding} = $1
 	if m/ENCODING\s+([^# \n]*)/ ;
-      $config->{corpora}{$corpus}{tooltips}{lc($1)}{$2 ? $2 : 'en'} = $3
-	if m/(ATTRIBUTE|STRUCTURE)\s+([^#]*)\s*"([^#]*)"/ ;
+      $config->{corpora}{$corpus}{tooltips}{lc($1)}{$2}{$3 ? $3 : 'en'} = $4
+	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }
     app->log->info("Info file $config->{corpora}{$corpus}{info} for $corpus processed.");
     $config->{corpora}{$corpus}{encoding} //= 'UTF-8';
     app->log->info("Encoding for $corpus set to $config->{corpora}{$corpus}{encoding}.");
-    app->log->info("Description for $corpus set to $config->{corpora}{$corpus}{description}{en}.");
     $fh->close;
   }
 }
@@ -345,9 +345,7 @@ __DATA__
  <p>Available corpora:</p>
  <ul>
 % foreach my $corpus ( sort keys %{$config->{corpora}} ) {
-   <li><a href="<%= $config->{root} . '/' . lc($corpus) %>"><b><%= $corpus %></b>: <%= $config->{corpora}{$corpus}{name} %></a>
-%#= dumper $config->{corpora}{uc($corpus)};
-   </li>
+   <li><a href="<%= $config->{root} . '/' . lc($corpus) %>"><b><%= $corpus %></b>: <%= $config->{corpora}{$corpus}{name} %></a></li>
 % }
  </ul>
 
@@ -375,14 +373,26 @@ __DATA__
     Search</a>:
 % my $checked = 0;
 % foreach my $att (@{$config->{corpora}{$corpus}{attributes}}) {
+  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en} %></span>
+  % }
      <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
+  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
+   </a>
+  % }
 % }
     <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:
 % $checked = 0;
 % foreach my $att (@{$config->{corpora}{$corpus}{attributes}}) {
+  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en} %></span>
+  % }
      <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
+  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
+   </a>
+  % }
 % }
     <br>
 %# if (@{$config->{corpora}{$corpus}{structures}}) {
@@ -555,6 +565,10 @@ div.corpora > li {
   margin-bottom: .2ex;
   margin-top: .2ex;
 }
+div.description {
+  margin: 3ex;
+  font-size: 0.8em;
+}
 
 /* # tooltips from Alexander Dawson,
    # http://sixrevisions.com/css/css-only-tooltips/ */
@@ -569,18 +583,18 @@ a.tooltip span {
 }
 a.tooltip:hover span {
     display: block;
-    border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; 
+    border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
-    font-family: Calibri, Tahoma, Geneva, sans-serif;
+    font-family: Calibri, Tahoma, Geneva, sans-serif; font-size: 0.7em;
     position: absolute; left: 1em; top: 2em; z-index: 99;
-    margin-left: 0; width: 36em;
+    margin-left: 0; width: 24em;
 }
 a.tooltip:hover img {
     border: 0; margin: -10px 0 0 -55px;
     float: left; position: absolute;
 }
 a.tooltip:hover em {
-    font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 0.8em; font-weight: bold;
+    font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
     display: block; padding: 0.2em 0 0.6em 0;
 }
 .classic  { padding: 0.8em 1em; }
