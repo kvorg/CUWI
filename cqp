@@ -324,10 +324,12 @@ $tabulator = sub {
 };
 
 $utfizator = sub {
-  my $string = Encode::decode('utf8', new Mojo::ByteStream(shift)->html_unescape);
-  $string =~ s/.&frac34;/&#x017E;/g;
-  $string =~ s/.&frac12;/&#x017D;/g;
-  $string =~ s/D.&frac14;/&#272;/g;
+  my $enc = ( @_ == 2 ) ? shift : 'utf8';
+  #my $string = Encode::decode($enc, new Mojo::ByteStream(shift)->html_unescape);
+  #$string =~ s/.&frac34;/&#x017E;/g;
+  #$string =~ s/.&frac12;/&#x017D;/g;
+  #$string =~ s/D.&frac14;/&#272;/g;
+  my $string = Encode::decode($enc, shift);
   return $string;
 } ;
 
@@ -424,6 +426,7 @@ __DATA__
 % layout 'main', title=>"in $corpus for $query" ;
 <%= include 'form' %>
 % my $nr_matches = @{$matches};
+% my $enc = $config->{corpora}{$corpus}{encoding};
   <div class="report">
 % unless ( $query eq $qquery ) {
    <br>Executed as <span class="querytext"><%= $qquery %></span>.</p>
@@ -454,9 +457,9 @@ __DATA__
 %   }
 %   warn "$m->{'kwic'}->{'left'}\n";
      </span></td>
-     <td class="left"><%== $tc->($utf->($m->{'kwic'}->{'left'})); %></td>
-     <td class="match"><span class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></span></td>
-     <td class="right"><%== $tc->($utf->($m->{'kwic'}->{'right'})); %></td>
+     <td class="left"><%== $tc->($utf->($enc, $m->{'kwic'}->{'left'})); %></td>
+     <td class="match"><span class="match"><%== $tc->($utf->($enc, $m->{'kwic'}->{'match'})); %></span></td>
+     <td class="right"><%== $tc->($utf->($enc, $m->{'kwic'}->{'right'})); %></td>
     </tr>
 %  }
   </table>
@@ -471,9 +474,9 @@ __DATA__
 %   }
 %   warn "$m->{'kwic'}->{'left'}\n";
      </span>
-     <%== $tc->($utf->($m->{'kwic'}->{'left'})); %>
-     <span class="match"><%== $tc->($utf->($m->{'kwic'}->{'match'})); %></span>
-     <%== $tc->($utf->($m->{'kwic'}->{'right'})); %>
+     <%== $tc->($utf->($enc, $m->{'kwic'}->{'left'})); %>
+     <span class="match"><%== $tc->($utf->($enc, $m->{'kwic'}->{'match'})); %></span>
+     <%== $tc->($utf->($enc, $m->{'kwic'}->{'right'})); %>
     </p>
 %  }
 % } elsif ($self->param('display') eq 'wordlist') {

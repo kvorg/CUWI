@@ -4,8 +4,8 @@ package CWB::Web::Query;
 use Carp;
 use CWB::CQP;
 use CWB::CL;
-use HTML::Entities;
-
+#use HTML::Entities;
+sub encode_entities {};
 
 # global registry setting for new CWB::Web::Query objects
 # changing this will set the registry for all objects created afterwards
@@ -71,7 +71,8 @@ sub new {
   $self->{'reduce'} = 0;
   $self->{'attributes'} = ['word']; # CQP default setting
   $self->{'structures'} = {};
-  $self->{'aligned'} = [];      
+  $self->{'aligned'} = [];
+
   # if CQP generated any error messages during startup, the first command executed
   # (i.e. the corpus activation) will fail; to avoid that, execute a dummy command
   # now, so the CQP module reads all pending error messages
