@@ -504,7 +504,13 @@ __DATA__
   <h2><%= link_to 'index' => begin %>
     CQP Search
   <% end %>
- <%= param('corpus') ? ' on ' . $config->{corpora}{uc(param('corpus'))}{name} : '' %></h2>
+ % if (param('corpus')) {
+   on
+   <%= link_to '/' . $config->{root} . '/' . lc(param('corpus')) => begin %>
+     <%= $config->{corpora}{uc(param('corpus'))}{name} %>
+   <% end %>
+ %}
+  </h2>
 <%== content %> </body>
 </html>
 
