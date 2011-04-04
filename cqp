@@ -243,8 +243,6 @@ get "/:corpus/search" => sub {
     $search->context('' . $self->param('contextsize') . ' words',
 		     '' . $self->param('contextsize') . ' words');
     $search->context('1 s', '1 s') if $self->param('display') eq 'sentences';
-    $search->attributes(scalar $self->param('show') ?
-			$self->param('show') : 'word' );
     $search->structures($self->param('struct'))
       if $config->{corpora}{$corpus}{structures} and $self->param('struct') ;
   } else { #wordlist
@@ -264,7 +262,11 @@ get "/:corpus/search" => sub {
 		   '['
 		     . (defined $self->param('search') ?
 			$self->param('search') : 'word')
-		       . '="' . $_ . '"]'
+		       . '="' . $_ . '"'
+		       . ( ($self->param('ignorecase') or $self->param('ignorediacritics')) ? ' %' : '' )
+		       . ( $self->param('ignorecase') ? 'c' : '' )
+		       . ( $self->param('ignorediacritics')  ? 'd' : '' )
+		      . ']'
 		     } split('\s+', $query)
 		  );
     $self->app->log->info("Passing query as $query.");
@@ -311,7 +313,6 @@ $sanitize = sub {
     unless $self->param('startfrom')
       and '' . $self->param('startfrom') =~ m{[0-9]+}
       and $self->param('startfrom') <= $maxsize;
-
 };
 
 $tabulator = sub {
@@ -388,6 +389,10 @@ __DATA__
    </a>
   % }
 % }
+    <span>&nbsp; &nbsp;</span>
+    Ignore
+      <%= check_box 'ignorecase'       => 1 %> case
+      <%= check_box 'ignorediacritics' => 1 %> diacritics
     <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:
