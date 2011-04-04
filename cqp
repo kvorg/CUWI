@@ -2,6 +2,9 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/usr/cwb/share/perl5 /home/jona/usr/cwb/lib64/perl5 /home/jona/usr/cwb/lib64/perl5/auto );
 
+# TODO 2011-04-01
+# - uporabi prevedene naslove iz INFO
+
 # TODO 2011-03-30
 # - link iz imena korpusa na info file DONE (differently)
 # - tooltipe na link na register corpusov in info o corpusu DONE
@@ -165,8 +168,8 @@ foreach my $reg (@corpora) {
   app->log->info( "Corpus name is: $config->{corpora}{$corpus}{name} with " . scalar @{$config->{corpora}{$corpus}{attributes}} . " attributes:" . (join ', ', @{$config->{corpora}{$corpus}{attributes}}) . '.' );
   app->log->info("Registry file $reg processed as $corpus ($config->{corpora}{$corpus}{name}).");
 
-  if ($config->{corpora}{$corpus}{info}) {
-    $fh->open($config->{corpora}{$corpus}{info}, '<:encoding(UTF-8)') or die "Could not open $config->{corpora}{$corpus}{info} for reading.\n";
+  if ($config->{corpora}{$corpus}{info} and 
+      $fh->open($config->{corpora}{$corpus}{info}, '<:encoding(UTF-8)') ) {
     my $description;
     while (<$fh>) {
       $description = $1 || 'en'
