@@ -1,6 +1,10 @@
 # Dependencies: Mojolicius, Task::Weaken
 #
-# Turn * on its own into []
+# Turn ** on its own into []
+# Query escapes:
+#  ~ force simple query
+#  = force literal strings (not ? * **)
+#  + force CQP, possibly /macro with table output
 # Implement paging
 # Implement max_size and max_querytime
 # Support for list-oriented queries and macros:
