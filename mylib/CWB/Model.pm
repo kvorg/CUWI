@@ -28,7 +28,7 @@ our $excepton_handler = sub { die @_ ; } ;
 
 sub install_exception_handler {
   my ($this, $handler) = @_;
-  if ( $handler and ref $handler eq 'SUB' ) {
+  if ( $handler and ref $handler eq 'CODE' ) {
     $excepton_handler = $handler ;
   } else {
     $excepton_handler = sub { die @_ ; } ;
@@ -54,9 +54,9 @@ package CWB::Model::Corpus;
 use Carp;
 use Mojo::Base -base;
 
-has [qw(file infofile name NAME title align encoding)];
-has [qw(attributes structures)] => sub { return [] };
-has [qw(description tooltips)]  => sub { return {} };
+has [qw(file infofile name NAME title encoding)];
+has [qw(attributes structures align)] => sub { return [] };
+has [qw(description tooltips)]        => sub { return {} };
 
 sub new {
   my $self = shift->SUPER::new(file => shift);
@@ -68,9 +68,9 @@ sub new {
   $fh->open($self->file, '<')
     or die "Could not open $self->file for reading during corpus init.\n";
   while (<$fh>) {
-    $self->title($1)    if m/NAME\s+"([^#]*)"/ ;
-    $self->align($1)    if m/ALIGN\s+([^# \n]*)/ ;
-    $self->infofile($1) if m/INFO\s+([^# \n]*)/ ;
+    $self->title($1)              if m/NAME\s+"([^#]*)"/ ;
+    $self->infofile($1)           if m/INFO\s+([^# \n]*)/ ;
+    push @{$self->align}, $1      if m/ALIGN\s+([^# \n]*)/ ;
     push @{$self->attributes}, $1 if m/ATTRIBUTE\s+([^# \n]*)/ ;
     push @{$self->structures}, $1 if m/STRUCTURE\s+([^# \n]*)/ ;
   }
