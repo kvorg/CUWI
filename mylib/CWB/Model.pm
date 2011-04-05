@@ -1,7 +1,6 @@
 # Dependencies: Mojolicius, Task::Weaken
 #
 # Turn * on its own into []
-# Implement context, l_context, r_context
 # Implement paging
 # Implement max_size and max_querytime
 # Support for list-oriented queries and macros:
@@ -144,18 +143,18 @@ use CWB::CQP;
 use CWB::CL;
 use Encode qw(encode decode);
 
-
-has [qw(corpus cqp query reduce pagesize maxhits context l_context r_context parallel)] ;
+has [qw(corpus cqp query reduce pagesize maxhits l_context r_context parallel)] ;
 has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
 has _structures =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
-has startfrom => 1;
-has display => 'kwic';
-has parallel => 0;
-has result => sub { CWB::Model::Result->new };
+has startfrom   => 1;
+has context     => 25;
+has display     => 'kwic';
+has parallel    => 0;
+has result      => sub { CWB::Model::Result->new };
 
 sub new {
   use Scalar::Util qw(weaken);
@@ -257,6 +256,16 @@ sub run {
   foreach my $struct (keys %{$self->_structures}) {
     $self->exec("show +$struct;", "Can't set show for structure $struct");
   }
+
+  $self->exec('set Context ' . $self->context . ';',
+	      , "Can't set context to '" . $self->context . "'")
+    if defined $self->context;
+  $self->exec('set LeftContext ' . $self->l_context . ';',
+	      , "Can't set left context to '" . $self->l_context . "'")
+    if defined $self->l_context;
+  $self->exec('set RightContext ' . $self->r_context . ';',
+	      , "Can't set right context to '" . $self->r_context . "'")
+    if defined $self->r_context;
 
   # BUG see if we need to show the alignement attribute: see align
 
