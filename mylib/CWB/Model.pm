@@ -3,7 +3,6 @@
 # /codist["whose", pos];
 # /codist[lemma, "go", word];
 # Handle quotes
-# Time::HiRes::gettimeofday() to see how much time a request takes
 # or use CQP feature
 # timeout on request that are too long
 
@@ -32,14 +31,14 @@ has corpora => sub {
   } ;
 } ;
 
-our $excepton_handler = sub { die @_ ; } ;
+our $exception_handler = sub { die @_ ; } ;
 
 sub install_exception_handler {
   my ($this, $handler) = @_;
   if ( $handler and ref $handler eq 'CODE' ) {
-    $excepton_handler = $handler ;
+    $exception_handler = $handler ;
   } else {
-    $excepton_handler = sub { die @_ ; } ;
+    $exception_handler = sub { die @_ ; } ;
   }
 }
 
@@ -126,8 +125,9 @@ sub tooltip {
 
 # change api to reuse query without reopening corpora?
 sub query {
-  croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ > 2;
-  return CWB::Model::Query->new(shift, @_)->run;
+  my $self = shift;
+  croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
+  return CWB::Model::Query->new(corpus => $self, @_)->run;
 }
 
 
@@ -139,8 +139,8 @@ use CWB::CL;
 use Encode qw(encode decode);
 
 
-has [qw(corpus query page pagesize maxhits context l_context r_context parallel)] ;
-has search      =>  sub { return [ 'word' ] };
+has [qw(corpus cqp query reduce pagesize maxhits context l_context r_context parallel)] ;
+has search      => 'word';
 has show  =>  sub { return [] };
 has _structures =>  sub { return {} };
 has ignorecase  => 1;
@@ -148,17 +148,37 @@ has ignorediacritics => 0;
 has startfrom => 1;
 has display => 'kwic';
 has parallel => 0;
+has result => sub { CWB::Model::Result->new };
 
-has cqp    => sub {
+sub new {
+  use Scalar::Util qw(weaken);
+  my $this = shift;
+  my %args = @_;
+  my $structures;
+  if ($args{structures}) {
+    $structures = $args{structures};
+    delete $args{structures};
+  }
+
+  my $self = $this->SUPER::new(%args);
+  weaken($self->corpus);  #avoid circular references
+  $self->showstructs(@{$structures}) if $structures;
+
+  # instantiate CQP - but should have more than one in the future
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
   # set registry - needed since we can supercede the ENV and CWB::Config
   $cqp->exec("set registry '$CWB::CL::Registry';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
     unless $cqp->ok;
-  # enable corpus position
+  # activate corpus
+  $cqp->exec($self->corpus->NAME . ';');
+  # enable corpus position and timing
   $cqp->exec("show +cpos");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set +cpos. -', $cqp->error_message)
+    unless $cqp->ok;
+  $cqp->exec("set Timing on");
+  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t enable timing display. -', $cqp->error_message)
     unless $cqp->ok;
   # set easy-to-parse left and right match delimiters
   $cqp->exec("set ld '::--:: ';");
@@ -167,26 +187,14 @@ has cqp    => sub {
   $cqp->exec("set rd ' ::--::';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set rd. -', $cqp->error_message)
     unless $cqp->ok;
+  $self->cqp($cqp);
 
-  return $cqp;
-};
-has result => sub { CWB::Model::Result->new };
-
-sub new {
-  use Scalar::Util qw(weaken);
-
-  my %args = @_;
-  my $structures = $args{structures};
-  delete $args{structures};
-
-  my $self = shift->SUPER::new(%args);
-  weaken($self->corpus);  #avoid circular references
-  $self->showstructs($structures);
   return $self;
 }
 
 # convert structural attribute names to CWB::CL handles
 sub showstructs { 
+  return unless @_ > 1;
   my $self = shift;
   foreach my $struct (@_) {
     my $sah = $self->corpus->clh->attribute($struct, 's') or
@@ -197,10 +205,13 @@ sub showstructs {
 }
 
 sub run {
+  use Time::HiRes;
   my $self = shift;
-  $self->exception("No corpus passed to CWB::Model::Query: aborting run.")
+  $self->exception("No corpus passed to CWB::Model::Query: aborting run. ")
     and return
-      unless blessed $self->corpus and $self->corpus->isa('CWB::Model');
+      unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus');
+
+  my $query_start_time = Time::HiRes::gettimeofday();
 
   my $query = $self->query;
   if ( not $query =~ m/"/ ) { # transform into CQP query
@@ -228,7 +239,7 @@ sub run {
   foreach my $att (@{$self->corpus->attributes}) {
     $self->exec("show -$att;", "Can't unset show for attribute $att");
   }
-  foreach my $struct (keys %{$self->corpus->_structures}) {
+  foreach my $struct (@{$self->corpus->structures}) {
     $self->exec("show -$struct;", "Can't unset show for structure $struct");
   }
 
@@ -250,7 +261,8 @@ sub run {
   # execute query (but don't show the results yet)
   my $_query = encode($self->corpus->encoding, $query);
   $self->cqp->exec_query($_query); # for tainted execution
-  $self->exception("CQP query for $query failed -", $self->cqp->error_message)
+  $self->exception("CQP query for $query failed -",
+		   $self->cqp->error_message)
     unless $self->cqp->ok;
 
   # process results into a result object
@@ -263,23 +275,23 @@ sub run {
 
   if ($self->display eq 'kwic' or $self->display eq 'sentences') {
     $self->exec("reduce Last to " . $self->reduce)
-      if $self->reduce > 0;
+      if $self->reduce and $self->reduce > 0;
 
     my @kwic = $self->cqp->exec("cat Last");
     foreach my $kwic (@kwic) {
-      $kwic =~ m{^\s*([0-9]+):\s*(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)}
+      $kwic =~ m{^\s*([\d]+):\s+(.*)\s*::--::\s+(.*)\s+::--::\s+(.*)}
 	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
       my ($cpos, $left, $match, $right) =
 	(
-	 $1.
+	 $1,
 	 decode($self->corpus->encoding, $2),
 	 decode($self->corpus->encoding, $3),
 	 decode($self->corpus->encoding, $4),
 	);
 
       my $data = {};
-      foreach my $struct (keys %{$self->structures}) {
-        my $value = ${$self->structures}->{$struct}->cpos2struc2str($cpos);
+      foreach my $struct (keys %{$self->_structures}) {
+        my $value = ${$self->_structures}->{$struct}->cpos2struc2str($cpos);
         $data->{$struct} = $value ? $value : "";
       }
 
@@ -287,16 +299,19 @@ sub run {
 			       cpos  => $cpos,
 			       left  => $left,
 			       match => $match,
+			       right  => $right,
 			       data  => $data,
+			     # kwic  => $kwic,
 			      };
     }
     #manual sort here
   } elsif ( $self->display eq 'wordlist' ) {
-    my @kwic = $self->exec("cat Last");
+    my @kwic = $self->cqp->exec("cat Last");
+    warn "Got " . scalar @kwic . " lines.\n";
     my %counts;
     foreach my $kwic (@kwic) {
       $kwic =~ m{::--:: (.*) ::--::}
-	or $self->exception("Can't parse CQP kwic output for wordcount, line:", $kwic);
+	or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
       my $match = decode($self->corpus->encoding, $1);
       $match = lc($match) if $self->ignorecase;
       $counts{$match} = 0 unless exists $counts{$match};
@@ -304,11 +319,14 @@ sub run {
     }
     @{$result->hits} = map { [$_, $counts{$_}] }
       reverse sort {$counts{$a} <=> $counts{$b}}  keys %counts;
+    splice @{$result->hits}, $self->reduce
+      if $self->reduce and $self->reduce > 0;
     $result->distinct(scalar keys %counts);
   } else {
     $self->exception("No known display mode specified, aborting query.");
   }
 
+  $result->time(Time::HiRes::gettimeofday() - $query_start_time);
   return $result;
 }
 
@@ -320,6 +338,7 @@ sub exec {
 }
 
 sub exception {
+  shift;
   return $CWB::Model::exception_handler->('CWB::Model Exception: ' . shift, @_);
 }
 
