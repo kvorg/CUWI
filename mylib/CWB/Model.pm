@@ -136,9 +136,22 @@ has parallel => 0;
 has cqp    => sub {
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
+  # set registry - needed since we can supercede the ENV and CWB::Config
   $cqp->exec("set registry '$CWB::CL::Registry';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
     unless $cqp->ok;
+  # enable corpus position
+  $cqp->exec("show +cpos");
+  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set +cpos. -', $cqp->error_message)
+    unless $cqp->ok;
+  # set easy-to-parse left and right match delimiters
+  $cqp->exec("set ld '::--:: ';");
+  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set ld. -', $cqp->error_message)
+    unless $cqp->ok;
+  $cqp->exec("set rd ' ::--::';");
+  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set rd. -', $cqp->error_message)
+    unless $cqp->ok;
+
   return $cqp;
 };
 has result => sub { CWB::Model::Result->new };
@@ -168,11 +181,15 @@ sub run {
     warn("Passing query as $query.\n");
   }
 
-  # test CQP connection and reset values
+  # test CQP connection
   $self->exec("show", 'CQP not answering');
+
+  # reset CQP settings
   foreach my $att ($self->a) {
     $self->exec("show -$att;", "Internal error");
   }
+
+  # set new CQP settings
 
 
   # CWB::Web::Query stuff here
