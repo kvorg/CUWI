@@ -1,10 +1,16 @@
 # Dependencies: Mojolicius, Task::Weaken
+#
 # Turn * on its own into []
-# /codist["whose", pos];
-# /codist[lemma, "go", word];
-# Handle quotes
-# or use CQP feature
-# timeout on request that are too long
+# Implement context, l_context, r_context
+# Implement paging
+# Implement max_size and max_querytime
+# Support for list-oriented queries and macros:
+#  /codist["whose", pos];
+#  /codist[lemma, "go", word];
+# Sorting (with perl fail-over)
+# Alignement
+# Multiple 'aligned' searches for corpus groups /perhaps front-end?/
+# Tests
 
 package CWB::Model;
 use Carp;
