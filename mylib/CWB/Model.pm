@@ -1,3 +1,12 @@
+# Dependencies: Mojolicius, Task::Weaken
+# Turn * on its own into []
+# /codist["whose", pos];
+# /codist[lemma, "go", word];
+# Handle quotes
+# Time::HiRes::gettimeofday() to see how much time a request takes
+# or use CQP feature
+# timeout on request that are too long
+
 package CWB::Model;
 use Carp;
 use IO::Dir;
@@ -54,7 +63,7 @@ package CWB::Model::Corpus;
 use Carp;
 use Mojo::Base -base;
 
-has [qw(file infofile name NAME title encoding)];
+has [qw(file infofile name NAME title encoding clh)];
 has [qw(attributes structures align)] => sub { return [] };
 has [qw(description tooltips)]        => sub { return {} };
 
@@ -66,7 +75,7 @@ sub new {
 
   my $fh = new IO::File;
   $fh->open($self->file, '<')
-    or die "Could not open $self->file for reading during corpus init.\n";
+    or die "CWB::Model::Corpus Exception: Could not open $self->file for reading during corpus init.\n";
   while (<$fh>) {
     $self->title($1)              if m/NAME\s+"([^#]*)"/ ;
     $self->infofile($1)           if m/INFO\s+([^# \n]*)/ ;
@@ -98,6 +107,9 @@ sub new {
     warn "Could not access info file for $self->file.\n";
   }
 
+  $self->clh( CWB::CL::Corpus->new($self->NAME)
+	      or die "CWB::Model::Corpus Exception: Could not open $self->NAME with CWB::CL.\n" );
+
   return $self;
 }
 
@@ -124,15 +136,19 @@ use Mojo::Base -base;
 use Carp;
 use CWB::CQP;
 use CWB::CL;
+use Encode qw(encode decode);
 
-has [qw(corpus query cut reduce size contextsize  parallel)] ;
-has search => sub { return [ 'word' ] };
-has show =>   sub { return [ 'word' ] };
-has ignorecase => 1;
+
+has [qw(corpus query page pagesize maxhits context l_context r_context parallel)] ;
+has search      =>  sub { return [ 'word' ] };
+has show  =>  sub { return [] };
+has _structures =>  sub { return {} };
+has ignorecase  => 1;
 has ignorediacritics => 0;
 has startfrom => 1;
 has display => 'kwic';
 has parallel => 0;
+
 has cqp    => sub {
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
@@ -155,6 +171,30 @@ has cqp    => sub {
   return $cqp;
 };
 has result => sub { CWB::Model::Result->new };
+
+sub new {
+  use Scalar::Util qw(weaken);
+
+  my %args = @_;
+  my $structures = $args{structures};
+  delete $args{structures};
+
+  my $self = shift->SUPER::new(%args);
+  weaken($self->corpus);  #avoid circular references
+  $self->showstructs($structures);
+  return $self;
+}
+
+# convert structural attribute names to CWB::CL handles
+sub showstructs { 
+  my $self = shift;
+  foreach my $struct (@_) {
+    my $sah = $self->corpus->clh->attribute($struct, 's') or
+      $self->exception("Structural attribute '$struct' missing in corpus "
+		     . $self->corpus);
+    ${$self->_structures}{$struct} = $sah;
+  }
+}
 
 sub run {
   my $self = shift;
@@ -185,15 +225,91 @@ sub run {
   $self->exec("show", 'CQP not answering');
 
   # reset CQP settings
-  foreach my $att ($self->a) {
-    $self->exec("show -$att;", "Internal error");
+  foreach my $att (@{$self->corpus->attributes}) {
+    $self->exec("show -$att;", "Can't unset show for attribute $att");
+  }
+  foreach my $struct (keys %{$self->corpus->_structures}) {
+    $self->exec("show -$struct;", "Can't unset show for structure $struct");
   }
 
   # set new CQP settings
+  foreach my $att (@{$self->show}) {
+    $self->exec("show +$att;", "Can't set show for attribute $att");
+  }
+  foreach my $struct (keys %{$self->_structures}) {
+    $self->exec("show +$struct;", "Can't set show for structure $struct");
+  }
 
+  # BUG see if we need to show the alignement attribute: see align
 
-  # CWB::Web::Query stuff here
+  # fix context
+  # also
+  # $self->context('1 s', '1 s') if $self->display eq 'sentences';
+  # $self->context('0 w', '0 w') if $self->display eq 'wordlist';
 
+  # execute query (but don't show the results yet)
+  my $_query = encode($self->corpus->encoding, $query);
+  $self->cqp->exec_query($_query); # for tainted execution
+  $self->exception("CQP query for $query failed -", $self->cqp->error_message)
+    unless $self->cqp->ok;
+
+  # process results into a result object
+  my $result = CWB::Model::Result->new;
+  $result->query($query);
+  $result->QUERY($_query);
+  $result->hitno($self->cqp->exec("size Last"));
+
+  # sort here
+
+  if ($self->display eq 'kwic' or $self->display eq 'sentences') {
+    $self->exec("reduce Last to " . $self->reduce)
+      if $self->reduce > 0;
+
+    my @kwic = $self->cqp->exec("cat Last");
+    foreach my $kwic (@kwic) {
+      $kwic =~ m{^\s*([0-9]+):\s*(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)}
+	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
+      my ($cpos, $left, $match, $right) =
+	(
+	 $1.
+	 decode($self->corpus->encoding, $2),
+	 decode($self->corpus->encoding, $3),
+	 decode($self->corpus->encoding, $4),
+	);
+
+      my $data = {};
+      foreach my $struct (keys %{$self->structures}) {
+        my $value = ${$self->structures}->{$struct}->cpos2struc2str($cpos);
+        $data->{$struct} = $value ? $value : "";
+      }
+
+      push @{$result->hits}, {
+			       cpos  => $cpos,
+			       left  => $left,
+			       match => $match,
+			       data  => $data,
+			      };
+    }
+    #manual sort here
+  } elsif ( $self->display eq 'wordlist' ) {
+    my @kwic = $self->exec("cat Last");
+    my %counts;
+    foreach my $kwic (@kwic) {
+      $kwic =~ m{::--:: (.*) ::--::}
+	or $self->exception("Can't parse CQP kwic output for wordcount, line:", $kwic);
+      my $match = decode($self->corpus->encoding, $1);
+      $match = lc($match) if $self->ignorecase;
+      $counts{$match} = 0 unless exists $counts{$match};
+      $counts{$match}++ ;
+    }
+    @{$result->hits} = map { [$_, $counts{$_}] }
+      reverse sort {$counts{$a} <=> $counts{$b}}  keys %counts;
+    $result->distinct(scalar keys %counts);
+  } else {
+    $self->exception("No known display mode specified, aborting query.");
+  }
+
+  return $result;
 }
 
 sub exec {
@@ -210,8 +326,10 @@ sub exception {
 package CWB::Model::Result;
 use Mojo::Base -base;
 
-has [qw(query QUERY time hitno)] ;
+has [qw(query QUERY time hitno distinct next prev)] ;
 has hits => sub { return [] } ;
+
+# Now this is what I call a neat and clean package - it has no code.
 
 1;
 
@@ -317,11 +435,23 @@ similar erros, but L<carp> is used instead.
 
 =head1 AUTHORS
 
-Jan Jona Javoršek (jan.javorsek@ijs.si), 
+Jan Jona Javoršek (jan.javorsek@ijs.si),
 Tomaž Erjavec (tomaz.erjavec@ijs.si)
 
-Ideas, resources and possibly code snippets have been borrowed from
-CWB moudels by Stefan Evert [http::/purl.org/stefan.evert].
+Ideas, solutions and even code snippets have been "borrowed" from CWB
+module by Stefan Evert [http::/purl.org/stefan.evert].
+
+=head1 LICENCE
+
+This perl package is distributed under the same conditions as perl
+itself (Dual Artistic / GPL licence.) See
+L<http://dev.perl.org/licenses/> for more info.
+
+Contributors: please note that by contributing to this package you
+implicitly agree and give permission to the package maintainer (Jan
+Jona Javoršek) to relicence your contributions with the whole package
+under a different OSI-Approved licence. See
+L<http://www.opensource.org/licenses/> for more info.
 
 =head1 SEE ALSO
 
