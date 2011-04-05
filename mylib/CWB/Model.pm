@@ -7,8 +7,7 @@ use CWB::Config;
 use Mojo::Base -base;
 
 has registry => sub {
-  $CWB::CL::Registry = $ENV{CORPUS_REGISTRY}
-    ||= CWB::Config::Registry;
+  $CWB::CL::Registry = $ENV{CORPUS_REGISTRY} ||= $CWB::Config::Registry;
 } ;
 has corpora => sub {
   return {
@@ -32,6 +31,7 @@ sub install_exception_handler {
     $excepton_handler = $handler ;
   } else {
     $excepton_handler = sub { die @_ ; } ;
+  }
 }
 
 sub dump {
@@ -133,14 +133,23 @@ has ignorediacritics => 0;
 has startfrom => 1;
 has display => 'kwic';
 has parallel => 0;
-has cqp    => sub { CWB::CQP->new
-  or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.') };
+has cqp    => sub {
+  my $cqp = CWB::CQP->new
+    or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
+  $cqp->exec("set registry '$CWB::CL::Registry';");
+  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
+    unless $cqp->ok;
+  return $cqp;
+};
 has result => sub { CWB::Model::Result->new };
 
 sub run {
   my $self = shift;
-  my $query = $self->query;
+  $self->exception("No corpus passed to CWB::Model::Query: aborting run.")
+    and return
+      unless blessed $self->corpus and $self->corpus->isa('CWB::Model');
 
+  my $query = $self->query;
   if ( not $query =~ m/"/ ) { # transform into CQP query
     # BUG: possibly CQP metacharacters should be escaped
     $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
@@ -159,16 +168,20 @@ sub run {
     warn("Passing query as $query.\n");
   }
 
+  # test CQP connection and reset values
+  $self->exec("show", 'CQP not answering');
+  foreach my $att ($self->a) {
+    $self->exec("show -$att;", "Internal error");
+  }
+
+
   # CWB::Web::Query stuff here
 
-  # Probably not needed:
-  # $self->exec("set registry '$CWB::CL::Registry';",
-  # 	      "Can't change to registry to $CWB::CL::Registry")
 }
 
 sub exec {
   my ($self, $command, $error) = @_;
-  $self->cqp->exec($cmd);
+  $self->cqp->exec($command);
   $self->exception("$error -", $self->cqp->error_message)
     unless $self->cqp->ok;
 }
