@@ -141,7 +141,8 @@ use Encode qw(encode decode);
 
 has [qw(corpus cqp query reduce pagesize maxhits context l_context r_context parallel)] ;
 has search      => 'word';
-has show  =>  sub { return [] };
+has show        =>  sub { return [] };
+has showstructs =>  sub { return [] };
 has _structures =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
@@ -155,14 +156,14 @@ sub new {
   my $this = shift;
   my %args = @_;
   my $structures;
-  if ($args{structures}) {
-    $structures = $args{structures};
-    delete $args{structures};
+  if ($args{showstructs}) {
+    $structures = $args{showstructs};
+    delete $args{showstructs};
   }
 
   my $self = $this->SUPER::new(%args);
   weaken($self->corpus);  #avoid circular references
-  $self->showstructs(@{$structures}) if $structures;
+  $self->structures(@{$structures}) if $structures;
 
   # instantiate CQP - but should have more than one in the future
   my $cqp = CWB::CQP->new
@@ -193,7 +194,7 @@ sub new {
 }
 
 # convert structural attribute names to CWB::CL handles
-sub showstructs { 
+sub structures { 
   return unless @_ > 1;
   my $self = shift;
   foreach my $struct (@_) {
@@ -291,8 +292,8 @@ sub run {
 
       my $data = {};
       foreach my $struct (keys %{$self->_structures}) {
-        my $value = ${$self->_structures}->{$struct}->cpos2struc2str($cpos);
-        $data->{$struct} = $value ? $value : "";
+        my $value = ${$self->_structures}{$struct}->cpos2struc2str($cpos);
+        $data->{$struct} = $value ? $value : '';
       }
 
       push @{$result->hits}, {
