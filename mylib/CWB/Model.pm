@@ -14,6 +14,10 @@
 # Alignement
 # Multiple 'aligned' searches for corpus groups /perhaps front-end?/
 # Tests
+# If needed, cached queries:
+#  check if CQP query is the same, then run with options
+# If needed, non-blocking queries using
+#  Mojo::IOLoop->timer(0, sub { cb ; reset timer; }
 
 package CWB::Model;
 use Carp;
@@ -147,7 +151,7 @@ use CWB::CQP;
 use CWB::CL;
 use Encode qw(encode decode);
 
-has [qw(corpus cqp query reduce pagesize maxhits l_context r_context parallel)] ;
+has [qw(corpus cqp query reduce  maxhits l_context r_context parallel debug)] ;
 has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
@@ -155,6 +159,7 @@ has _structures =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
 has startfrom   => 1;
+has pagesize    => 25;
 has context     => 25;
 has display     => 'kwic';
 has parallel    => 0;
@@ -239,7 +244,7 @@ sub run {
 		      . ']'
 		     } split('\s+', $query)
 		  );
-    warn("Passing query as $query.\n");
+    warn("Passing query as $query.\n") if $self->debug;
   }
 
   # test CQP connection
@@ -296,11 +301,27 @@ sub run {
 
   # sort here
 
-  if ($self->display eq 'kwic' or $self->display eq 'sentences') {
+  if ($self->display eq 'kwic'
+      or $self->display eq 'sentences'
+      or $self->display eq 'paragraphs') {
     $self->exec("reduce Last to " . $self->reduce)
       if $self->reduce and $self->reduce > 0;
 
-    my @kwic = $self->cqp->exec("cat Last");
+    # paging
+    my $thispage = $self->startfrom ? $self->startfrom : 1;
+    my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
+	$self->startfrom + $self->pagesize : undef ;
+    ${$result->pages}{this} = $thispage;
+    ${$result->pages}{next} = $nextpage;
+    ${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
+      $self->startfrom - $self->pagesize : 
+	($thispage == 1 ? undef : 1);
+    ${$result->pages}{pagesize} = $self->pagesize;
+    my $pages = '';
+    $pages = $thispage . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
+      if $self->pagesize and not $self->reduce;
+
+    my @kwic = $self->cqp->exec("cat Last $pages");
     foreach my $kwic (@kwic) {
       $kwic =~ m{^\s*([\d]+):\s+(.*)\s*::--::\s+(.*)\s+::--::\s+(.*)}
 	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
@@ -371,9 +392,40 @@ package CWB::Model::Result;
 use Mojo::Base -base;
 
 has [qw(query QUERY time hitno distinct next prev)] ;
-has hits => sub { return [] } ;
+has hits  => sub { return [] } ;
+has pages => sub { return {} } ;
 
-# Now this is what I call a neat and clean package - it has no code.
+sub pagelist {
+  my $self = shift;
+  my $page = 1;
+  my @pages;
+  if (not @_) { #all pages
+    while ($page < $self->hitno) {
+      push @pages, $page;
+      $page += ${$self->pages}{pagesize};
+    }
+  } else {
+    my $maxpages = shift;
+    $page = ${$self->pages}{this}
+      - abs($maxpages / 2) * ${$self->pages}{pagesize};
+    # if near beginning
+    $page = 1 if $page < 1;
+    # if near end
+    $page = $self->hitno - $maxpages * ${$self->pages}{pagesize} + 1
+      if $page + $maxpages * ${$self->pages}{pagesize} > $self->hitno;
+    $page = 1 if $page < 1;  #not enough pages
+    my $lastpage = $page + $maxpages * ${$self->pages}{pagesize};
+    $lastpage = $self->hitno
+      if $lastpage > $self->hitno; #not enough pages
+    push @pages, '...' if $page != 1;
+    while ($page < $lastpage - 1) {
+      push @pages, $page;
+      $page += ${$self->pages}{pagesize};
+      push @pages, '...' if $page > $lastpage - 1 and $page < $self->hitno -1;
+    }
+  }
+  return \@pages;
+}
 
 1;
 
