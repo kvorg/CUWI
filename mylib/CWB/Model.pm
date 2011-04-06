@@ -261,22 +261,25 @@ sub run {
     $self->exec("show +$struct;", "Can't set show for structure $struct");
   }
 
-  $self->exec('set Context ' . $self->context . ';',
-	      , "Can't set context to '" . $self->context . "'")
-    if defined $self->context;
-  $self->exec('set LeftContext ' . $self->l_context . ';',
-	      , "Can't set left context to '" . $self->l_context . "'")
-    if defined $self->l_context;
-  $self->exec('set RightContext ' . $self->r_context . ';',
-	      , "Can't set right context to '" . $self->r_context . "'")
-    if defined $self->r_context;
+  if ($self->context eq 'kwic') {
+    $self->exec('set Context ' . $self->context . ';',
+		"Can't set context to '" . $self->context . "'")
+      if defined $self->context;
+    $self->exec('set LeftContext ' . $self->l_context . ';',
+		"Can't set left context to '" . $self->l_context . "'")
+      if defined $self->l_context;
+    $self->exec('set RightContext ' . $self->r_context . ';',
+		"Can't set right context to '" . $self->r_context . "'")
+      if defined $self->r_context;
+  }
+  $self->exec('set Context s;', "Can't set context to 's''")
+    if $self->display eq 'sentences';
+  $self->exec('set Context p;', "Can't set context to 'p''")
+    if $self->display eq 'paragraph';
+  $self->exec('set Context 0 words;', "Can't set context to 'p''")
+    if $self->display eq 'wordlist';
 
   # BUG see if we need to show the alignement attribute: see align
-
-  # fix context
-  # also
-  # $self->context('1 s', '1 s') if $self->display eq 'sentences';
-  # $self->context('0 w', '0 w') if $self->display eq 'wordlist';
 
   # execute query (but don't show the results yet)
   my $_query = encode($self->corpus->encoding, $query);
@@ -324,7 +327,9 @@ sub run {
 			     # kwic  => $kwic,
 			      };
     }
+
     #manual sort here
+
   } elsif ( $self->display eq 'wordlist' ) {
     my @kwic = $self->cqp->exec("cat Last");
     warn "Got " . scalar @kwic . " lines.\n";
@@ -381,7 +386,7 @@ CWB::Model - CWB registry, corpus, info and query model layer
 
   $model = CWB::Model->new;       # instantiate a model
   $mine  = CWB::Model->new( "$ENV{HOME}/corpora/registry" );
-
+  
   
   print join(', ', $model->list);  # list corpora names
   %corpora = $model->list_long     # corpora names and titles:
