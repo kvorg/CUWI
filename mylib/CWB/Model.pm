@@ -2,10 +2,8 @@
 #
 # Turn ** on its own into []
 # Query escapes:
-#  ~ force simple query
-#  = force literal strings (not ? * **)
+#  ~ force simple query (and escape CQP)
 #  + force CQP, possibly /macro with table output
-# Implement paging
 # Implement max_size and max_querytime
 # Support for list-oriented queries and macros:
 #  /codist["whose", pos];
@@ -229,9 +227,15 @@ sub run {
   my $query_start_time = Time::HiRes::gettimeofday();
 
   my $query = $self->query;
-  if ( not $query =~ m/"/ ) { # transform into CQP query
+  if ( $query =~ m{^\s*[~=]} or not $query =~ m{"}  ) {
+    # transform into CQP query
     # BUG: possibly CQP metacharacters should be escaped
-    $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
+    $query =~ s{^\s*~}{};           #remove simple query escape
+    unless ($query =~ s{^\s*=}{}) { #disable simple metacharacters
+      $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
+    } else {
+      $query =~ s/[*]/\\*/gm; $query =~ s/[?]/\\?/gm;
+    }
     $query = join(' ',
 		   map {
 		   '['
