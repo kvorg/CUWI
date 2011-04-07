@@ -2,106 +2,13 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
 use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/usr/cwb/share/perl5 /home/jona/usr/cwb/lib64/perl5 /home/jona/usr/cwb/lib64/perl5/auto );
 
-# TODO 2011-04-01
-# - uporabi prevedene naslove iz INFO
-
-# TODO 2011-03-30
-# - link iz imena korpusa na info file DONE (differently)
-# - tooltipe na link na register corpusov in info o corpusu DONE
-# - encoding v info file DONE
-# - use encoding
-
-# TODO 2011-03-24
-# Evo, tole:
-# - Preuredit iskalno maslo da je query na začetku DONE
-# - Help pop ups in navodila DONE
-# - wordlist da tudi podpira prikaz anotacij
-# - wordlist totals na vrhu
-# - reduce preimenovati v sample; context preimenovati v kwic; cut
-#     preimenovati v all DONE
-# - usposobit UTF-8, podpirat tudi 8bit encoding + BUG v wordlistih
-# - simple search . gre v ? DONE (just help bug)
-# - css bug z ozadjem DONE
-# - ignoriranje velikih črk
-# - export v tabeli
-# - metadata: prikaz info fileta
-# - prikaz iz katerega besedila je posamezen hit (structural attributes)
-
-# Sortiranje:
-# - po hit string, en token levo, en token desno
-# - ascending, descending, od spredaj, a tergo
-# - po besedi oz. poljubnem drugem positional attribute
-# - 2 ali trije ključi
-
-# Further work:
-# - paralelni korpusi
-# - kolokacije
-# - izbira podkorpusa glede na structural attributes // glej spook
-
-# SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
-# Para corpora: http://nl2.ijs.si/index-bi.html
-# mimgrede: ALIGNED imenuje korpus, aligned je pa po 'seg'
-
-
-#glej: corpus.leeds.ac.uk./ serge cqp search
-#spredi zadi, beseda lemi
-#+ reverse sorts
-#parallel corpora
-#
-# context link: one hit with metainfo, wider context (paragraph mode)
-# and all tags
-# structural attributes: searchable? -> enega za link na document metadata
-# generic id documenta, source id cca ena beseda za izpis
-# metapodatki & paragraph mode
-
-# bug: sanitize can't work (readonly)
-# sort: zadnja levega, prva desnega etc. --- glej primere iz maila
-# TODO:
-# corpus browser with permalinks DONE
-# add corpus info link from registry ?
-# sentences-> to paragraphs
-# tags in paragraphs: colors and /
-# context: to words OK
-# tables: no wrap OK
-# reduce: no next/prev OK
-# properly limit results: fix prev/next limits OK (more intuitive Next)
-# add case insensitive option: default?
-# paragraph, wordlist views OK - sentences
-# macro cases: frekvenčni leksikon (po query, cel korpus :-) 
-#   s search/display options
-# logika soritranja
-# sort po cqp opcijah -- predlagaj interface
-# dokumentacija v mouse-over balonih
-# cwb-scan-corpus support?
-
-# TODO:
-# fix attribute printing as per http://nl2.ijs.si/fpj.html DONE
-# display structural attributes DONE (with caveats - pending)
-# query compositing: http://nl2.ijs.si/fpj.html
-# promote errors to the renderer somehow PARTIAL, need fixes
-# parallel corpora
-
-# Deployment:
-# beta + utf test && deploy in parallel on mantra
-
-#WISH LIST:
-#rezultati: levo znamka o viru, na besedo klik v kontekst
-#po vseh rezultatih, sortiranje po levem, desnem kontekstu, mogoče odzadnje po zadetku (odzadnji slovar princip)
-#izpiše samo sample - default opcija, a velika (cut 1000)
-#kolokacije
-#v bodočnosti tudi vzporedni korpusi, npr. http://nl2.ijs.si/index-bi.html
-
-# Production:
-#MOJO_MODE=production ./myapp.pl
-#mkdir log/
-
 use Mojolicious::Lite;
 #use CWB::Web::Search;
 use IO::File;
 use IO::Dir;
-use CWB::Web::Query;
-use CWB::CL;
+use CWB::Model;
 use Encode 'decode';
+
 
 plugin 'charset' => {charset => 'utf-8'};
 plugin 'tag_helpers_extra';
@@ -112,85 +19,28 @@ my $maxsize = 5000;
 
 my $sanitize;  # param sanitization callback
 my $tabulator; # multi attribute tabulator callback
-my $utfizator; # fix utf8 misencoding from html callback
 
 # config
 # possibly use the config helper?
 my $config = plugin json_config => {
-#       file      => '/etc/cqp.conf',
         stash_key => 'config',
         default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
     };
+#stuff me in a helper?
+my $model = CWB::Model->new(
+			    ( $config->{registry} ? 
+			     (registry => $config->{registry}) : () )
+			   )
+  or die "Could not instantiate CWB::Model, aboring\n";
+$model->install_exception_handler(sub { app->log->error(@_); } );
+app->defaults(model => $model);
+
+app->log->info('CWB Model instantiated with corpora: ' .
+	       join(', ', $model->list) );
 $config->{root} =~ s{^(.*)/$}{$1};
 app->log->info("App web root: '$config->{root}'.");
 
-$ENV{CORPUS_REGISTRY} = $CWB::CL::Registry =  $ENV{CORPUS_REGISTRY} ||= $config->{registry};
-app->log->info("Registry at $CWB::CL::Registry.");
-
-#get registry
-#change this to parse all registries and build a list of corpora
-my @reg = split (':', $CWB::CL::Registry);
-my @corpora =
-  grep {
-    -f $_  and not ( m{/[#]} or m {[#~]$});
-  } map {
-    my $dirname = $_;
-    map { "$dirname/$_" } IO::Dir->new($dirname)->read;
-  } @reg;
-app->log->info("Corpora: " . join (", ", @corpora) );
-
-foreach my $reg (@corpora) {
-  $reg =~ m{.*/([^/]+)$};  my $corpus = uc($1);
-  app->log->info("Scanning registry file at $reg for $corpus.");
-  $config->{corpora}{$corpus} = {
-				 name => '',
-				 align => '',
-				 info => '',
-				 attributes => [],
-				 structures => [],
-				};
-  my $fh = new IO::File;
-  $fh->open($reg, '<') or die "Could not open $reg for reading.\n";
-  while (<$fh>) {
-    $config->{corpora}{$corpus}{name} = $1
-      if m/NAME\s+"([^#]*)"/ ;
-    $config->{corpora}{$corpus}{align} = $1
-      if m/ALIGN\s+([^# \n]*)/ ;
-    $config->{corpora}{$corpus}{info} = $1
-      if m/INFO\s+([^# \n]*)/ ;
-    push @{$config->{corpora}{$corpus}{attributes}}, $1
-      if m/ATTRIBUTE\s+([^# \n]*)/ ;
-      push @{$config->{corpora}{$corpus}{structures}}, $1
-	if m/STRUCTURE\s+([^# \n]*)/ ;
-  }
-  $fh->close;
-  $config->{corpora}{$corpus}{name} = ucfirst(lc($corpus)) unless $config->{corpora}{$corpus}{name};
-  app->log->info( "Corpus name is: $config->{corpora}{$corpus}{name} with " . scalar @{$config->{corpora}{$corpus}{attributes}} . " attributes:" . (join ', ', @{$config->{corpora}{$corpus}{attributes}}) . '.' );
-  app->log->info("Registry file $reg processed as $corpus ($config->{corpora}{$corpus}{name}).");
-
-  if ($config->{corpora}{$corpus}{info} and 
-      $fh->open($config->{corpora}{$corpus}{info}, '<:encoding(UTF-8)') ) {
-    my $description;
-    while (<$fh>) {
-      $description = $1 || 'en'
-	and $config->{corpora}{$corpus}{description}{$description} = ''
-	  or next if m/^DESCRIPTION\s*([^# \n]*)/;
-      $config->{corpora}{$corpus}{description}{$description} .= $_
-	if ($description);
-      $config->{corpora}{$corpus}{encoding} = $1
-	if m/ENCODING\s+([^# \n]*)/ ;
-      $config->{corpora}{$corpus}{tooltips}{lc($1)}{$2}{$3 ? $3 : 'en'} = $4
-	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
-    }
-    app->log->info("Info file $config->{corpora}{$corpus}{info} for $corpus processed.");
-    $config->{corpora}{$corpus}{encoding} //= 'utf8';
-    $config->{corpora}{$corpus}{encoding} = 'utf8'
-      if $config->{corpora}{$corpus}{encoding} eq 'UTF-8';
-    app->log->info("Encoding for $corpus set to $config->{corpora}{$corpus}{encoding}.");
-    $fh->close;
-  }
-}
-
+app->log->info("Registry at '" . $model->registry . "'.");
 app->log->info("Ready to serve requests.");
 
 # routes and controllers
@@ -202,99 +52,63 @@ get "/style.css" => 'style';
 
 get "/:corpus" => sub {
   my $self = shift;
-  $self->stash(corpus => uc($self->param('corpus')) );
-} => 'corpus';
+  my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 
+  $self->app->log->info("Redirecting to registry, corpus init aborted.")
+    and $self->redirect_to('index')
+      and return
+	unless $self->param('corpus')
+	  and $corpus and $corpus->isa('CWB::Model::Corpus');
+
+  $self->stash(corpus => $corpus );
+} => 'corpus';
 
 get "/:corpus/search" => sub {
   my $self = shift;
-# warn $self->helper(dumper=> $self->stash); #calls Data::Dumper
-  warn $self->dumper($self->param);
 
-  $self->app->log->info("Query was: " . $self->param('query'));
-  my $corpus = uc($self->param('corpus'));
+  $self->app->log->info("Received query: " . $self->param('query'));
+  $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
+  my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
 
-  $self->app->log->info("Redirecting.")
+  $self->app->log->info("Redirecting to registry, corpus init aborted.")
     and $self->redirect_to('index')
       and return
 	unless $self->param('query')
-	  and $config->{corpora}{$corpus};
-
-  $self->app->log->info("CWB::Web::Query init on $corpus.");
-  my $search = new CWB::Web::Query $corpus;
-  die "Error accessing corpus.\n" unless ref $search;
-  $search->on_error( sub { warn join("\n", @_) . "\n"; } );
+	  and $corpus and $corpus->isa('CWB::Model::Corpus');
 
   $sanitize->($self); # sanitize parameters, set defaults
+#  my %params = %{$self->req->params->to_hash};
+  my %params;
+  $params{query} = $self->param('query');
+  $params{search} = $self->param('search');
+  $params{ignorecase} = $self->param('ignorecase');
+  $params{ignorediacritics} = $self->param('ignorediacritics');
+  $params{show} = ref $self->param('show') eq 'ARRAY' ?
+    $self->param('show') : [ $self->param('show') ] ;
+  $params{context} = $self->param('contextsize') . ' words';
+  $params{display} = $self->param('display');
+  $params{reduce} = 1 if $self->param('listing') eq 'sample';
+  $params{pagesize} = $self->param('size');
+  warn "Calling query with " . $self->dumper(\%params);
 
-  unless ($self->param('display') eq 'wordlist') {
+  my $result = $corpus->query(%params);
 
-    #only return a sample of results
-    if ($self->param('listing') eq 'all') {
-      #shifting in the list if using the cut method and more
-      $search->cut($self->param('startfrom') + $self->param('size'));
-    } else {
-      $self->param('listing', 'sample');
-      $search->reduce($self->param('size'));
-    }
-
-    # window and context size are specified in CQP syntax
-    # $search->context("1 s", "1 s");  # for sentence display
-    $search->context('' . $self->param('contextsize') . ' words',
-		     '' . $self->param('contextsize') . ' words');
-    $search->context('1 s', '1 s') if $self->param('display') eq 'sentences';
-    $search->structures($self->param('struct'))
-      if $config->{corpora}{$corpus}{structures} and $self->param('struct') ;
-  } else { #wordlist
-    $search->context('0 words', '0 words');
-    $search->attributes('wordlist');
-    $self->app->log->info("Passed wordlist as attribute parameter.");
+  if ( $result and $result->isa('CWB::Model::Result') ) {
+    $self->app->log->info(
+			  'Query processed in '.
+			  sprintf('%0.3f', $result->time) . ' s ' .
+			  'with ' . $result->hitno . ' hits.' );
+  } else {
+    $self->app->log->error("Query failed."); #handle fail
   }
-
-  # fix-up query string
-  my $query = $self->param('query');
-  if ( $query =~ m/"/ ) {
-    $self->app->log->info("Passing as a CQP-formatted query.")
-  } else  {
-    $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
-    $query = join(' ',
-		   map {
-		   '['
-		     . (defined $self->param('search') ?
-			$self->param('search') : 'word')
-		       . '="' . $_ . '"'
-		       . ( ($self->param('ignorecase') or $self->param('ignorediacritics')) ? ' %' : '' )
-		       . ( $self->param('ignorecase') ? 'c' : '' )
-		       . ( $self->param('ignorediacritics')  ? 'd' : '' )
-		      . ']'
-		     } split('\s+', $query)
-		  );
-    $self->app->log->info("Passing query as $query.");
-  }
-
-  my @matches;
-  eval { @matches = $search->query($query); } ;
-  $self->app->log->info("Query errors: $@") if $@;
-  $self->app->log->info("Query processed.");
 
   $self->param('startfrom', 0)
-    unless $self->param('startfrom') < scalar @matches;
-
-  my @structs = $self->param('structs');
+    unless $self->param('startfrom') < $result->hitno;
 
   $self->render( template=>'search',
-		 size=>$self->param('size'), #stash them!
-		 startfrom=>$self->param('startfrom'),
-		 listing=>$self->param('listing'),
-		 contextsize=>$self->param('contextsize'),
-		 query=>$self->param('query'),
-		 qquery=>$query,
-		 corpus=>uc($corpus),
-		 search=>$search,
-		 matches=>\@matches,
+		 result=>$result,
+		 corpus=>$corpus,
 		 tc=>$tabulator,
-		 utf=>$utfizator,
-		 structures=>\@structs,
 	       );
 } => 'search';
 
@@ -309,7 +123,7 @@ $sanitize = sub {
     unless $self->param('size')
       and '' . $self->param('size') =~ m{[0-9]+}
       and $self->param('size') <= $maxsize;
-  $self->param('startfrom', 0)
+  $self->param('startfrom', 1)
     unless $self->param('startfrom')
       and '' . $self->param('startfrom') =~ m{[0-9]+}
       and $self->param('startfrom') <= $maxsize;
@@ -327,16 +141,6 @@ $tabulator = sub {
   return join(' ', @tokens);
 };
 
-$utfizator = sub {
-  my $enc = ( @_ == 2 ) ? shift : 'utf8';
-  #my $string = Encode::decode($enc, new Mojo::ByteStream(shift)->html_unescape);
-  #$string =~ s/.&frac34;/&#x017E;/g;
-  #$string =~ s/.&frac12;/&#x017D;/g;
-  #$string =~ s/D.&frac14;/&#272;/g;
-  my $string = Encode::decode($enc, shift);
-  return $string;
-} ;
-
 app->start;
 
 
@@ -352,8 +156,9 @@ __DATA__
 <div class="corpora">
  <p>Available corpora:</p>
  <ul>
-% foreach my $corpus ( sort keys %{$config->{corpora}} ) {
-   <li><a href="<%= $config->{root} . '/' . lc($corpus) %>"><b><%= $corpus %></b>: <%= $config->{corpora}{$corpus}{name} %></a></li>
+% my $corpora = $model->corpora;
+% foreach my $corpusname ( sort keys %{$corpora} ) {
+   <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a></li>
 % }
  </ul>
 
@@ -362,30 +167,28 @@ __DATA__
 % layout 'main', title=>'Form';
 %= include 'form', query=>undef, contextsize=>10, size=>50, startfrom=>0, listing=>'all'
 
-%#Looking for config for <%== $corpus %> in <%= $config->{corpora}{uc($corpus)}{encoding} %>
-%#= dumper $config->{corpora}{uc($corpus)};
-% if ($config->{corpora}{uc($corpus)}{description}{en}) {
   <div class="description">
-    <%== $config->{corpora}{uc($corpus)}{description}{en} %>
+    <%== $corpus->describe('en') %>
+%# add attribute descriptions here
   </div>
-% }
 
 
 @@ form.html.ep
   <div class="form">
-  <%= form_for "/$config->{root}/" . lc($corpus) . "/search", ( method => "get") => begin %>
+  <%= form_for "/$config->{root}/" . $corpus->name . "/search", ( method => "get") => begin %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Query</em>The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored. </span>
   Query</a>: <%= text_field 'query', size=>60 %>
     <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Search attributes</em>Select the attribute the search is to be performed on. If you need different attributes in the same query, you need to use the CQP syntax. When using CQP syntax, the selected Search attribute is ignored. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Search</a>:
 % my $checked = 0;
-% foreach my $att (@{$config->{corpora}{$corpus}{attributes}}) {
-  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en} %></span>
+% foreach my $att (@{$corpus->attributes}) {
+  % my $ttip = $corpus->tooltip(attribute => $att, 'en');
+  % if ($ttip) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
   % }
      <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
-  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
+  % if ($ttip) {
    </a>
   % }
 % }
@@ -397,25 +200,17 @@ __DATA__
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:
 % $checked = 0;
-% foreach my $att (@{$config->{corpora}{$corpus}{attributes}}) {
-  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en} %></span>
+% foreach my $att (@{$corpus->attributes}) {
+  % my $ttip = $corpus->tooltip(attribute => $att, 'en');
+  % if ($ttip) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
   % }
      <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') => begin %><%= $att %><% end %>
-  % if ($config->{corpora}{$corpus}{tooltips}{attribute}{$att}{en}) {
+  % if ($ttip) {
    </a>
   % }
 % }
     <br>
-%# if (@{$config->{corpora}{$corpus}{structures}}) {
-%#    <br>
-%#    Structures:
-%#%   foreach my $att (@{$config->{corpora}{$corpus}{structures}}) {
-%#%   next unless $att =~ m/_/;
-%#       <%= check_box_x 'struct' => $att => begin %><%= $att %><% end %>
-%#%   }
-%# }
-%#    <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Context tokens</em>Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.</span>
     Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>10 %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em>Selects the display mode used to display the results. <b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides. <b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit. <b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</span>
@@ -425,86 +220,95 @@ __DATA__
     Listing mode</a>: <%= select_field 'listing', [qw/sample all/] %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Results</em>Sets the number or results in the random sample or per page when all the results are being listed.</span>
     Results</a>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %>
-    <%= hidden_field 'startfrom', value => 0 %>
+    <%= hidden_field startfrom => 1 %>
     <span class="submit"><%= submit_button 'CQP search' %></span>
   <% end %>
   </div>
 
 @@ search.html.ep
-% layout 'main', title=>"in $corpus for $query" ;
+% layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
 <%= include 'form' %>
-% my $nr_matches = @{$matches};
-% my $enc = $config->{corpora}{$corpus}{encoding};
   <div class="report">
-% unless ( $query eq $qquery ) {
-   <br>Executed as <span class="querytext"><%= $qquery %></span>.</p>
+% if ($result->reduce) {
+   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= $result->query %></span>
 % }
-% if ($nr_matches < $size) {
-   <p><b><%= $nr_matches %></b> matches found for <span class="querytext"><%= $query %></span>.
+% elsif ($result->hitno > ${$result->pages}{pagesize}) {
+   <p>Matches <b><%= ${$result->pages}{this} ? ${$result->pages}{this} : 1 %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= $result->query %></span>
 % } else {
-   <p><b>Matches <%= $startfrom + 1 %></b> to <b><%= $nr_matches %></b> displayed for <span class="querytext"><%= $query %></span>.
+   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= $result->query %></span>
 % }
+ in <%= sprintf('%0.3f', $result->time) %> s.</p>
   </div>
-%  if ($nr_matches >= $size and $self->param('listing') eq 'all' and $self->param('display') ne 'wordlist') {
-  <div class="nav">
-  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size') >= 1 ? $self->param('startfrom') - $self->param('size') : 0 } => (class=>'prev') => begin %>Prev<% end %>
-  <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
- </div>
-% }
-% if ($nr_matches) {
+
+<%= include 'nav' %>
+
+% if ($result->hitno) {
   <div class="matches">
 % if ($self->param('display') eq 'kwic') {
   <table>
-%  for (my $i = $startfrom; $i < $nr_matches; $i++) {
-%   my $nr = $i + 1;         # match number
-%   my $m = $matches->[$i];  # returns result struct without 'context'
+%  my $nr = ${$result->{pages}}{this};
+%  foreach my $m (@{$result->hits}) {
     <tr>
-     <td class="head"><span class="no">[<%= $nr %>]</sep> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
+     <td class="head"><span class="no">[<%= $nr++ %>]</sep> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
 %   foreach my $struct (keys %{$m->{data}}) {
     <span class="struct"><%= $m->{data}{$struct} %></span>
 %   }
-%   warn "$m->{'kwic'}->{'left'}\n";
+%#   warn "$m->{'left'}\n";
      </span></td>
-     <td class="left"><%== $tc->($utf->($enc, $m->{'kwic'}->{'left'})); %></td>
-     <td class="match"><span class="match"><%== $tc->($utf->($enc, $m->{'kwic'}->{'match'})); %></span></td>
-     <td class="right"><%== $tc->($utf->($enc, $m->{'kwic'}->{'right'})); %></td>
+     <td class="left"><%== $tc->($m->{left}); %></td>
+     <td class="match"><span class="match"><%== $tc->($m->{match}); %></span></td>
+     <td class="right"><%== $tc->($m->{right}); %></td>
     </tr>
 %  }
   </table>
-% } elsif ($self->param('display') eq 'sentences') {
-%  for (my $i = $startfrom; $i < $nr_matches; $i++) {
-%   my $nr = $i + 1;         # match number
-%   my $m = $matches->[$i];  # returns result struct without 'context'
+% } elsif ($self->param('display') eq 'sentences' or $self->param('display') eq 'paragraphs') {
+%  my $nr = ${$result->{pages}}{this};
+%  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="no">[<%= $nr %>]</span> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
+     <span class="no">[<%= $nr++ %>]</span> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
 %   foreach my $struct (keys %{$m->{data}}) {
-    <span class="struct"><%= $m->{data}{$struct} %></span>
+      <span class="struct"><%= $m->{data}{$struct} %></span>
 %   }
-%   warn "$m->{'kwic'}->{'left'}\n";
      </span>
-     <%== $tc->($utf->($enc, $m->{'kwic'}->{'left'})); %>
-     <span class="match"><%== $tc->($utf->($enc, $m->{'kwic'}->{'match'})); %></span>
-     <%== $tc->($utf->($enc, $m->{'kwic'}->{'right'})); %>
+     <%== $tc->($m->{left}); %>
+     <span class="match"><%== $tc->($m->{match}); %></span>
+     <%== $tc->($m->{right}); %>
     </p>
 %  }
 % } elsif ($self->param('display') eq 'wordlist') {
-  % my $total = 0; my $wordcount = 0;
   <table>
-  %  foreach my $match (@{$matches}) {
-    % $wordcount++; $total += $match->[1];
-    <tr><td><%= $match->[0] %></td><td class="count"><%= Encode::decode('utf8', $match->[1]) %></td></tr>
-%  }
-    <tr class="total"><td><%= $wordcount %></td><td class="count"><%= $total %></td></tr>
+    <tr class="total"><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
+  %  foreach my $m (@{$result->hits}) {
+    <tr><td><%= $m->[0] %></td><td class="count"><%= $m->[1] %></td></tr>
+  %#  <tr><td><%= $self->dumper($m) %></td></tr>
+  %  }
   </table>
+% } else {
+  Unknown display mode: aborting.
 % }
  </div>
-%  if ($nr_matches >= $size and $self->param('listing') eq 'all' and $self->param('display') ne 'wordlist') {
-  <div class="nav">
-  <%= link_to_here { startfrom => $self->param('startfrom') - $self->param('size') >= 1 ? $self->param('startfrom') - $self->param('size') : 0 } => (class=>'prev') => begin %>Prev<% end %>
-  <%= link_to_here { startfrom => $self->param('startfrom') + $self->param('size')} => (class=>'next') => begin %>Next<% end %>
- </div>
-% }
+<%= include 'nav' %>
+
 %}
+
+@@ nav.html.ep
+% if ($result->hitno and not ${$result->pages}{single}) {
+  <div class="nav">
+    <%= link_to_here { startfrom => ${$result->pages}{prev} } => (class=>'prev') => begin %>Prev<% end %>
+    <%= link_to_here { startfrom => ${$result->pages}{next} } => (class=>'next') => begin %>Next<% end %>
+   <span class="pagelist">
+     % foreach my $page (@{$result->pagelist(11)}) {
+     %  if ($page eq '...') {
+          . . .
+     %    next;
+     %  }
+       <%= link_to_here { startfrom => $page } 
+            => (class=> ( ${$result->pages}{this} == $page ? 'here' : 'pg') )
+            => begin %><%= $page %><% end %>
+     % }
+   </span>
+  </div>
+% }
 
 @@ layouts/main.html.ep
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -519,8 +323,8 @@ __DATA__
   <% end %>
  % if (param('corpus')) {
    on
-   <%= link_to '/' . $config->{root} . '/' . lc(param('corpus')) => begin %>
-     <%= $config->{corpora}{uc(param('corpus'))}{name} %>
+   <%= link_to '/' . $config->{root} . '/' . param('corpus') => begin %>
+     <%= ${$model->{corpora}}{param('corpus')}->title %>
    <% end %>
  %}
   </h2>
@@ -533,11 +337,25 @@ body { font-family: Palatino, Times, serif;
        background-color: #F0F0F0;
 }
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
-div.nav   { font-weight: bold; font-size: 60%; }
+div.nav   { font-weight: bold; font-size: 80%; }
 div.nav > a.prev   { float: left; }
 div.nav > a.next   { float: right; }
 div.nav > a { padding: .5em; padding-left: 1.5em; padding-right: 1.5em;
               background-color: #3E3E3E; color: white;
+}
+span.pagelist {
+  padding: .5em;
+  text-align: center;
+  vertical-align: center;
+  background-color: #DEDEDE;
+  display: block;
+}
+span.pagelist > a {
+  margin-left:  .3em;
+  margin-right: .3em;
+}
+span.pagelist > a.here {
+ color: red;
 }
 div.matches   { clear: both; }
 div.matches { background-color: white;
@@ -574,10 +392,10 @@ h2 + p, div.report, div.corpora { margin-left: 4em; margin-right: 4em; }
 div.form { margin-left: auto; margin-right: auto; width: 36em;
 	   background-color: white;
 	   padding: .4em; padding-bottom: .6em; padding-left: .6em;
-	   border-left: solid 2px black;
-	   border-top: solid 2px black;
-	   border-bottom: solid 2px gray;
-	   border-right: solid 2px gray;
+	   border-left: solid 3px black;
+	   border-top: solid 3px black;
+	   border-bottom: solid 3px gray;
+	   border-right: solid 3px gray;
 }
 span.submit { float: right; }
 div.corpora > li {

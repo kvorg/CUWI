@@ -1,0 +1,92 @@
+# TODO 2011-04-01
+# - uporabi prevedene naslove iz INFO
+
+# TODO 2011-03-30
+# - link iz imena korpusa na info file DONE (differently)
+# - tooltipe na link na register corpusov in info o corpusu DONE
+# - encoding v info file DONE
+# - use encoding
+
+# TODO 2011-03-24
+# Evo, tole:
+# - Preuredit iskalno maslo da je query na začetku DONE
+# - Help pop ups in navodila DONE
+# - wordlist da tudi podpira prikaz anotacij
+# - wordlist totals na vrhu
+# - reduce preimenovati v sample; context preimenovati v kwic; cut
+#     preimenovati v all DONE
+# - usposobit UTF-8, podpirat tudi 8bit encoding + BUG v wordlistih
+# - simple search . gre v ? DONE (just help bug)
+# - css bug z ozadjem DONE
+# - ignoriranje velikih črk
+# - export v tabeli
+# - metadata: prikaz info fileta
+# - prikaz iz katerega besedila je posamezen hit (structural attributes)
+
+# Sortiranje:
+# - po hit string, en token levo, en token desno
+# - ascending, descending, od spredaj, a tergo
+# - po besedi oz. poljubnem drugem positional attribute
+# - 2 ali trije ključi
+
+# Further work:
+# - paralelni korpusi
+# - kolokacije
+# - izbira podkorpusa glede na structural attributes // glej spook
+
+# SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
+# Para corpora: http://nl2.ijs.si/index-bi.html
+# mimgrede: ALIGNED imenuje korpus, aligned je pa po 'seg'
+
+
+#glej: corpus.leeds.ac.uk./ serge cqp search
+#spredi zadi, beseda lemi
+#+ reverse sorts
+#parallel corpora
+#
+# context link: one hit with metainfo, wider context (paragraph mode)
+# and all tags
+# structural attributes: searchable? -> enega za link na document metadata
+# generic id documenta, source id cca ena beseda za izpis
+# metapodatki & paragraph mode
+
+# bug: sanitize can't work (readonly)
+# sort: zadnja levega, prva desnega etc. --- glej primere iz maila
+# TODO:
+# corpus browser with permalinks DONE
+# add corpus info link from registry ?
+# sentences-> to paragraphs
+# tags in paragraphs: colors and /
+# context: to words OK
+# tables: no wrap OK
+# reduce: no next/prev OK
+# properly limit results: fix prev/next limits OK (more intuitive Next)
+# add case insensitive option: default?
+# paragraph, wordlist views OK - sentences
+# macro cases: frekvenčni leksikon (po query, cel korpus :-) 
+#   s search/display options
+# logika soritranja
+# sort po cqp opcijah -- predlagaj interface
+# dokumentacija v mouse-over balonih
+# cwb-scan-corpus support?
+
+# TODO:
+# fix attribute printing as per http://nl2.ijs.si/fpj.html DONE
+# display structural attributes DONE (with caveats - pending)
+# query compositing: http://nl2.ijs.si/fpj.html
+# promote errors to the renderer somehow PARTIAL, need fixes
+# parallel corpora
+
+# Deployment:
+# beta + utf test && deploy in parallel on mantra
+
+#WISH LIST:
+#rezultati: levo znamka o viru, na besedo klik v kontekst
+#po vseh rezultatih, sortiranje po levem, desnem kontekstu, mogoče odzadnje po zadetku (odzadnji slovar princip)
+#izpiše samo sample - default opcija, a velika (cut 1000)
+#kolokacije
+#v bodočnosti tudi vzporedni korpusi, npr. http://nl2.ijs.si/index-bi.html
+
+# Production:
+#MOJO_MODE=production ./myapp.pl
+#mkdir log/
