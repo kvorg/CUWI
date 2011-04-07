@@ -349,8 +349,9 @@ sub run {
     }
 
     my @kwic = $self->cqp->exec("cat Last $pages");
+
     foreach my $kwic (@kwic) {
-      $kwic =~ m{^\s*([\d]+):\s+(.*)\s*::--::\s+(.*)\s+::--::\s+(.*)}
+      $kwic =~ m{^\s*([\d]+):\s+(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)}
 	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
       my ($cpos, $left, $match, $right) =
 	(
