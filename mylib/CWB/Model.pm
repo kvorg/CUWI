@@ -12,10 +12,12 @@
 # Alignement
 # Multiple 'aligned' searches for corpus groups /perhaps front-end?/
 # Tests
+# Paging and progressive building for wordlists
 # If needed, cached queries:
 #  check if CQP query is the same, then run with options
 # If needed, non-blocking queries using
 #  Mojo::IOLoop->timer(0, sub { cb ; reset timer; }
+# BUG: paging is Result is wrong about the end
 
 package CWB::Model;
 use Carp;
@@ -24,6 +26,9 @@ use IO::File;
 use CWB::Config;
 
 use Mojo::Base -base;
+
+#BUG: registry and corpora can't really work like this at all!
+# this only works with ENV currently
 
 has registry => sub {
   $CWB::CL::Registry = $ENV{CORPUS_REGISTRY} ||= $CWB::Config::Registry;
@@ -129,9 +134,9 @@ sub describe {
 }
 
 sub tooltip {
-  croak 'CWB::Model::Corpus syntax error: not called as $corpus->tooltip(<attribute|structure> <name> <lang>);' unless @_ == 4;
+  croak 'CWB::Model::Corpus syntax error: not called as $corpus->tooltip(<attribute|structure> => <name>. <lang>);.' unless @_ == 4;
   my ($self, $type, $name, $lang) = @_;
-  return ${$self->tooltip}{$type}{$name}{$lang};
+  return ${$self->tooltips}{$type}{$name}{$lang};
 }
 
 # change api to reuse query without reopening corpora?
@@ -298,9 +303,12 @@ sub run {
     unless $self->cqp->ok;
 
   # process results into a result object
-  my $result = CWB::Model::Result->new;
+  my $result = CWB::Model::Result->new
+    or $self->exception("Failed to create a result object.");
+
   $result->query($query);
   $result->QUERY($_query);
+  @{$result->attributes} = $self->show;
   $result->hitno($self->cqp->exec("size Last"));
 
   # sort here
@@ -308,22 +316,37 @@ sub run {
   if ($self->display eq 'kwic'
       or $self->display eq 'sentences'
       or $self->display eq 'paragraphs') {
-    $self->exec("reduce Last to " . $self->reduce)
-      if $self->reduce and $self->reduce > 0;
+    if ($self->reduce and $self->pagesize) {
+      $self->exec("reduce Last to " . $self->pagesize);
+      $result->reduce(1);
+    }
 
-    # paging
-    my $thispage = $self->startfrom ? $self->startfrom : 1;
-    my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
-	$self->startfrom + $self->pagesize : undef ;
-    ${$result->pages}{this} = $thispage;
-    ${$result->pages}{next} = $nextpage;
-    ${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
-      $self->startfrom - $self->pagesize : 
-	($thispage == 1 ? undef : 1);
-    ${$result->pages}{pagesize} = $self->pagesize;
     my $pages = '';
-    $pages = $thispage . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
-      if $self->pagesize and not $self->reduce;
+
+    #startfrom may be tainted
+    if ($self->startfrom < 1)
+      { $self->startfrom(1); }
+    elsif ($self->startfrom > $result->hitno)
+      { $self->startfrom($result->hitno - 1) ; }
+    else
+      { $self->startfrom(int($self->startfrom)); }
+
+    if ( $self->reduce 
+	 or $result->hitno <= $self->pagesize ) {
+      ${$result->pages}{single} = 1;
+    } else {
+      my $thispage = $self->startfrom ? $self->startfrom : 1;
+      my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
+	$self->startfrom + $self->pagesize : undef ;
+      ${$result->pages}{this} = $thispage;
+      ${$result->pages}{next} = $nextpage;
+      ${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
+	$self->startfrom - $self->pagesize : 
+	  ($thispage == 1 ? undef : 1);
+      ${$result->pages}{pagesize} = $self->pagesize;
+      $pages = $thispage . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
+	if $self->pagesize and not $self->reduce;
+    }
 
     my @kwic = $self->cqp->exec("cat Last $pages");
     foreach my $kwic (@kwic) {
@@ -347,16 +370,17 @@ sub run {
 			       cpos  => $cpos,
 			       left  => $left,
 			       match => $match,
-			       right  => $right,
+			       right => $right,
 			       data  => $data,
-			     # kwic  => $kwic,
 			      };
     }
 
     #manual sort here
 
   } elsif ( $self->display eq 'wordlist' ) {
-    my @kwic = $self->cqp->exec("cat Last");
+    ${$result->pages}{single} = 1;
+    $result->table(1);
+    my @kwic = $self->cqp->exec("cat Last 1 10000"); # limit max
     warn "Got " . scalar @kwic . " lines.\n";
     my %counts;
     foreach my $kwic (@kwic) {
@@ -395,12 +419,14 @@ sub exception {
 package CWB::Model::Result;
 use Mojo::Base -base;
 
-has [qw(query QUERY time hitno distinct next prev)] ;
-has hits  => sub { return [] } ;
-has pages => sub { return {} } ;
+has [qw(query QUERY time hitno distinct next prev reduce table)] ;
+has hits        => sub { return [] } ;
+has pages       => sub { return {} } ;
+has attributes  => sub { return [] } ;
 
 sub pagelist {
   my $self = shift;
+  return [ 1 ] if ${$self->pages}{single} ; #shortcut
   my $page = 1;
   my @pages;
   if (not @_) { #all pages
@@ -411,21 +437,22 @@ sub pagelist {
   } else {
     my $maxpages = shift;
     $page = ${$self->pages}{this}
-      - abs($maxpages / 2) * ${$self->pages}{pagesize};
+      - int($maxpages / 2) * ${$self->pages}{pagesize};
     # if near beginning
     $page = 1 if $page < 1;
     # if near end
     $page = $self->hitno - $maxpages * ${$self->pages}{pagesize} + 1
       if $page + $maxpages * ${$self->pages}{pagesize} > $self->hitno;
     $page = 1 if $page < 1;  #not enough pages
-    my $lastpage = $page + $maxpages * ${$self->pages}{pagesize};
+    my $lastpage  = $page + $maxpages * ${$self->pages}{pagesize};
+    my $finalpage = $self->hitno - $self->hitno % ${$self->pages}{pagesize};
     $lastpage = $self->hitno
       if $lastpage > $self->hitno; #not enough pages
-    push @pages, '...' if $page != 1;
+    push @pages, 1, '...' if $page != 1;
     while ($page < $lastpage - 1) {
       push @pages, $page;
       $page += ${$self->pages}{pagesize};
-      push @pages, '...' if $page > $lastpage - 1 and $page < $self->hitno -1;
+      push @pages, '...', $finalpage if $page > $lastpage - 1 and $page < $self->hitno -1;
     }
   }
   return \@pages;
@@ -451,8 +478,8 @@ CWB::Model - CWB registry, corpus, info and query model layer
   my $dickens = ${$model->corpora}{dickens};        # specific corpus
   my $text    = $corpus->encoding; # corpus encoding from info file
   my $en_desc = $corpus->describe('en');            # English description
-  $corpus->tooltip(attribute => 'pos', 'en);        # English tooltips
-  $corpus->tooltip(structure => 'doc', 'en)
+  $corpus->tooltip(attribute => 'pos', 'en');        # English tooltips
+  $corpus->tooltip(structure => 'doc', 'en')
   
   # run a query (see CWB::Model::Query for options)
   
