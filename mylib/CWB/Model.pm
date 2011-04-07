@@ -275,7 +275,7 @@ sub run {
     $self->exec("show +$struct;", "Can't set show for structure $struct");
   }
 
-  if ($self->context eq 'kwic') {
+  if ($self->display ne 'wordlist') {
     $self->exec('set Context ' . $self->context . ';',
 		"Can't set context to '" . $self->context . "'")
       if defined $self->context;
@@ -285,7 +285,11 @@ sub run {
     $self->exec('set RightContext ' . $self->r_context . ';',
 		"Can't set right context to '" . $self->r_context . "'")
       if defined $self->r_context;
+  } else {
+    $self->exec('set Context 0;',
+		"Can't set context to '" . $self->context . "'");
   }
+
   $self->exec('set Context s;', "Can't set context to 's''")
     if $self->display eq 'sentences';
   $self->exec('set Context p;', "Can't set context to 'p''")
