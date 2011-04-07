@@ -31,21 +31,34 @@ use Mojo::Base -base;
 # this only works with ENV currently
 
 has registry => sub {
-  $CWB::CL::Registry = $ENV{CORPUS_REGISTRY} ||= $CWB::Config::Registry;
+  return $ENV{CORPUS_REGISTRY} ? $ENV{CORPUS_REGISTRY} : $CWB::Config::Registry;
 } ;
 has corpora => sub {
-  return {
-   map {
-     my $corpus = CWB::Model::Corpus->new($_ );
-     ($corpus->name, $corpus);
-   } grep {
-     -f $_  and not ( m{/[#]} or m {[#~]$});
-   } map {
-     my $dirname = $_;
-     map { "$dirname/$_" } IO::Dir->new($dirname)->read;
-   } split (':', $CWB::CL::Registry)
-  } ;
-} ;
+  return { } ; 
+};
+
+sub new {
+  my $self = shift->SUPER::new(@_);
+
+  $self->reload;
+  return $self;
+}
+
+sub reload {
+  my $self = shift;
+
+  $self->corpora( {
+		map {
+		  my $corpus = CWB::Model::Corpus->new($_, $self->registry);
+		  ($corpus->name, $corpus);
+		} grep {
+		  -f $_  and not ( m{/[#]} or m {[#~]$});
+		} map {
+		  my $dirname = $_;
+		  map { "$dirname/$_" } IO::Dir->new($dirname)->read;
+		} split (':', $self->registry)
+	      } ) ;
+};
 
 our $exception_handler = sub { die @_ ; } ;
 
@@ -78,12 +91,12 @@ package CWB::Model::Corpus;
 use Carp;
 use Mojo::Base -base;
 
-has [qw(file infofile name NAME title encoding clh)];
+has [qw(file infofile name NAME title encoding registry)];
 has [qw(attributes structures align)] => sub { return [] };
 has [qw(description tooltips)]        => sub { return {} };
 
 sub new {
-  my $self = shift->SUPER::new(file => shift);
+  my $self = shift->SUPER::new(file => shift, registry => shift);
 
   $self->name(  $self->file =~ m{.*/([^/]+)$} );
   $self->NAME(uc($self->name));
@@ -122,9 +135,6 @@ sub new {
     warn "Could not access info file for $self->file.\n";
   }
 
-  $self->clh( CWB::CL::Corpus->new($self->NAME)
-	      or die "CWB::Model::Corpus Exception: Could not open $self->NAME with CWB::CL.\n" );
-
   return $self;
 }
 
@@ -143,18 +153,22 @@ sub tooltip {
 sub query {
   my $self = shift;
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
-  return CWB::Model::Query->new(corpus => $self, @_)->run;
+  return CWB::Model::Query->new(corpus => $self, registry => $self->registry, @_)->run;
 }
 
+sub structures_ {
+  return [ grep { m/_/ } @{$_[0]->structures} ];
+}
 
 package CWB::Model::Query;
 use Mojo::Base -base;
 use Carp;
 use CWB::CQP;
-use CWB::CL;
 use Encode qw(encode decode);
 
-has [qw(corpus cqp query reduce  maxhits l_context r_context parallel debug)] ;
+has [ qw(corpus registry cqp
+	query reduce maxhits parallel
+	l_context r_context debug) ] ;
 has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
@@ -186,7 +200,7 @@ sub new {
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
   # set registry - needed since we can supercede the ENV and CWB::Config
-  $cqp->exec("set registry '$CWB::CL::Registry';");
+  $cqp->exec("set registry '" . $self->registry . "';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
     unless $cqp->ok;
   # activate corpus
@@ -210,17 +224,6 @@ sub new {
   return $self;
 }
 
-# convert structural attribute names to CWB::CL handles
-sub structures { 
-  return unless @_ > 1;
-  my $self = shift;
-  foreach my $struct (@_) {
-    my $sah = $self->corpus->clh->attribute($struct, 's') or
-      $self->exception("Structural attribute '$struct' missing in corpus "
-		     . $self->corpus);
-    ${$self->_structures}{$struct} = $sah;
-  }
-}
 
 sub run {
   use Time::HiRes;
@@ -263,16 +266,10 @@ sub run {
   foreach my $att (@{$self->corpus->attributes}) {
     $self->exec("show -$att;", "Can't unset show for attribute $att");
   }
-  foreach my $struct (@{$self->corpus->structures}) {
-    $self->exec("show -$struct;", "Can't unset show for structure $struct");
-  }
 
   # set new CQP settings
   foreach my $att (@{$self->show}) {
     $self->exec("show +$att;", "Can't set show for attribute $att");
-  }
-  foreach my $struct (keys %{$self->_structures}) {
-    $self->exec("show +$struct;", "Can't set show for structure $struct");
   }
 
   if ($self->display ne 'wordlist') {
@@ -285,15 +282,19 @@ sub run {
     $self->exec('set RightContext ' . $self->r_context . ';',
 		"Can't set right context to '" . $self->r_context . "'")
       if defined $self->r_context;
+  my $ps = join(', ', @{$self->corpus->structures});
+  $self->exec('set PrintStructures "' . $ps . '";',
+	      "Can't set PrintStructures for");
   } else {
     $self->exec('set Context 0;',
 		"Can't set context to '" . $self->context . "'");
+    $self->exec('set PrintStructures ""', "Can't set PrintStructures.");
   }
 
   $self->exec('set Context s;', "Can't set context to 's''")
     if $self->display eq 'sentences';
   $self->exec('set Context p;', "Can't set context to 'p''")
-    if $self->display eq 'paragraph';
+    if $self->display eq 'paragraphs';
   $self->exec('set Context 0 words;', "Can't set context to 'p''")
     if $self->display eq 'wordlist';
 
@@ -355,20 +356,21 @@ sub run {
     my @kwic = $self->cqp->exec("cat Last $pages");
 
     foreach my $kwic (@kwic) {
-      $kwic =~ m{^\s*([\d]+):\s+(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)}
+      $kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:\s+)?(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)$}
 	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
-      my ($cpos, $left, $match, $right) =
+      my ($cpos, $structs, $left, $match, $right) =
 	(
 	 $1,
-	 decode($self->corpus->encoding, $2),
+	 $2,
 	 decode($self->corpus->encoding, $3),
 	 decode($self->corpus->encoding, $4),
+	 decode($self->corpus->encoding, $5),
 	);
 
       my $data = {};
-      foreach my $struct (keys %{$self->_structures}) {
-        my $value = ${$self->_structures}{$struct}->cpos2struc2str($cpos);
-        $data->{$struct} = $value ? $value : '';
+      foreach (split '><', $structs) {
+	m{(\S*)\s(.*)};
+	$data->{$1} = $2;
       }
 
       push @{$result->hits}, {
@@ -591,7 +593,7 @@ L<http://www.opensource.org/licenses/> for more info.
 
 =head1 SEE ALSO
 
-L<CWB::CQP>, L<CWB::CL>, L<http://...> for L<CQP> syntax and general
+L<CWB::CQP>, L<http://...> for L<CQP> syntax and general
 B<Corpus WorkBench> information.
 
 =cut

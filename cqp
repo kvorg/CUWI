@@ -214,8 +214,10 @@ __DATA__
     <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Context tokens</em>Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.</span>
     Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>10 %>
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em>Selects the display mode used to display the results. <b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides. <b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit. <b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</span>
-    Display mode</a>: <%= select_field 'display', [qw/kwic sentences wordlist/] %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em><p>Selects the display mode used to display the results.</p> <p><b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides.</p> <p><b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit.</p> <p><b>Paragraphs</b> does the same for paragraphs. Both modes are only available if structural attributes to support them are present in the corpus.</p> <p><b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</p></span>
+% my @extras = grep { $_ } map { my $s; $s = 'paragraphs' if $_ eq 'p'; $s = 'sentences' if $_ eq 's'; $s; } 
+%  @{$corpus->structures};
+ Display mode</a>: <%= select_field 'display', ['kwic', @extras, 'wordlist'] %>
     <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Listing mode</em><b>Sample</b> displays a random sample of hits. Hit reload to see a different sample. <b>All</b> lists all the hits with result pages.</span>
     Listing mode</a>: <%= select_field 'listing', [qw/sample all/] %>
@@ -256,12 +258,12 @@ __DATA__
 %  my $nr = ${$result->{pages}}{this};
 %  foreach my $m (@{$result->hits}) {
     <tr>
-     <td class="head"><span class="no">[<%= $nr++ %>]</sep> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
+     <td class="head"><span class="no"><a href="#" class="tooltip">[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em><ul>
+      <li>cpos: <%= $m->{'cpos'} %></li>
 %   foreach my $struct (keys %{$m->{data}}) {
-    <span class="struct"><%= $m->{data}{$struct} %></span>
+      <li><%= $struct . ': ' . $m->{data}{$struct} %></li>
 %   }
-%#   warn "$m->{'left'}\n";
-     </span></td>
+     </ul></a></span></td>
      <td class="left"><%== $tc->($m->{left}); %></td>
      <td class="match"><span class="match"><%== $tc->($m->{match}); %></span></td>
      <td class="right"><%== $tc->($m->{right}); %></td>
@@ -272,11 +274,12 @@ __DATA__
 %  my $nr = ${$result->{pages}}{this};
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="no">[<%= $nr++ %>]</span> <span class="sd"><%= $m->{'cpos'} %></span><span class="structs">
+     <span class="no"><a href="#" class="tooltip">[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em><ul>
+      <li>cpos: <%= $m->{'cpos'} %></li>
 %   foreach my $struct (keys %{$m->{data}}) {
-      <span class="struct"><%= $m->{data}{$struct} %></span>
+      <li><%= $struct . ': ' . $m->{data}{$struct} %></li>
 %   }
-     </span>
+     </ul></a></span>
      <%== $tc->($m->{left}); %>
      <span class="match"><%== $tc->($m->{match}); %></span>
      <%== $tc->($m->{right}); %>
@@ -374,9 +377,10 @@ div.matches table { padding: .5em; background-color: white; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
 span.no   { font-weight: bold; }
-span.sd   { font-family: sans-serif; font-size: 60%; }
-span.structs { display: inline-block }
-span.struct   { display: block; font-family: sans-serif; font-size: 50%; }
+span.no ul   { padding: 0px; margin: 0px; }
+span.no li   { margin: 0px; padding: 0px; }
+# span.sd   { font-family: sans-serif; font-size: 60%; }
+em0 ;}
 td  { white-space: nowrap;}
 td.head  { white-space: nowrap;}
 td.left  { text-align: right; vertical-align: text-bottom;}
