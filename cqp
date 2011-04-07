@@ -87,6 +87,7 @@ get "/:corpus/search" => sub {
     $self->param('show') : [ $self->param('show') ] ;
   $params{context} = $self->param('contextsize') . ' words';
   $params{display} = $self->param('display');
+  $params{startfrom} = $self->param('startfrom');
   $params{reduce} = 1 if $self->param('listing') eq 'sample';
   $params{pagesize} = $self->param('size');
   warn "Calling query with " . $self->dumper(\%params);
@@ -229,7 +230,13 @@ __DATA__
 % layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
 <%= include 'form' %>
   <div class="report">
+% if ($self->param('display') eq 'wordlist') {
+   <p>Retrieved <b><%=  scalar @{$result->hits} %></b> 
 % if ($result->reduce) {
+  out of <b><%= $result->distinct %></b>
+% }
+ distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= $result->query %></span>
+% } elsif ($result->reduce) {
    <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= $result->query %></span>
 % }
 % elsif ($result->hitno > ${$result->pages}{pagesize}) {
@@ -284,7 +291,7 @@ __DATA__
   %  }
   </table>
 % } else {
-  Unknown display mode: aborting.
+  Unknown display mode: query aborted. (Stop playing with my query parameters or I won't be RESTful much longer!)
 % }
  </div>
 <%= include 'nav' %>

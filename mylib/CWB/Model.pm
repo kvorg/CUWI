@@ -380,6 +380,9 @@ sub run {
 
   } elsif ( $self->display eq 'wordlist' ) {
     ${$result->pages}{single} = 1;
+    if ($self->reduce and $self->pagesize) {
+      $result->reduce(1);
+    }
     $result->table(1);
     my @kwic = $self->cqp->exec("cat Last 1 10000"); # limit max
     warn "Got " . scalar @kwic . " lines.\n";
@@ -394,8 +397,9 @@ sub run {
     }
     @{$result->hits} = map { [$_, $counts{$_}] }
       reverse sort {$counts{$a} <=> $counts{$b}}  keys %counts;
-    splice @{$result->hits}, $self->reduce
-      if $self->reduce and $self->reduce > 0;
+    # reduce only shows the top frequencies for wordlists
+    splice @{$result->hits}, $self->pagesize
+      if $self->reduce and $self->pagesize > 0;
     $result->distinct(scalar keys %counts);
   } else {
     $self->exception("No known display mode specified, aborting query.");
