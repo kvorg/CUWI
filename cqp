@@ -195,8 +195,8 @@ __DATA__
 % }
     <span>&nbsp; &nbsp;</span>
     Ignore
-      <%= check_box 'ignorecase'       => 1 %> case
-      <%= check_box 'ignorediacritics' => 1 %> diacritics
+      <%= check_box_x ignorecase => 1       %> case
+      <%= check_box_x ignorediacritics => 1 %> diacritics
     <br>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:
