@@ -170,7 +170,34 @@ __DATA__
 
   <div class="description">
     <%== $corpus->describe('en') %>
-%# add attribute descriptions here
+
+% my @atts = grep { $corpus->tooltip(attribute => $_, 'en') }
+%    @{$corpus->attributes};
+% if (@atts) {
+  <h2>Attribute Descriptions</h2>
+  <ul>
+%   foreach my $att (@atts) {
+    <li><b><%= $att %></b>:
+     <%= $corpus->tooltip(attribute => $att, 'en') %>
+    </li>
+%   }
+  </ul>
+% }
+
+% my @satts = grep { $corpus->tooltip(structure => $_, 'en') }
+%    @{$corpus->structures};
+% if (@satts) {
+  <h2>Structural Attribute Descriptions (Tags)</h2>
+  <ul>
+%   foreach my $satt (@satts) {
+    <li><b><%= $satt %></b>:
+     <%= $corpus->tooltip(structure => $satt, 'en') %>
+    </li>
+%   }
+  </ul>
+% }
+
+
   </div>
 
 
@@ -423,6 +450,10 @@ div.corpora > li {
 div.description {
   margin: 3ex;
   font-size: 0.8em;
+}
+div.description h2 {
+  text-align: left;
+  margin-left: 0px;
 }
 
 /* # tooltips from Alexander Dawson,
