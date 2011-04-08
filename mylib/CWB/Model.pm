@@ -318,6 +318,12 @@ sub run {
   @{$result->attributes} = $self->show;
   $result->hitno($self->cqp->exec("size Last"));
 
+  $result->bigcontext('paragraphs') if grep { $_ } map { $_ eq 's' }
+    @{$self->corpus->structures};
+  $result->bigcontext('sentences') if not $result->bigcontext
+    and grep { $_ } map { $_ eq 's' }
+    @{$self->corpus->structures};
+
   # sort here
 
   if ($self->display eq 'kwic'
@@ -370,9 +376,11 @@ sub run {
 	);
 
       my $data = {};
-      foreach (split '><', $structs) {
-	m{(\S*)\s(.*)};
-	$data->{$1} = $2;
+      if ($structs) {
+	foreach (split '><', $structs) {
+	  m{(\S*)\s(.*)};
+	  $data->{$1} = $2;
+	}
       }
 
       push @{$result->hits}, {
@@ -432,7 +440,7 @@ sub exception {
 package CWB::Model::Result;
 use Mojo::Base -base;
 
-has [qw(query QUERY time hitno distinct next prev reduce table)] ;
+has [qw(query QUERY time hitno distinct next prev reduce table bigcontext)] ;
 has hits        => sub { return [] } ;
 has pages       => sub { return {} } ;
 has attributes  => sub { return [] } ;
@@ -458,7 +466,8 @@ sub pagelist {
       if $page + $maxpages * ${$self->pages}{pagesize} > $self->hitno;
     $page = 1 if $page < 1;  #not enough pages
     my $lastpage  = $page + $maxpages * ${$self->pages}{pagesize};
-    my $finalpage = $self->hitno - $self->hitno % ${$self->pages}{pagesize};
+    my $finalpage = $self->hitno - 
+      ($self->hitno ? 1 : $self->hitno % ${$self->pages}{pagesize});
     $lastpage = $self->hitno
       if $lastpage > $self->hitno; #not enough pages
     push @pages, 1, '...' if $page != 1;
