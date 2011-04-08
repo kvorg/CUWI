@@ -241,14 +241,14 @@ __DATA__
 % if ($result->reduce) {
   out of <b><%= $result->distinct %></b>
 % }
- distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= $result->query %></span>
+ distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % } elsif ($result->reduce) {
-   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= $result->query %></span>
+   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % }
 % elsif ($result->hitno > ${$result->pages}{pagesize}) {
-   <p>Matches <b><%= ${$result->pages}{this} ? ${$result->pages}{this} : 1 %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= $result->query %></span>
+   <p>Matches <b><%= ${$result->pages}{this} ? ${$result->pages}{this} : 1 %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % } else {
-   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= $result->query %></span>
+   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % }
  in <%= sprintf('%0.3f', $result->time) %> s.</p>
   </div>
