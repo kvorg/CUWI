@@ -91,9 +91,10 @@ package CWB::Model::Corpus;
 use Carp;
 use Mojo::Base -base;
 
-has [qw(file infofile name NAME title encoding registry)];
+has [qw(file infofile name NAME title registry)];
 has [qw(attributes structures align)] => sub { return [] };
 has [qw(description tooltips)]        => sub { return {} };
+has encoding => 'utf8';
 
 sub new {
   my $self = shift->SUPER::new(file => shift, registry => shift);
@@ -128,12 +129,13 @@ sub new {
       ${$self->tooltips}{lc($1)}{$2}{$3 ? $3 : 'en'} = $4
 	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }
-    $self->encoding('utf8') unless $self->encoding;
-    $self->encoding('utf8') if $self->encoding eq 'UTF-8';
     $fh->close;
   } else {
-    warn "Could not access info file for $self->file.\n";
+    warn 'Could not access info file for ' . $self->file . ": $@\n";
   }
+
+  $self->encoding('utf8') unless $self->encoding;
+  $self->encoding('utf8') if $self->encoding eq 'UTF-8';
 
   return $self;
 }
