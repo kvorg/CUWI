@@ -322,9 +322,10 @@ __DATA__
 %  }
 % } elsif ($self->param('display') eq 'wordlist') {
   <table>
-    <tr class="total"><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
+    <tr class="total"><td> </td><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
+%  my $nr = 1;
   %  foreach my $m (@{$result->hits}) {
-    <tr><td><%= $m->[0] %></td><td class="count"><%= $m->[1] %></td></tr>
+    <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%= link_to_here { query=>$m->[0], display=>'kwic' } => begin %><%== $tc->($m->[0]) %><% end %></td><td class="count"><%= $m->[1] %></td></tr>
   %#  <tr><td><%= $self->dumper($m) %></td></tr>
   %  }
   </table>
