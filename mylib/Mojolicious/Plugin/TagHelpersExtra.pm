@@ -32,7 +32,10 @@ sub register {
 		     $pp->append(shift @{$_[0]} => shift @{$_[0]})
 		       while @{$_[0]};
 		     shift;		   }
-		   $self->_tag('a', href=>$c->req->url->query($pp), @_) }
+		   $self->_tag('a', 
+			       href => Mojo::ByteStream->new($c->req->url->query($pp))->html_escape,
+			       @_)
+		 }
 		);
 
     # Add "check_box_x" helper

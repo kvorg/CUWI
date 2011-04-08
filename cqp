@@ -162,7 +162,7 @@ __DATA__
    <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a> [<%= $corpora->{$corpusname}->encoding %>]</li>
 % }
  </ul>
-
+</div>
 
 @@ corpus.html.ep
 % layout 'main', title=>'Form';
@@ -186,10 +186,11 @@ __DATA__
 % my $checked = 0;
 % foreach my $att (@{$corpus->attributes}) {
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
+     <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
   % }
-     <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %><%= $att %>
+     <%= $att %>
   % if ($ttip) {
    </a>
   % }
@@ -204,10 +205,11 @@ __DATA__
 % $checked = 0;
 % foreach my $att (@{$corpus->attributes}) {
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
+     <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
   % }
-     <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %><%= $att %>
+     <%= $att %>
   % if ($ttip) {
    </a>
   % }
@@ -258,14 +260,17 @@ __DATA__
 % if ($self->param('display') eq 'kwic') {
   <table>
 %  my $nr = ${$result->{pages}}{this};
+%  my @single = ( contextsize=>25 );
+%  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <tr>
-     <td class="head"><span class="no"><a href="#" class="tooltip">[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+     <td class="head"><span class="no">
+<%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"tooltip") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       cpos: <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><%= $struct . ': ' . $m->{data}{$struct} %>
 %   }
-     </span></a></span></td>
+     </span><% end %></span></td>
      <td class="left"><%== $tc->($m->{left}); %></td>
      <td class="match"><span class="match"><%== $tc->($m->{match}); %></span></td>
      <td class="right"><%== $tc->($m->{right}); %></td>
@@ -276,12 +281,13 @@ __DATA__
 %  my $nr = ${$result->{pages}}{this};
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="no"><a href="#" class="tooltip">[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+     <span class="parno"><%= link_to_here {startfrom=>$nr, pagesize=>1, listing=>"all", display=>$result->bigcontext}, (class=>"tooltip") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       cpos: <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><%= $struct . ': ' . $m->{data}{$struct} %>
 %   }
-     </span></a></span>
+      </span><% end %>
+     </span>
      <%== $tc->($m->{left}); %>
      <span class="match"><%== $tc->($m->{match}); %></span>
      <%== $tc->($m->{right}); %>
@@ -327,6 +333,7 @@ __DATA__
 <html>
  <head>
   <title>CQP Search <%= $title ? " $title" : '' =%></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link href="<%= '/' . $config->{root} . '/' . 'style.css' %>" rel="stylesheet" type="text/css" />
  </head>
  <body>
@@ -345,7 +352,7 @@ __DATA__
 
 @@ style.css.ep
 body { font-family: Palatino, Times, serif;
-       font-size: 120%; 
+       font-size: 120%;
        background-color: #F0F0F0;
 }
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
@@ -358,7 +365,7 @@ div.nav > a { padding: .5em; padding-left: 1.5em; padding-right: 1.5em;
 span.pagelist {
   padding: .5em;
   text-align: center;
-  vertical-align: center;
+  vertical-align: middle;
   background-color: #DEDEDE;
   display: block;
 }
@@ -378,11 +385,9 @@ div.matches { background-color: white;
 div.matches table { padding: .5em; background-color: white; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
-span.no   { font-weight: bold; }
-span.no ul   { padding: 0px; margin: 0px; }
-span.no li   { margin: 0px; padding: 0px; }
-# span.sd   { font-family: sans-serif; font-size: 60%; }
-em0 ;}
+span.no, span.parno   { font-weight: bold; }
+span.parno   { font-weight: bold; vertical-align: top;}
+/* span.sd   { font-family: sans-serif; font-size: 60%; } */
 td  { white-space: nowrap;}
 td.head  { white-space: nowrap;}
 td.left  { text-align: right; vertical-align: text-bottom;}
