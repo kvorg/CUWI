@@ -38,6 +38,7 @@ app->defaults(model => $model);
 app->log->info('CWB Model instantiated with corpora: ' .
 	       join(', ', $model->list) );
 $config->{root} =~ s{^(.*)/$}{$1};
+$config->{root} = 'cqp' unless $config->{root};
 app->log->info("App web root: '$config->{root}'.");
 
 app->log->info("Registry at '" . $model->registry . "'.");
