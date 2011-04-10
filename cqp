@@ -131,14 +131,43 @@ $sanitize = sub {
 };
 
 $tabulator = sub {
-  my $string = shift;
-  return $string unless $string =~ m{/};
-  my $o = '<span class="part">'; my $c = '</span>';
+  my ($string, $c) = (@_);
+  return $c->link_to_here(
+			  { query => $string, display=>'kwic',
+			    search=> (ref $c->param('show') ? 
+				      ${$c->param('show')}[0] :
+				      $c->param('show') )
+			  },
+		      sub { return $string } )
+    if $c and not $string =~ m{/};
+  return  $string unless $string =~ m{/};
+  my $st = '<span class="part">'; my $et = '</span>';
   my @tokens = split(/\s+/, $string);
-  @tokens = map {
-    my @parts = split('/', $_);
-    '<span class="token">' . $o . join("$c$o", @parts) . $c . '</span>';
-  } @tokens;
+  my @attrs; @attrs = $c->param('show') if $c;
+
+  if ($c and scalar @attrs > 1) {
+    #[ [ je, V ] [ bil, K ] ]  [ word, POS ]
+    @tokens = map { [ split '/' ] } @tokens;
+    my %query; my $i = 0;
+    foreach my $attr (@attrs) {
+      my $query = join(' ', map {$_->[$i]} @tokens ) ;
+      foreach my $j (0 .. scalar @tokens - 1) {
+	$tokens[$j][$i] = $c->link_to_here({query=>$query,
+					    search=>$attr,
+					    display=>'kwic'},
+				    sub { return $tokens[$j][$i] });
+      }
+      $i++;
+    }
+    @tokens = map {
+      '<span class="token">' . $st . join("$et$st", @$_) . $et . '</span>';
+    } @tokens;
+  } else {
+    @tokens = map {
+      my @parts = split('/', $_);
+      '<span class="token">' . $st . join("$et$st", @parts) . $et . '</span>';
+    } @tokens;
+  }
   return join(' ', @tokens);
 };
 
@@ -306,9 +335,11 @@ __DATA__
   </table>
 % } elsif ($self->param('display') eq 'sentences' or $self->param('display') eq 'paragraphs') {
 %  my $nr = ${$result->{pages}}{this};
+%  my @single = ( contextsize=>25 );
+%  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="parno"><%= link_to_here {startfrom=>$nr, pagesize=>1, listing=>"all", display=>$result->bigcontext}, (class=>"tooltip") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+     <span class="parno"><%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"tooltip") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       cpos: <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><%= $struct . ': ' . $m->{data}{$struct} %>
@@ -325,7 +356,7 @@ __DATA__
     <tr class="total"><td> </td><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
 %  my $nr = 1;
   %  foreach my $m (@{$result->hits}) {
-    <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%= link_to_here { query=>$m->[0], display=>'kwic' } => begin %><%== $tc->($m->[0]) %><% end %></td><td class="count"><%= $m->[1] %></td></tr>
+    <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%== $tc->($m->[0], $self) %></td><td class="count"><%= $m->[1] %></td></tr>
   %#  <tr><td><%= $self->dumper($m) %></td></tr>
   %  }
   </table>
@@ -426,7 +457,7 @@ td.count  { text-align: right; padding-left: 1em;}
 tr.total  { font-weight: bold;}
 tr:nth-child(2n+1) { background-color: #F2F2F2; }
 span.token { display: inline-block }
-span.part { display: block; text-align: center; }
+span.part { display: block; text-align: left; }
 span.token span.part:nth-child(4n+1) { color: navy; }
 span.token span.part:nth-child(4n+2) { color: green; }
 span.token span.part:nth-child(4n+3) { color: maroon; }
