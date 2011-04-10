@@ -462,6 +462,10 @@ span.token span.part:nth-child(4n+1) { color: navy; }
 span.token span.part:nth-child(4n+2) { color: green; }
 span.token span.part:nth-child(4n+3) { color: maroon; }
 span.token span.part:nth-child(4n+4) { color: purple; }
+span.token span.part:nth-child(4n+1) > a { color: navy; }
+span.token span.part:nth-child(4n+2) > a { color: green; }
+span.token span.part:nth-child(4n+3) > a { color: maroon; }
+span.token span.part:nth-child(4n+4) > a { color: purple; }
 span.hlp span.hlptxt { display: none; }
 span.hlp:hover span.helptxt { display: block; }
 h2 { margin-left: 2em; margin-right: 2em; text-align: center ; }
