@@ -361,34 +361,34 @@ sub run {
 	${@{$result->hits}[-1]}{aligns}{$1} = decode($self->corpus->encoding, $2);
 	warn "Got an align from $1.\n";
       } else { #kwic
-      $kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:\s+)?(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)$}
-	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
-      my ($cpos, $structs, $left, $match, $right) =
-	(
-	 $1,
-	 $2,
-	 decode($self->corpus->encoding, $3),
-	 decode($self->corpus->encoding, $4),
-	 decode($self->corpus->encoding, $5),
-	);
+	$kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:\s+)?(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)$}
+	  or $self->exception("Can't parse CQP kwic output, line:", $kwic);
+	my ($cpos, $structs, $left, $match, $right) =
+	  (
+	   $1,
+	   $2,
+	   decode($self->corpus->encoding, $3),
+	   decode($self->corpus->encoding, $4),
+	   decode($self->corpus->encoding, $5),
+	  );
 
-      my $data = {};
-      if ($structs) {
-	foreach (split '><', $structs) {
-	  m{(\S*)\s(.*)};
-	  $data->{$1} = $2;
+	my $data = {};
+	if ($structs) {
+	  foreach (split '><', $structs) {
+	    m{(\S*)\s(.*)};
+	    $data->{$1} = $2;
+	  }
 	}
-      }
 
-      push @{$result->hits}, {
-			       cpos  => $cpos,
-			       left  => $left,
-			       match => $match,
-			       right => $right,
-			       data  => $data,
+	push @{$result->hits}, {
+				cpos    => $cpos,
+				left    => $left,
+				match   => $match,
+				right   => $right,
+				data    => $data,
 			       aligns  => {},
-			      };
-    }
+			       };
+      }
     }
     #manual sort here
 
