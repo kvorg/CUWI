@@ -260,9 +260,14 @@ sub run {
     $self->exec("show +$att;", "Can't set show for attribute $att");
   }
 
+  my @aligns = grep { my $align = $_;
+		      scalar grep { $_ eq $align }
+			@{$self->corpus->alignements}
+		      } @{$self->align} ;
+
   unless ($self->display eq 'wordlist') { # no alignment for wordlists
-    foreach my $align (@{$self->align}) {
-      $self->exec("show +$align;", "Can't set show for alignement $align");
+    foreach my $align (@aligns) {
+      $self->exec("show +$align;", "Can't set show for alignement $align")
     }
   }
 
@@ -306,6 +311,7 @@ sub run {
   $result->query($query);
   $result->QUERY($_query);
   @{$result->attributes} = $self->show;
+  @{$result->aligns} = @aligns;
   $result->hitno($self->cqp->exec("size Last"));
 
   $result->bigcontext('paragraphs') if grep { $_ } map { $_ eq 'p' }
@@ -442,6 +448,7 @@ has [qw(query QUERY time hitno distinct next prev reduce table bigcontext)] ;
 has hits        => sub { return [] } ;
 has pages       => sub { return {} } ;
 has attributes  => sub { return [] } ;
+has aligns      => sub { return [] } ;
 
 sub pagelist {
   my $self = shift;

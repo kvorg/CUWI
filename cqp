@@ -86,6 +86,8 @@ get "/:corpus/search" => sub {
   $params{ignorediacritics} = $self->param('ignorediacritics');
   $params{show} = ref $self->param('show') eq 'ARRAY' ?
     $self->param('show') : [ $self->param('show') ] ;
+  $params{align} = ref $self->param('align') eq 'ARRAY' ?
+    $self->param('align') : [ $self->param('align') ] ;
   $params{context} = $self->param('contextsize') . ' words';
   $params{display} = $self->param('display');
   $params{startfrom} = $self->param('startfrom');
@@ -251,11 +253,10 @@ __DATA__
    </a>
   % }
 % }
-     <br />Ignore:
+    </div>
+     Ignore:
       <%= check_box_x ignorecase => 1       %> case
       <%= check_box_x ignorediacritics => 1 %> diacritics
-
-    </div>
     <div class="show">
     <span class="label"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:</span>
@@ -272,6 +273,21 @@ __DATA__
   % }
 % }
     </div>
+% if (scalar @{$corpus->alignements}) {
+     Align:
+% foreach my $align (@{$corpus->alignements}) {
+  % my $ttip; $ttip = ${$model->corpora}{'jos100k-en'}->title if exists ${$model->corpora}{'jos100k-en'};
+     <%= check_box_x 'align' => $align %>
+  % if ($ttip) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $align %></em><%= $ttip %></span>
+  % }
+&nbsp;<%= $align %>
+  % if ($ttip) {
+   </a>
+  % }
+% }
+ <br />
+%} #alignements
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Context tokens</em>Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.</span>
     Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>10 %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em>Selects the display mode used to display the results.<br /><b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides.<br /><b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit.<br /><b>Paragraphs</b> does the same for paragraphs. Both modes are only available if structural attributes to support them are present in the corpus.<br /><b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</span>
@@ -332,6 +348,9 @@ __DATA__
      <td class="match"><span class="match"><%== $tc->($m->{match}); %></span></td>
      <td class="right"><%== $tc->($m->{right}); %></td>
     </tr>
+%   foreach my $align (keys %{$m->{aligns}}) {
+    <tr><td class="head"><span class="no"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{'jos100k-en'} ? ${$model->corpora}{'jos100k-en'}->title : '' %></span></td><td colspan="3" class="align"><%== $tc->($m->{aligns}{$align}); %></td></tr>
+%   }
 %  }
   </table>
 % } elsif ($self->param('display') eq 'sentences' or $self->param('display') eq 'paragraphs') {
@@ -351,6 +370,9 @@ __DATA__
      <span class="match"><%== $tc->($m->{match}); %></span>
      <%== $tc->($m->{right}); %>
     </p>
+%   foreach my $align (keys %{$m->{aligns}}) {
+    <p class="align"><span class="parno"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{'jos100k-en'} ? ${$model->corpora}{'jos100k-en'}->title : '' %></span></a></span><span class="align"><%== $tc->($m->{aligns}{$align}); %></span></p>
+%   }
 %  }
 % } elsif ($self->param('display') eq 'wordlist') {
   <table>
@@ -542,13 +564,15 @@ span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
 span.no, span.parno   { font-weight: bold; }
 span.parno   { font-weight: bold; vertical-align: top;}
-/* span.sd   { font-family: sans-serif; font-size: 60%; } */
 td  { white-space: nowrap;}
-td.head  { white-space: nowrap;}
+td.head  { white-space: nowrap; text-align: right;
+           padding-left: .3em; padding-right: .3em; }
+td.head a * { text-align: left; white-space: normal; }
 td.left  { text-align: right; vertical-align: text-bottom;}
 td.right { text-align: left;  vertical-align: text-top;}
 td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
+td.align { white-space: normal; }
 td.count  { text-align: right; padding-left: 1em;}
 tr.total  { font-weight: bold;}
 tr:nth-child(2n+1) { background-color: #F2F2F2; }
