@@ -318,7 +318,7 @@ sub run {
   @{$result->attributes} = $self->show;
   $result->hitno($self->cqp->exec("size Last"));
 
-  $result->bigcontext('paragraphs') if grep { $_ } map { $_ eq 's' }
+  $result->bigcontext('paragraphs') if grep { $_ } map { $_ eq 'p' }
     @{$self->corpus->structures};
   $result->bigcontext('sentences') if not $result->bigcontext
     and grep { $_ } map { $_ eq 's' }
