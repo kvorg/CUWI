@@ -1,92 +1,77 @@
-# TODO 2011-04-01
-# - uporabi prevedene naslove iz INFO
+-*- outline -*-
 
-# TODO 2011-03-30
-# - link iz imena korpusa na info file DONE (differently)
-# - tooltipe na link na register corpusov in info o corpusu DONE
-# - encoding v info file DONE
-# - use encoding
+* CWB::Model BUGS:
 
-# TODO 2011-03-24
-# Evo, tole:
-# - Preuredit iskalno maslo da je query na začetku DONE
-# - Help pop ups in navodila DONE
-# - wordlist da tudi podpira prikaz anotacij
-# - wordlist totals na vrhu
-# - reduce preimenovati v sample; context preimenovati v kwic; cut
-#     preimenovati v all DONE
-# - usposobit UTF-8, podpirat tudi 8bit encoding + BUG v wordlistih
-# - simple search . gre v ? DONE (just help bug)
-# - css bug z ozadjem DONE
-# - ignoriranje velikih črk
-# - export v tabeli
-# - metadata: prikaz info fileta
-# - prikaz iz katerega besedila je posamezen hit (structural attributes)
+** Buggy Query escapes:
+    ~ force simple query (and escape CQP)
+    = force simple text  (and escape CQP)
+    + force CQP
+    should also handle whitespace better:
+       at query start
+       before and after the escape
+** In paging with Result objects, the end page calucaltion is wrong
 
-# Sortiranje:
-# - po hit string, en token levo, en token desno
-# - ascending, descending, od spredaj, a tergo
-# - po besedi oz. poljubnem drugem positional attribute
-# - 2 ali trije ključi
+* CWB::Model
 
-# Further work:
-# - paralelni korpusi
-# - kolokacije
-# - izbira podkorpusa glede na structural attributes // glej spook
+** Aligned corpora
+** Multicorpora
+    - created with an external API from existing corpora
+    - suld send queries to multiple corpora and queue or mix the results
+** Sorting (hopefully no perl fail-over)
+** Test cwb beta release compatibiliy
+** Support [] syntax, possibly just letting users use [], []*, []?, []{n,n}
+** Tests
+** Implement max_size and max_querytime
+** Paging and progressive building for bigger wordlists
+** Wordlist and sorting/prunning using CQP features better
+** Implement cached queries:
+   - CWB::Model::Corpus has a has of Qury objects, matched on query
+   - queries are reused with different show options, paging etc.
+   - possibly used for chained queries
+** Support for chained query support, list-oriented queries and macros, i.e. 
+    /codist["whose", pos];
+    /codist[lemma, "go", word];
+** Non-blocking high performant queries using
+    Mojo::IOLoop->timer(0, sub { cb ; reset timer; }
+    The query should have a flag when still running and refuse new request
+    from the query cache API
+** Concordance support
 
-# SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
-# Para corpora: http://nl2.ijs.si/index-bi.html
-# mimgrede: ALIGNED imenuje korpus, aligned je pa po 'seg'
+* Web interface BUGS
+
+** sanitize can't/does not work (readonly??)
+** handle errors with web page display
+
+* Web interface
+
+** Aligned result support
+** Tabular export for queries
+** Cleanup of templates: separation with includes
+** When more than 7 attributes are present, switch display to 4 drop-down lists 
+** Query compositing, see: http://nl2.ijs.si/fpj.html
+** Concordance support
+   - probaly by supporting cwb-scan-corpus and disk-related
+     long-polled results
+** Sorting, with options:
+   - by hit string, left / right token
+   - ascending, descending, forward, a tergo (reversed)
+   - by word or any other atribute
+   - with 2 or three sort keys
+** More sorting and groupig for wordlists:
+   - by frequency, by object found (using column headings for sort)
+   - 2 or 3 sort keys = grouping
+
+** ??? subcorpus selection according to structural attributes
 
 
-#glej: corpus.leeds.ac.uk./ serge cqp search
-#spredi zadi, beseda lemi
-#+ reverse sorts
-#parallel corpora
-#
-# context link: one hit with metainfo, wider context (paragraph mode)
-# and all tags
-# structural attributes: searchable? -> enega za link na document metadata
-# generic id documenta, source id cca ena beseda za izpis
-# metapodatki & paragraph mode
+* Links: 
 
-# bug: sanitize can't work (readonly)
-# sort: zadnja levega, prva desnega etc. --- glej primere iz maila
-# TODO:
-# corpus browser with permalinks DONE
-# add corpus info link from registry ?
-# sentences-> to paragraphs
-# tags in paragraphs: colors and /
-# context: to words OK
-# tables: no wrap OK
-# reduce: no next/prev OK
-# properly limit results: fix prev/next limits OK (more intuitive Next)
-# add case insensitive option: default?
-# paragraph, wordlist views OK - sentences
-# macro cases: frekvenčni leksikon (po query, cel korpus :-) 
-#   s search/display options
-# logika soritranja
-# sort po cqp opcijah -- predlagaj interface
-# dokumentacija v mouse-over balonih
-# cwb-scan-corpus support?
+** http://corpus.leeds.ac.uk/paraquery.html
+** http://www.comp.leeds.ac.uk/ssharoff/
+** http://the.sketchengine.co.uk/
+** corpus.leeds.ac.uk./ serge cqp search
+SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
+Para corpora:  http://nl2.ijs.si/index-bi.html
+               where ALIGNED names is the aligned corpus, aligned by <seg>
 
-# TODO:
-# fix attribute printing as per http://nl2.ijs.si/fpj.html DONE
-# display structural attributes DONE (with caveats - pending)
-# query compositing: http://nl2.ijs.si/fpj.html
-# promote errors to the renderer somehow PARTIAL, need fixes
-# parallel corpora
 
-# Deployment:
-# beta + utf test && deploy in parallel on mantra
-
-#WISH LIST:
-#rezultati: levo znamka o viru, na besedo klik v kontekst
-#po vseh rezultatih, sortiranje po levem, desnem kontekstu, mogoče odzadnje po zadetku (odzadnji slovar princip)
-#izpiše samo sample - default opcija, a velika (cut 1000)
-#kolokacije
-#v bodočnosti tudi vzporedni korpusi, npr. http://nl2.ijs.si/index-bi.html
-
-# Production:
-#MOJO_MODE=production ./myapp.pl
-#mkdir log/

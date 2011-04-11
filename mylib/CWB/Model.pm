@@ -1,23 +1,4 @@
 # Dependencies: Mojolicius, Task::Weaken
-#
-# Turn ** on its own into []
-# Query escapes:
-#  ~ force simple query (and escape CQP)
-#  + force CQP, possibly /macro with table output
-# Implement max_size and max_querytime
-# Support for list-oriented queries and macros:
-#  /codist["whose", pos];
-#  /codist[lemma, "go", word];
-# Sorting (with perl fail-over)
-# Alignement
-# Multiple 'aligned' searches for corpus groups /perhaps front-end?/
-# Tests
-# Paging and progressive building for wordlists
-# If needed, cached queries:
-#  check if CQP query is the same, then run with options
-# If needed, non-blocking queries using
-#  Mojo::IOLoop->timer(0, sub { cb ; reset timer; }
-# BUG: paging is Result is wrong about the end
 
 package CWB::Model;
 use Carp;
