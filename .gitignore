@@ -1,0 +1,7 @@
+[#]*[#]
+.[#]*
+*~
+Attic/
+DemoCorpus/
+lib/
+src/
