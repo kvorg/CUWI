@@ -73,7 +73,7 @@ use Carp;
 use Mojo::Base -base;
 
 has [qw(file infofile name NAME title registry)];
-has [qw(attributes structures align)] => sub { return [] };
+has [qw(attributes structures alignements)] => sub { return [] };
 has [qw(description tooltips)]        => sub { return {} };
 has encoding => 'utf8';
 
@@ -87,11 +87,11 @@ sub new {
   $fh->open($self->file, '<')
     or die "CWB::Model::Corpus Exception: Could not open $self->file for reading during corpus init.\n";
   while (<$fh>) {
-    $self->title($1)              if m/NAME\s+"([^#]*)"/ ;
-    $self->infofile($1)           if m/INFO\s+([^# \n]*)/ ;
-    push @{$self->align}, $1      if m/ALIGN\s+([^# \n]*)/ ;
-    push @{$self->attributes}, $1 if m/ATTRIBUTE\s+([^# \n]*)/ ;
-    push @{$self->structures}, $1 if m/STRUCTURE\s+([^# \n]*)/ ;
+    $self->title($1)               if m/NAME\s+"([^#]*)"/ ;
+    $self->infofile($1)            if m/INFO\s+([^# \n]*)/ ;
+    push @{$self->alignements}, $1 if m/ALIGNED\s+([^# \n]*)/ ;
+    push @{$self->attributes}, $1  if m/ATTRIBUTE\s+([^# \n]*)/ ;
+    push @{$self->structures}, $1  if m/STRUCTURE\s+([^# \n]*)/ ;
   }
   $fh->close;
   $self->title( ucfirst($self->name) ) unless $self->title;
@@ -156,6 +156,7 @@ has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
 has _structures =>  sub { return {} };
+has align       =>  sub { return [] };
 has ignorecase  => 1;
 has ignorediacritics => 0;
 has startfrom   => 1;
@@ -250,9 +251,19 @@ sub run {
     $self->exec("show -$att;", "Can't unset show for attribute $att");
   }
 
+  foreach my $align (@{$self->corpus->alignements}) {
+    $self->exec("show -$align;", "Can't unset show for alignement $align");
+  }
+
   # set new CQP settings
   foreach my $att (@{$self->show}) {
     $self->exec("show +$att;", "Can't set show for attribute $att");
+  }
+
+  unless ($self->display eq 'wordlist') { # no alignment for wordlists
+    foreach my $align (@{$self->align}) {
+      $self->exec("show +$align;", "Can't set show for alignement $align");
+    }
   }
 
   if ($self->display ne 'wordlist') {
@@ -280,8 +291,6 @@ sub run {
     if $self->display eq 'paragraphs';
   $self->exec('set Context 0 words;', "Can't set context to 'p''")
     if $self->display eq 'wordlist';
-
-  # BUG see if we need to show the alignement attribute: see align
 
   # execute query (but don't show the results yet)
   my $_query = encode($self->corpus->encoding, $query);
@@ -345,6 +354,13 @@ sub run {
     my @kwic = $self->cqp->exec("cat Last $pages");
 
     foreach my $kwic (@kwic) {
+      if ($kwic =~ m{^-->(.*?):(.*)$}) { #align - to previous hit
+	$self->exception("Found and aligned line without a previous hit:", $kwic)
+	  and next
+	    unless (scalar @{$result->hits});
+	${@{$result->hits}[-1]}{aligns}{$1} = decode($self->corpus->encoding, $2);
+	warn "Got an align from $1.\n";
+      } else { #kwic
       $kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:\s+)?(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)$}
 	or $self->exception("Can't parse CQP kwic output, line:", $kwic);
       my ($cpos, $structs, $left, $match, $right) =
@@ -370,9 +386,10 @@ sub run {
 			       match => $match,
 			       right => $right,
 			       data  => $data,
+			       aligns  => {},
 			      };
     }
-
+    }
     #manual sort here
 
   } elsif ( $self->display eq 'wordlist' ) {
