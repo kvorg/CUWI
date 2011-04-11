@@ -317,7 +317,7 @@ __DATA__
 % if ($self->param('display') eq 'kwic') {
   <table>
 %  my $nr = ${$result->{pages}}{this};
-%  my @single = ( contextsize=>25 );
+%  my @single = ( contextsize=>50 );
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <tr>
