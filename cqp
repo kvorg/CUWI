@@ -276,7 +276,7 @@ __DATA__
 % if (scalar @{$corpus->alignements}) {
      Align:
 % foreach my $align (@{$corpus->alignements}) {
-  % my $ttip; $ttip = ${$model->corpora}{'jos100k-en'}->title if exists ${$model->corpora}{'jos100k-en'};
+  % my $ttip; $ttip = ${$model->corpora}{$align}->title if exists ${$model->corpora}{$align};
      <%= check_box_x 'align' => $align %>
   % if ($ttip) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $align %></em><%= $ttip %></span>
@@ -349,7 +349,7 @@ __DATA__
      <td class="right"><%== $tc->($m->{right}); %></td>
     </tr>
 %   foreach my $align (keys %{$m->{aligns}}) {
-    <tr><td class="head"><span class="no"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{'jos100k-en'} ? ${$model->corpora}{'jos100k-en'}->title : '' %></span></td><td colspan="3" class="align"><%== $tc->($m->{aligns}{$align}); %></td></tr>
+    <tr><td class="head"><span class="no"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></td><td colspan="3" class="align"><%== $tc->($m->{aligns}{$align}); %></td></tr>
 %   }
 %  }
   </table>
@@ -371,7 +371,7 @@ __DATA__
      <%== $tc->($m->{right}); %>
     </p>
 %   foreach my $align (keys %{$m->{aligns}}) {
-    <p class="align"><span class="parno"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{'jos100k-en'} ? ${$model->corpora}{'jos100k-en'}->title : '' %></span></a></span><span class="align"><%== $tc->($m->{aligns}{$align}); %></span></p>
+    <p class="align"><span class="parno"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></a></span><span class="align"><%== $tc->($m->{aligns}{$align}); %></span></p>
 %   }
 %  }
 % } elsif ($self->param('display') eq 'wordlist') {
