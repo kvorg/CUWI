@@ -1,6 +1,0 @@
-CWBDIR=/home/jona/Projects-ijs/CQP/DemoCorpus
-#append_path $CWBDIR/bin
-export CORPUS_REGISTRY="$CWBDIR/registry"
-which cqp
-echo CORPUS_REGISTY set to $CORPUS_REGISTRY
-

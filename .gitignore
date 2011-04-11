@@ -2,6 +2,8 @@
 .[#]*
 *~
 Attic/
-DemoCorpus/
-lib/
+Corpora/
+lib
+lib.bkp/
 src/
+t/
