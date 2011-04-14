@@ -553,13 +553,14 @@ span.pagelist > a {
 span.pagelist > a.here {
  color: red;
 }
+div.report p  { text-align: center; }
 div.matches   { clear: both; }
 div.matches { background-color: white;
 	      width: 98%;
               padding: 0px;
 	      margin-left: auto; margin-right: auto;
 }
-div.matches table { padding: .5em; background-color: white; }
+div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
 span.no, span.parno   { font-weight: bold; }
