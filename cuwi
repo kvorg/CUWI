@@ -38,7 +38,7 @@ app->defaults(model => $model);
 app->log->info('CWB Model instantiated with corpora: ' .
 	       join(', ', $model->list) );
 $config->{root} =~ s{^(.*)/$}{$1};
-$config->{root} = 'cqp' unless $config->{root};
+$config->{root} = 'cuwi' unless $config->{root};
 app->log->info("App web root: '$config->{root}'.");
 
 app->log->info("Registry at '" . $model->registry . "'.");
@@ -120,7 +120,7 @@ get "/:corpus/search" => sub {
 $sanitize = sub {
   my $self = shift;
 
-  $self->param('contextsize', 10)
+  $self->param('contextsize', 7)
     unless $self->param('contextsize')
       and '' . $self->param('contextsize') =~ m{[0-9]+};
   $self->param('size', 50)
@@ -198,7 +198,7 @@ __DATA__
 
 @@ corpus.html.ep
 % layout 'main', title=>'Form';
-%= include 'form', query=>undef, contextsize=>10, size=>50, startfrom=>0, listing=>'all'
+%= include 'form', query=>undef, contextsize=>7, size=>50, startfrom=>0, listing=>'all'
 
   <div class="description">
     <%== $corpus->describe('en') %>
@@ -289,18 +289,18 @@ __DATA__
  <br />
 %} #alignements
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Context tokens</em>Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.</span>
-    Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>10 %>
+    Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>7 %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em>Selects the display mode used to display the results.<br /><b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides.<br /><b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit.<br /><b>Paragraphs</b> does the same for paragraphs. Both modes are only available if structural attributes to support them are present in the corpus.<br /><b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</span>
 % my @extras = grep { $_ } map { my $s; $s = 'paragraphs' if $_ eq 'p'; $s = 'sentences' if $_ eq 's'; $s; } 
 %  @{$corpus->structures};
  Display mode</a>: <%= select_field 'display', ['kwic', @extras, 'wordlist'] %>
     <br />
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Listing mode</em><b>Sample</b> displays a random sample of hits. Hit reload to see a different sample. <b>All</b> lists all the hits with result pages.</span>
-    Listing mode</a>: <%= select_field 'listing', [qw/sample all/] %>
+    Listing mode</a>: <%= select_field 'listing', [qw/all sample/] %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Results</em>Sets the number or results in the random sample or per page when all the results are being listed.</span>
     Results</a>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %>
     <%= hidden_field startfrom => 1 %>
-    <span class="submit"><%= submit_button 'CQP search' %></span>
+    <span class="submit"><%= submit_button 'Run Query' %></span>
     </div>
   <% end %>
   </div>
@@ -414,13 +414,13 @@ __DATA__
 <!DOCTYPE HTML>
 <html>
  <head>
-  <title>CQP Search <%= $title ? " $title" : '' =%></title>
+  <title>CUWI Search <%= $title ? " $title" : '' =%></title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link href="<%= '/' . $config->{root} . '/' . 'style.css' %>" rel="stylesheet" type="text/css" />
  </head>
  <body>
   <h2><%= link_to 'index' => begin %>
-    CQP Search
+    CUWI Search
   <% end %>
  % if (param('corpus')) {
    on
