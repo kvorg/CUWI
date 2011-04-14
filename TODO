@@ -9,13 +9,16 @@
     should also handle whitespace better:
        at query start
        before and after the escape
-** In paging with Result objects, the end page calucaltion is wrong
+** In paging with Result objects, the end page calcualation is wrong
 
 * CWB::Model
 
 ** Multicorpora
     - created with an external API from existing corpora
-    - suld send queries to multiple corpora and queue or mix the results
+    - shuld send queries to multiple corpora and queue or mix the results
+    - paging calculation should be optional, wrapped up in a function
+      (and thus reusable for virtual corpora; pagesize and this needed)
+    - corpus offsets should be included for virtual paging
 ** Sorting (hopefully no perl fail-over)
 ** Test cwb beta release compatibiliy
 ** Support [] syntax, possibly just letting users use [], []*, []?, []{n,n}
@@ -35,9 +38,12 @@
     The query should have a flag when still running and refuse new request
     from the query cache API
 ** Concordance support
+** Ugly workaround for sample/reduce display mode context links:
+    Chained query on full context, then original search
 
 * Web interface BUGS
 
+** disable context links for para display mode
 ** sanitize can't/does not work (readonly??)
 ** handle errors with web page display
 ** should 'sample' stay as default?
@@ -45,9 +51,13 @@
 * Web interface
 
 ** Multicorpora support as needed
+** Display CWB::Model errors
+** rename to cuwi, cuwi favicon
+** set defaults to 'all', context of 7 words
 ** L18n
 ** Tabular export for queries
 ** Cleanup of templates: separation with includes
+** Production mode logging of queries - cleanup
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
 ** Query compositing, see: http://nl2.ijs.si/fpj.html
 ** Sorting, with options:
@@ -76,3 +86,13 @@ Para corpora:  http://nl2.ijs.si/index-bi.html
                http://nl2.ijs.si/dsi.html
 
 
+* Release-cirtical:
+
+** bugs
+** sane defaults
+** sorting
+** I18n
+** multicorpora
+** tabular download
+** documentation
+** tests
