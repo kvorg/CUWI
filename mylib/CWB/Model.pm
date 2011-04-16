@@ -222,8 +222,9 @@ sub run {
   if ( $query =~ m{^\s*[~=]} or not $query =~ m{"}  ) {
     # transform into CQP query
     # BUG: possibly CQP metacharacters should be escaped
-    $query =~ s{^\s*~}{};           #remove simple query escape
-    unless ($query =~ s{^\s*=}{}) { #disable simple metacharacters
+    $query =~ s{^\s*}{};           #remove leading white space
+    $query =~ s{^~\s*}{};           #remove simple query escape
+    unless ($query =~ s{^=\s*}{}) { #disable simple metacharacters
       $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
     } else {
       $query =~ s/[*]/\\*/gm; $query =~ s/[?]/\\?/gm;
