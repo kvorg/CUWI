@@ -28,18 +28,38 @@ sub new {
 sub reload {
   my $self = shift;
 
+  # existing virtual corpora cannot be reloaded
+  my %virtuals =
+    map { ($_ => ${$self->corpora}{$_}) }
+      grep
+	{ ${$self->corpora}{$_}->isa('CWB::Model::Corpus::Virtual') }
+	  keys %{$self->corpora};
+  warn ((scalar keys %virtuals) . " virtual corpora present at reload.\n");
+
   $self->corpora( {
 		map {
-		  my $corpus = CWB::Model::Corpus->new($_, $self->registry);
+		  my $corpus = CWB::Model::Corpus::Filebased->new($_, $self->registry);
+		  croak "CWB::Model::Corpus Exception: Could not instantiate Corpus object for $_ "
+		    unless $corpus->isa('CWB::Model::Corpus::Filebased');
 		  ($corpus->name, $corpus);
 		} grep {
 		  -f $_  and not ( m{/[#]} or m {[#~]$});
 		} map {
 		  my $dirname = $_;
 		  map { "$dirname/$_" } IO::Dir->new($dirname)->read;
-		} split (':', $self->registry)
+		} split (':', $self->registry)#, %virtuals
 	      } ) ;
+  ${$self->corpora}{$_}->reload
+    foreach keys %virtuals; #reload subcorpora
 };
+
+# factory for virtual corpora
+sub virtual {
+  my $self = shift;
+  my $corpus = CWB::Model::Corpus::Virtual->new(@_);
+  ${$self->corpora}{$corpus->name} = $corpus;
+  return $corpus;
+}
 
 our $exception_handler = sub { die @_ ; } ;
 
@@ -71,13 +91,41 @@ sub list_long {
 }
 
 package CWB::Model::Corpus;
-use Carp;
 use Mojo::Base -base;
+use Carp qw(croak cluck);
 
-has [qw(file infofile name NAME title registry)];
+has [qw(name NAME title)];
 has [qw(attributes structures alignements)] => sub { return [] };
 has [qw(description tooltips)]        => sub { return {} };
 has encoding => 'utf8';
+
+sub new {
+  my $self = shift;
+  croak 'CWB::Model::Corpus error: CWB::Model::Corpus virtual class instantiated - use a specialization.' if ref $self eq 'CWB::Model::Corpus';
+
+  $self->SUPER::new(@_);
+}
+
+sub describe {
+  croak 'CWB::Model::Corpus syntax error: not called as $corpus->describe(<lang>);' unless @_ == 2;
+  return ${shift->description}{shift()};
+}
+
+sub tooltip {
+  croak 'CWB::Model::Corpus syntax error: not called as $corpus->tooltip(<attribute|structure> => <name>. <lang>);.' unless @_ == 4;
+  my ($self, $type, $name, $lang) = @_;
+  return ${$self->tooltips}{$type}{$name}{$lang};
+}
+
+sub reload {
+  cluck 'CWB::Model::Corpus error: this corpus does not implement a ->reload() method.' ;
+}
+
+package CWB::Model::Corpus::Filebased;
+use Mojo::Base 'CWB::Model::Corpus';
+use Carp;
+
+has [qw(file infofile registry)];
 
 sub new {
   my $self = shift->SUPER::new(file => shift, registry => shift);
