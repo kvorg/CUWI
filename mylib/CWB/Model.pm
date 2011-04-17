@@ -45,11 +45,13 @@ our $exception_handler = sub { die @_ ; } ;
 
 sub install_exception_handler {
   my ($this, $handler) = @_;
+  return $exception_handler unless $handler;
   if ( $handler and ref $handler eq 'CODE' ) {
     $exception_handler = $handler ;
   } else {
     $exception_handler = sub { die @_ ; } ;
   }
+  return $exception_handler;
 }
 
 sub dump {
@@ -85,7 +87,7 @@ sub new {
 
   my $fh = new IO::File;
   $fh->open($self->file, '<')
-    or die "CWB::Model::Corpus Exception: Could not open $self->file for reading during corpus init.\n";
+    or croak "CWB::Model::Corpus Exception: Could not open $self->file for reading during corpus init.\n";
   while (<$fh>) {
     $self->title($1)               if m/NAME\s+"([^#]*)"/ ;
     $self->infofile($1)            if m/INFO\s+([^# \n]*)/ ;
@@ -121,16 +123,6 @@ sub new {
   return $self;
 }
 
-sub describe {
-  croak 'CWB::Model::Corpus syntax error: not called as $corpus->describe(<lang>);' unless @_ == 2;
-  return ${shift->description}{shift()};
-}
-
-sub tooltip {
-  croak 'CWB::Model::Corpus syntax error: not called as $corpus->tooltip(<attribute|structure> => <name>. <lang>);.' unless @_ == 4;
-  my ($self, $type, $name, $lang) = @_;
-  return ${$self->tooltips}{$type}{$name}{$lang};
-}
 
 # change api to reuse query without reopening corpora?
 sub query {
@@ -143,6 +135,120 @@ sub structures_ {
   return [ grep { m/_/ } @{$_[0]->structures} ];
 }
 
+package CWB::Model::Corpus::Virtual;
+use Mojo::Base 'CWB::Model::Corpus';
+use Carp qw(croak cluck);
+
+has subcorpora  => sub { return []; };
+has _subcorpora => sub { return {}; };
+has qw(interleaved model);
+
+# ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
+#   possibly title attributes, structures, description, tooltips
+sub new {
+  croak "CWB::Model::Corpus::Virtual syntax error: not called as ->new('name'=>[<corpora>], %opts)" unless scalar @_ >= 3 and ((scalar @_) - 1) % 2 == 0;
+  my ($this, $name, $subcorpora) = (shift, shift, shift);
+  my $self = $this->SUPER::new(name => $name,
+			       subcorpora => $subcorpora,
+			       @_
+			      );
+  croak "CWB::Model::Corpus syntax error: virtual corpora should have at least one subcorpus.\n"
+    if scalar @{$self->subcorpora} < 1;
+
+  $self->NAME(uc($self->name));
+  $self->title( ucfirst($self->name) ) unless $self->title;
+
+  # generate corpora here
+
+  # virtual attributes, structures, alignements: 
+  # use superset here and filter when passing to subcorpus
+}
+
+sub registry { croak "CWB::Model::Corpus::Virtual syntax error: no registry in virtual corpora.\n" }
+
+sub file { croak "CWB::Model::Corpus::Virtual syntax error: no file in virtual corpora.\n" }
+
+
+sub reload {
+  my $self;
+  $CWB::Model::exception_handler->("Could not map subcorpora from model instances - no model passed to virtual coprus.\n") unless $self->model;
+
+  return $self->_subcorpora =
+    {
+     map {
+           $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - missing among model's corpora.\n") unless ${$self->model}{$_};
+	   ($_ => ${$self->model}{$_})
+	 } @{$self->subcorpora}
+    };
+}
+
+sub _map_opts {
+  my $self = shift;
+  my $subcorpus = shift;
+  croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
+  # this should map virtual options (atts, structures, aligns) to actual ones
+  # and will be called at query time
+  return(@_, identify=>1);
+}
+
+sub query {
+  my $self = shift;
+  $CWB::Model::exception_handler->("Query called on a virtual corpus with no subcorpora, aborting.\n") unless scalar @{$self->subcorpora};
+  # single subcorpus: virtual corpus mapping
+  if (scalar @{$self->subcorpora} == 1) {
+    cluck 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
+    return ${$self->subcorpora}[0]->query($self->_map_opts(${$self->subcorpora}[0], @_));
+  }
+  # interleave 0/1support here
+  # support in Filecorpus query by hitssonly => 1
+  #        (so we can caluclate the ratio based on maxhits here)
+  # support in Result by storing subcorpora offsets and ratios
+  # query: how to interact?
+  #        use hit->data to store real corpus by adding functionality to query
+  #        compose hits and tables here (are tables generic?)
+  #        we should store ratio per corpora with result to enable paging
+  #        and support ratio
+  my %opts = @_;
+
+  # multiple corpora: hitnums are needed for paging and interleaved (slow)
+  my %hitinfo;
+  foreach my $subcorpus (@{$self->subcorpora}) {
+    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($subcorpus, $self->_map_opts(%opts), hitsonly=>1);
+  }
+  my $result = CWB::Model::Result->new;
+
+  # sequential subcorpora: check into which subcorpus we fall
+  # rethink to be more objective and query hits on the fly
+  unless ($self->interlaved) {
+    my $offset = 0;
+    foreach my $subcorpus (@{$self->subcorpora}) {
+      $hitinfo{$subcorpus->name}{start} =
+	($opts{startfrom} - $offset > 1
+	  and $opts{startfrom} - $offset <= $hitinfo{$subcorpus->name}{hits}) ?
+	  $opts{startfrom} - $offset : undef;
+      $hitinfo{$subcorpus->name}{pagesize} =
+	$opts{startfrom} - $offset < 1 ?
+	  $opts{pagesize} + $opts{startfrom} - $offset : $opts{pagesize};
+      $offset += 0;
+    }
+  } else {
+  # interleaved
+    foreach my $subcorpus (@{$self->subcorpora}) {
+      # manipulate start and pagesize here for paging and ratii
+      my $r = $subcorpus->query($subcorpus, $self->_map_opts(%opts));
+      $result->hitno($result->hitno + $r->hitno);
+      $result->distinct($result->distinct + $r->distinct);
+      push @{$result->hits}, @{$r->hits};
+    }
+  }
+  $result->attributes($opts{show});
+  $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
+
+  # finalize pages
+
+  return $result;
+}
+
 package CWB::Model::Query;
 use Mojo::Base -base;
 use Carp;
@@ -150,12 +256,11 @@ use CWB::CQP;
 use Encode qw(encode decode);
 
 has [ qw(corpus registry cqp
-	query reduce maxhits parallel
+	query reduce maxhits identify
 	l_context r_context debug) ] ;
 has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
-has _structures =>  sub { return {} };
 has align       =>  sub { return [] };
 has ignorecase  => 1;
 has ignorediacritics => 0;
@@ -163,7 +268,6 @@ has startfrom   => 1;
 has pagesize    => 25;
 has context     => 25;
 has display     => 'kwic';
-has parallel    => 0;
 has result      => sub { CWB::Model::Result->new };
 
 sub new {
@@ -313,7 +417,7 @@ sub run {
     unless $self->cqp->ok;
 
   # process results into a result object
-  my $result = CWB::Model::Result->new
+  my $result = CWB::Model::Result->new(corpusname => $self->corpus->name)
     or $self->exception("Failed to create a result object.");
 
   $result->query($query);
@@ -322,6 +426,7 @@ sub run {
   @{$result->aligns} = @aligns;
   $result->hitno($self->cqp->exec("size Last"));
 
+  # select context display type for hit context presentation
   $result->bigcontext('paragraphs') if grep { $_ } map { $_ eq 'p' }
     @{$self->corpus->structures};
   $result->bigcontext('sentences') if not $result->bigcontext
@@ -330,6 +435,7 @@ sub run {
 
   # sort here
 
+  # reduce?
   if ($self->display eq 'kwic'
       or $self->display eq 'sentences'
       or $self->display eq 'paragraphs') {
@@ -338,11 +444,11 @@ sub run {
       $result->reduce(1);
     }
 
+    # compute page list for navigation
     my $pages = '';
 
-    #startfrom may be tainted
     if ($self->startfrom < 1)
-      { $self->startfrom(1); }
+      { $self->startfrom(1); }     #startfrom may be tainted
     elsif ($self->startfrom > $result->hitno)
       { $self->startfrom($result->hitno - 1) ; }
     else
@@ -369,7 +475,7 @@ sub run {
 
     foreach my $kwic (@kwic) {
       if ($kwic =~ m{^-->(.*?):(.*)$}) { #align - to previous hit
-	$self->exception("Found and aligned line without a previous hit:", $kwic)
+	$self->exception("Found an aligned line without a previous hit:", $kwic)
 	  and next
 	    unless (scalar @{$result->hits});
 	${@{$result->hits}[-1]}{aligns}{$1} = decode($self->corpus->encoding, $2);
@@ -452,7 +558,8 @@ sub exception {
 package CWB::Model::Result;
 use Mojo::Base -base;
 
-has [qw(query QUERY time hitno distinct next prev reduce table bigcontext)] ;
+has [qw(query QUERY time distinct next prev reduce table bigcontext corpusname)] ;
+has hitno       => 0;
 has hits        => sub { return [] } ;
 has pages       => sub { return {} } ;
 has attributes  => sub { return [] } ;
