@@ -208,29 +208,36 @@ sub new {
   return $self;
 }
 
-
 sub run {
   use Time::HiRes;
   my $self = shift;
-  $self->exception("No corpus passed to CWB::Model::Query: aborting run. ")
+  $self->exception("No queriable corpus passed to CWB::Model::Query: aborting run. ")
     and return
-      unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus');
+      unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus::Filebased');
 
   my $query_start_time = Time::HiRes::gettimeofday();
 
   my $query = $self->query;
   if ( $query =~ m{^\s*[~=]} or not $query =~ m{"}  ) {
-    # transform into CQP query
-    # BUG: possibly CQP metacharacters should be escaped
+    # simple or mixed query - transform into CQP query
     $query =~ s{^\s*}{};           #remove leading white space
-    $query =~ s{^~\s*}{};           #remove simple query escape
-    unless ($query =~ s{^=\s*}{}) { #disable simple metacharacters
-      $query =~ s/(?<!\\)[*]/.*/gm; $query =~ s/(?<!\\)[?]/./gm;
-    } else {
-      $query =~ s/[*]/\\*/gm; $query =~ s/[?]/\\?/gm;
-    }
+    my $qtype = 'mixed';
+    $query =~ s{^~\s*}{};
+    $qtype = 'simple' if $query =~ s{^=\s*}{};
+
     $query = join(' ',
 		   map {
+		     if ( $qtype eq 'simple' ) {
+		       s/[*]/\\*/g;
+		       s/[?]/\\?/g;
+		       s/(\[|\])/\\$1/g;
+		       s/"/""/gm;
+		     } elsif (not m{^\[}) {
+		       s/(?<!\\)[*]/.*/g;
+		       s/(?<!\\)[?]/./g;
+		       s/(\[|\])/\\$1/g;
+		     }
+		     (m{^\[}) ? $_ :
 		   '['
 		     . (defined $self->search ?
 			$self->search : 'word')
