@@ -3,14 +3,8 @@
 * CWB::Model BUGS:
 
 ** Encoding for aligned corpora has to match its encoding, not query's
-** Buggy Query escapes:
-    ~ force simple query (and escape CQP)
-    = force simple text  (and escape CQP)
-    + force CQP
-    should also handle whitespace better:
-       at query start
-       before and after the escape
 ** In paging with Result objects, the end page calcualation is wrong
+** Structure handling in Query
 
 * CWB::Model
 
@@ -24,7 +18,7 @@
 ** Info files translateable names/titles
 ** Sorting (hopefully no perl fail-over)
 ** Test cwb beta release compatibiliy
-** Support [] syntax, possibly just letting users use [], []*, []?, []{n,n}
+** Add a handle for literal matching (no regexps) with %l
 ** Implement max_size and max_querytime
 ** Wordlist and sorting/prunning using CQP features better
 ** Implement cached queries:

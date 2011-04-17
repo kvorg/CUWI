@@ -370,7 +370,8 @@ sub run {
   my $query_start_time = Time::HiRes::gettimeofday();
 
   my $query = $self->query;
-  if ( $query =~ m{^\s*[~=]} or not $query =~ m{"}  ) {
+  if ( $query =~ m{^\s*[~=]}
+       or (not $query =~ m{"} and not $query =~ m{^\s*[+]}) ) {
     # simple or mixed query - transform into CQP query
     $query =~ s{^\s*}{};           #remove leading white space
     my $qtype = 'mixed';
@@ -401,6 +402,8 @@ sub run {
 		     } split('\s+', $query)
 		  );
     warn("Passing query as $query.\n") if $self->debug;
+  } else { #handle CQP escape
+    $query =~ s{^\s*[+]?\s*}{};
   }
 
   # test CQP connection
