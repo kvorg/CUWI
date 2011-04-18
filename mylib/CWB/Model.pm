@@ -34,7 +34,7 @@ sub reload {
       grep
 	{ ${$self->corpora}{$_}->isa('CWB::Model::Corpus::Virtual') }
 	  keys %{$self->corpora};
-  warn ((scalar keys %virtuals) . " virtual corpora present at reload.\n");
+#  warn ((scalar keys %virtuals) . " virtual corpora present at reload.\n");
 
   $self->corpora( {
 		map {
