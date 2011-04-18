@@ -532,7 +532,7 @@ sub run {
 	${@{$result->hits}[-1]}{aligns}{$1} = decode($self->corpus->encoding, $2);
 	warn "Got an align from $1.\n";
       } else { #kwic
-	$kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:\s+)?(.*)\s*::--::\s+(.*)\s+::--::\s*(.*)$}
+	$kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:)?\s+(.*?)\s*::--::\s+(.*?)\s+::--::\s*(.*?)\s*$}
 	  or $self->exception("Can't parse CQP kwic output, line:", $kwic);
 	my ($cpos, $structs, $left, $match, $right) =
 	  (
