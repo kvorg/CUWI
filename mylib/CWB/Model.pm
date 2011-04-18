@@ -38,7 +38,7 @@ sub reload {
 
   $self->corpora( {
 		map {
-		  my $corpus = CWB::Model::Corpus::Filebased->new($_, $self->registry);
+		  my $corpus = CWB::Model::Corpus::Filebased->new($_, $self);
 		  croak "CWB::Model::Corpus Exception: Could not instantiate Corpus object for $_ "
 		    unless $corpus->isa('CWB::Model::Corpus::Filebased');
 		  ($corpus->name, $corpus);
@@ -56,7 +56,7 @@ sub reload {
 # factory for virtual corpora
 sub virtual {
   my $self = shift;
-  my $corpus = CWB::Model::Corpus::Virtual->new(@_);
+  my $corpus = CWB::Model::Corpus::Virtual->new(model => $self, @_);
   ${$self->corpora}{$corpus->name} = $corpus;
   return $corpus;
 }
@@ -100,10 +100,13 @@ has [qw(description tooltips)]        => sub { return {} };
 has encoding => 'utf8';
 
 sub new {
+  use Scalar::Util qw(weaken);
   my $self = shift;
   croak 'CWB::Model::Corpus error: CWB::Model::Corpus virtual class instantiated - use a specialization.' if ref $self eq 'CWB::Model::Corpus';
 
-  $self->SUPER::new(@_);
+  $self = $self->SUPER::new(@_);
+  weaken($self->model);  #avoid circular references
+  return $self;
 }
 
 sub describe {
@@ -125,10 +128,10 @@ package CWB::Model::Corpus::Filebased;
 use Mojo::Base 'CWB::Model::Corpus';
 use Carp;
 
-has [qw(file infofile registry)];
+has [qw(file infofile model)];
 
 sub new {
-  my $self = shift->SUPER::new(file => shift, registry => shift);
+  my $self = shift->SUPER::new(file => shift, model => shift);
 
   $self->name(  $self->file =~ m{.*/([^/]+)$} );
   $self->NAME(uc($self->name));
@@ -171,12 +174,13 @@ sub new {
   return $self;
 }
 
+sub registry { shift->model->registry };
 
 # change api to reuse query without reopening corpora?
 sub query {
   my $self = shift;
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
-  return CWB::Model::Query->new(corpus => $self, registry => $self->registry, @_)->run;
+  return CWB::Model::Query->new(corpus => $self, model => $self->model, @_)->run;
 }
 
 sub structures_ {
@@ -194,7 +198,7 @@ has qw(interleaved model);
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
 #   possibly title attributes, structures, description, tooltips
 sub new {
-  croak "CWB::Model::Corpus::Virtual syntax error: not called as ->new('name'=>[<corpora>], %opts)" unless scalar @_ >= 3 and ((scalar @_) - 1) % 2 == 0;
+  croak "CWB::Model::Corpus::Virtual syntax error: not called as ->new(model => <model>, 'name' => [<corpora>], %opts)" unless scalar @_ >= 3 and ((scalar @_) % 2) == 0;
   my ($this, $name, $subcorpora) = (shift, shift, shift);
   my $self = $this->SUPER::new(name => $name,
 			       subcorpora => $subcorpora,
@@ -303,7 +307,7 @@ use Carp;
 use CWB::CQP;
 use Encode qw(encode decode);
 
-has [ qw(corpus registry cqp
+has [ qw(corpus model cqp
 	query reduce maxhits identify
 	l_context r_context debug) ] ;
 has search      => 'word';
@@ -330,13 +334,14 @@ sub new {
 
   my $self = $this->SUPER::new(%args);
   weaken($self->corpus);  #avoid circular references
+  weaken($self->model);
   $self->structures(@{$structures}) if $structures;
 
   # instantiate CQP - but should have more than one in the future
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
   # set registry - needed since we can supercede the ENV and CWB::Config
-  $cqp->exec("set registry '" . $self->registry . "';");
+  $cqp->exec("set registry '" . $self->model->registry . "';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
     unless $cqp->ok;
   # activate corpus
@@ -529,7 +534,9 @@ sub run {
 	$self->exception("Found an aligned line without a previous hit:", $kwic)
 	  and next
 	    unless (scalar @{$result->hits});
-	${@{$result->hits}[-1]}{aligns}{$1} = decode($self->corpus->encoding, $2);
+	$self->exception("Aligned corpus $1 not found in model, hit was: $2\n")
+	unless ${$self->model->corpora}{$1}->isa('CWB::Model::Corpus');
+	${@{$result->hits}[-1]}{aligns}{$1} = decode(${$self->model->corpora}{$1}->encoding, $2);
       } else { #kwic
 	$kwic =~ m{^\s*([\d]+):        # cpos
 		   (?:\s+<(.*)>:)?\s+  # structs
