@@ -525,13 +525,20 @@ sub run {
     my @kwic = $self->cqp->exec("cat Last $pages");
 
     foreach my $kwic (@kwic) {
-      if ($kwic =~ m{^-->(.*?):(.*)$}) { #align - to previous hit
+      if ($kwic =~ m{^-->(.*?):\s(.*)$}) { #align - to previous hit
 	$self->exception("Found an aligned line without a previous hit:", $kwic)
 	  and next
 	    unless (scalar @{$result->hits});
 	${@{$result->hits}[-1]}{aligns}{$1} = decode($self->corpus->encoding, $2);
       } else { #kwic
-	$kwic =~ m{^\s*([\d]+):(?:\s+<(.*)>:)?\s+(.*?)\s*::--::\s+(.*?)\s+::--::\s*(.*?)\s*$}
+	$kwic =~ m{^\s*([\d]+):        # cpos
+		   (?:\s+<(.*)>:)?\s+  # structs
+		   (.*?)               # left
+		   \s*::--::\s+        # separator
+		   (.*?)               # match
+		   \s+::--::\s*        # separator
+		   (.*?)               # right
+		   \s*$}x              # tail
 	  or $self->exception("Can't parse CQP kwic output, line:", $kwic);
 	my ($cpos, $structs, $left, $match, $right) =
 	  (
