@@ -2,23 +2,23 @@
 
 * CWB::Model BUGS:
 
-** Encoding for aligned corpora has to match its encoding, not query's
 ** In paging with Result objects, the end page calcualation is wrong
 ** Structure handling in Query
+** Default overrides new for ingorecase
 
 * CWB::Model
 
+** Tests
+** Add a handle for literal matching (no regexps) with %l
+** Info files: translateable names/titles
 ** Multicorpora
     - created with an external API from existing corpora
     - shuld send queries to multiple corpora and queue or mix the results
     - paging calculation should be optional, wrapped up in a function
       (and thus reusable for virtual corpora; pagesize and this needed)
     - corpus offsets should be included for virtual paging
-** Tests
-** Info files translateable names/titles
-** Sorting (hopefully no perl fail-over)
 ** Test cwb beta release compatibiliy
-** Add a handle for literal matching (no regexps) with %l
+** Sorting (hopefully no perl fail-over)
 ** Implement max_size and max_querytime
 ** Wordlist and sorting/prunning using CQP features better
 ** Implement cached queries:
@@ -32,31 +32,29 @@
     Mojo::IOLoop->timer(0, sub { poll query or render-cb ; reset timer; }
     The query should have a flag when still running and refuse new request
     from the query cache API
-** Concordance support
 ** Ugly workaround for sample/reduce display mode context links:
     Chained query on full context, then original search
 ** Paging and progressive building for bigger wordlists, or:
 ** Native CQP and cwb-corpus-scan interfaces
+** Concordance support
+** Cleanup newlines at the end of descritpion
 
 * Web interface BUGS
 
-** disable context lin** should 'sample' stay as default?
-ks for sample and para display modes
-** sanitize can't/does not work (readonly??)
-** handle errors with web page display
+** disable context links for sample and para display modes
+** sanitize can't/does not work (readonly??) - tests
+** Display CWB::Model errors = handle errors with web page display
 ** Matches 253 to 253 out of 1454 -> context report should improve
 
 * Web interface
 
 ** Multicorpora support as needed
-** Display CWB::Model errors
 ** cuwi favicon
-** Tabular export for queries
 ** I18n
 ** Cleanup of templates: separation with includes, I18n
+** Templates for query result exports
+   for tab-delmited, cvs, xml, latex, json and data::dump
 ** Production mode logging of queries - cleanup
-** Query compositing, see: http://nl2.ijs.si/fpj.html
-** Use compositing or subcorpus to limit to structural atts with links
 ** Sorting, with options:
    - by hit string, left / right token
    - ascending, descending, forward, a tergo (reversed)
@@ -66,9 +64,11 @@ ks for sample and para display modes
    - by frequency, by object found (using column headings for sort)
    - 2 or 3 sort keys = grouping
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
+** Query compositing, see: http://nl2.ijs.si/fpj.html
+** Use compositing or subcorpus to limit to structural atts with links
 ** Concordance support
    - probaly by supporting cwb-scan-corpus and disk-related
-     long-polled results
+     long-polled results, see CWB::Model TODO
 
 
 * Links: 
