@@ -10,7 +10,7 @@ use CWB::Model;
 use Encode 'decode';
 
 
-plugin 'charset' => {charset => 'utf-8'};
+plugin 'charset' => {charset => 'UTF-8'};
 plugin 'tag_helpers_extra';
 plugin 'pod_renderer';
 
@@ -175,7 +175,6 @@ $tabulator = sub {
 };
 
 app->start;
-
 
 __DATA__
 
