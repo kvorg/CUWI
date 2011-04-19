@@ -55,6 +55,9 @@ When upgrading, you my wish to uninstall the previous version to avoid
 version clashes with modules:
 
      ./Build install uninst=1
+
+See Module::Build for more info.
+
 If you wish to deploy cuwi without installation, you can:
 
  * copy the lib directory, cuwi script and config file to your deployment
