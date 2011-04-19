@@ -5,7 +5,7 @@ my $build = Module::Build->new
   (
    dist_name      => 'CWB::CUWI',
    dist_version_from => 'cuwi',
-   dist_abstract  => 'Corpus Users\' Web Inteface with CWB::Model backend',
+   dist_abstract  => 'Corpus Users\' Web Inteface with the CWB::Model backend',
    dist_author    => [
 		      'Jan Jona Javorsek <jan.javorsek@guest.arnes.si>',
 		      'Tomaz Erjavec <tomaz.erjavec@ijs.si>'

@@ -1,14 +1,69 @@
-You can install CUWI using CPAN, i.e: cpan install CWB::CUWI
+PREREQUISITES
+-------------
 
-CUWI depends on Mojolicious, which has no out-of-core dependencies. If
-you wish to deploy cuwi without installation, you can:
+CUWI requres CWB binaries and CWB::CQP perl module, which is _not_ available on
+CPAN.
+
+Please build and install the CWB binaries from this page:
+
+    http://cwb.sourceforge.net/download.php#cwb
+
+Please install the Perl-CWB base package (no other perl modules are
+needed for CUWI and CWB::Model) from this page:
+
+    http://cwb.sourceforge.net/download.php#perl
+
+Alternatively, you can install the developer branch (with UTF-8 support), again only CWB::CQP perl module is needed:
+
+    svn co https://cwb.svn.sourceforge.net/svnroot/cwb/cwb/trunk cwb 
+    svn co https://cwb.svn.sourceforge.net/svnroot/cwb/perl/trunk cwb-perl
+
+See CWB Developer' page for more info:
+
+    http://cwb.sourceforge.net/developers.php#svn
+
+
+INSTALLATION
+------------
+
+When CWB binaries and CWB::CQP module are installed, you can install
+CUWI. Note that the tests will warn you if the cqp executable,
+CWB::Config or CWB::CQP are not accessible.
+
+You can install CUWI using CPAN:
+
+    cpan install CWB::CUWI
+
+You can install manually by downloading the source from the repository
+and running the provided build stripts. (CUWI depends on Mojolicious,
+which has no out-of-core dependencies, and on CWB::CQP for backend
+communications. Please see the relevant documentation for both
+installation procedures: )
+
+     wget https://github.com/kvorg/CUWI/tarball/master -O cuwi.tar.gz
+     tar xvf cuwi.tar.gz
+     cd kvorg-CUWI*
+     perl Build.PL
+     ./Build install
+
+If you wish to install in a different location, replace the last line with:
+
+     ./Build install --install_base /path/to/cuwi/install
+
+If you wish to deploy cuwi without installation, you can:
 
  * copy the lib directory, cuwi script and config file to your deployment
    location
  * copy Mojolicious lib directory in the same location
  * adjust PERL5LIB env variable to help cuwi script find its modules
+ * copy Mojolicious' hypnotoad script for preforking server support,
+   if needed
 
-CUWI needs its CWB::Model component to be able to find your
+
+CONFIGURATION
+-------------
+
+CUWI uses the CWB::Model module, which needs to  be able to find your
 registries. You can rely on CWB::Config, use CORPUS_REGISTRY
 environment variable or set the value in cuwi.json (see
 examples/cuwi.json). The latter expect a colon-delimited list of
@@ -19,12 +74,22 @@ generate help/tool-tip information.
 
 See cuwi pod/man and CWB::Model pod/man for details.
 
+
+CUSTOMIZATION AND DEPLOYMENT
+----------------------------
+
 For deployment information, see Mojolicious::Guides::Cookbook.
 
-For customization, see Mojolicious::Guides::Rendering and cuwi help inflate.
+For customization, see Mojolicious::Guides::Rendering and cuwi help
+inflate.
 
 See also: cuwi generate help, cuwi help daemon, Mojo::Server::Hypnotoad
 and Mojolicious or http://mojolicio.us/.
+
+See CWB::Model pod/man section on corpus info file information and
+cuwi pod/man's section on virtual corpora if you need to configure the
+behaviour of individual corpora
+
 
 Examples:
 ---------
@@ -48,5 +113,5 @@ Examples:
   (see Mojo::Server::Hypnotoad for more info)
 
 For production in other deployment modes such as plackup, plackup with
-modperl, cgi, fastcgi, preforking server behind a proxy (nginx,
+modperl, cgi, fastcgi and preforking server behind a proxy (nginx,
 apache), see Mojolicious::Guides::Cookbook.

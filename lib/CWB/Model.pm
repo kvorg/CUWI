@@ -8,7 +8,7 @@ use CWB::Config;
 
 use Mojo::Base -base;
 
-our $VERSION = '1.0';
+our $VERSION = '0.9';
 
 has registry => sub {
   return $ENV{CORPUS_REGISTRY} ? $ENV{CORPUS_REGISTRY} : $CWB::Config::Registry;
@@ -93,7 +93,7 @@ package CWB::Model::Corpus;
 use Mojo::Base -base;
 use Carp qw(croak cluck);
 
-our $VERSION = $CWB::Model::VERSION;
+our $VERSION = '0.9';
 
 has [qw(name NAME title)];
 has [qw(attributes structures alignements)] => sub { return [] };
@@ -129,7 +129,7 @@ package CWB::Model::Corpus::Filebased;
 use Mojo::Base 'CWB::Model::Corpus';
 use Carp;
 
-our $VERSION = $CWB::Model::VERSION;
+our $VERSION = '0.9';
 
 has [qw(file infofile model)];
 
@@ -194,7 +194,7 @@ package CWB::Model::Corpus::Virtual;
 use Mojo::Base 'CWB::Model::Corpus';
 use Carp qw(croak cluck);
 
-our $VERSION = $CWB::Model::VERSION;
+our $VERSION = '0.9';
 
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
@@ -312,7 +312,7 @@ use Carp;
 use CWB::CQP;
 use Encode qw(encode decode);
 
-our $VERSION = $CWB::Model::VERSION;
+our $VERSION = '0.9';
 
 has [ qw(corpus model cqp
 	query reduce maxhits identify
@@ -629,7 +629,7 @@ sub exception {
 package CWB::Model::Result;
 use Mojo::Base -base;
 
-our $VERSION = $CWB::Model::VERSION;
+our $VERSION = '0.9';
 
 has [qw(query QUERY time distinct next prev reduce table bigcontext corpusname)] ;
 has hitno       => 0;
