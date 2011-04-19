@@ -46,10 +46,15 @@ installation procedures: )
      perl Build.PL
      ./Build install
 
-If you wish to install in a different location, replace the last line with:
+If you wish to install in a different location, replace the last line
+with:
 
-     ./Build install --install_base /path/to/cuwi/install
+     ./Build install install_base=/path/to/cuwi/install
 
+When upgrading, you my wish to uninstall the previous version to avoid
+version clashes with modules:
+
+     ./Build install uninst=1
 If you wish to deploy cuwi without installation, you can:
 
  * copy the lib directory, cuwi script and config file to your deployment
