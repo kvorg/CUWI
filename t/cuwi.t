@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use strict; use warnings;
-use lib qw(/home/jona/Projects-ijs/CQP/lib /home/jona/Projects-ijs/CQP/mylib);
+use lib qw(lib ../lib lib-extra ../lib-extra);
 use Test::More;
 use Test::Mojo;
 
