@@ -8,8 +8,7 @@ use CWB::Config;
 
 use Mojo::Base -base;
 
-#BUG: registry and corpora can't really work like this at all!
-# this only works with ENV currently
+our $VERSION = '1.0';
 
 has registry => sub {
   return $ENV{CORPUS_REGISTRY} ? $ENV{CORPUS_REGISTRY} : $CWB::Config::Registry;
@@ -94,6 +93,8 @@ package CWB::Model::Corpus;
 use Mojo::Base -base;
 use Carp qw(croak cluck);
 
+our $VERSION = $CWB::Model::VERSION;
+
 has [qw(name NAME title)];
 has [qw(attributes structures alignements)] => sub { return [] };
 has [qw(description tooltips)]        => sub { return {} };
@@ -127,6 +128,8 @@ sub reload {
 package CWB::Model::Corpus::Filebased;
 use Mojo::Base 'CWB::Model::Corpus';
 use Carp;
+
+our $VERSION = $CWB::Model::VERSION;
 
 has [qw(file infofile model)];
 
@@ -190,6 +193,8 @@ sub structures_ {
 package CWB::Model::Corpus::Virtual;
 use Mojo::Base 'CWB::Model::Corpus';
 use Carp qw(croak cluck);
+
+our $VERSION = $CWB::Model::VERSION;
 
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
@@ -306,6 +311,8 @@ use Mojo::Base -base;
 use Carp;
 use CWB::CQP;
 use Encode qw(encode decode);
+
+our $VERSION = $CWB::Model::VERSION;
 
 has [ qw(corpus model cqp
 	query reduce maxhits identify
@@ -621,6 +628,8 @@ sub exception {
 
 package CWB::Model::Result;
 use Mojo::Base -base;
+
+our $VERSION = $CWB::Model::VERSION;
 
 has [qw(query QUERY time distinct next prev reduce table bigcontext corpusname)] ;
 has hitno       => 0;

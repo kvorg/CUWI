@@ -1,0 +1,81 @@
+               CUWI - Corpus Users' Web Interface
+               ----------------------------------
+
+CUWI is a full-featured web front-end for corpora prepared with CWB -
+the IMS Corpus WorkBench (http://cwb.sourceforge.net/). It uses its
+own back-end layer, CWB::Model. CWB::Modle is a CWB registry, corpus,
+info and query model layer which uses the CWB::CQP module and a
+background cqp query processor to query corpora.
+
+CUWI has no dependencies on CWB::CL and C-level bindings to CWB, and
+is therefore relatively version agnostic as regards to CWB - is should
+work with any cqp no later than version 2.0.0.
+
+CUWI uses its CWB::Model to parse your registry files and present you
+with a list of available corpora. For each corpus, a suitable search
+form is used, listing attributes, alignments and other options. It
+supports KWIC output, sentences, paragraphs, sequences and more.
+
+CWB::Model and related modules require Mojolicious (they are build on
+Mojo infrastructure), but can be used independently in your scripts and
+do not imply a web interface per se.
+
+CUWI's web interface is build using Mojolicious and thus includes
+features such as templating, template customization for your site,
+internationalization, deployment in most possible web environments
+(including production-grade stand-alone perl server) etc. See
+http://mojolicio.us/ for more info.
+
+
+Feature highlights:
+-------------------
+
+* Queries can be specified in a simplified globbing expression using
+  form options, full CQP query language or a combination.
+
+* Clean encoding support for different corpus encodings (fully
+  functional regular expressions for UTF-8 require a recent CWB
+  distribution).
+
+* Tool-tips and informational blocks extracted from special-format
+  information in corpus registry info files are used to help the user
+  throughout the interface.
+
+* Query results are available in a number of formats, where new ones
+  can be easily added with user templates at your leisure.
+
+* Welcome message, CSS and HTML layout can all be adapted to your site
+  using config files and template overrides.
+
+* Result navigation: contextual links allow the user to see a larger
+  context for each hit or to perform a search for a specific
+  combination in a frequency table.
+
+* Virtual corpora: you can configure CUWI to present a corpus differently,
+  or query and present multiple corpora as a single large corpus in different
+  ways.
+
+A number of additional features are in the pipeline:
+
+ * frequencies and collocations using cwb-corpus-scan
+
+ * support for asynchronous queries (better performance with high loads)
+
+ * support for sub-corpora and chained queries
+
+ * graphical aids in frequency tables
+
+ * many more ease-of use and advanced features
+
+
+Additional info:
+----------------
+
+Documentation can be found in cuwi and CWB::Model pods or man pages.
+
+For deployment information, see Mojolicious::Guides::Cookbook.
+
+For customization, see Mojolicious::Guides::Rendering and cuwi help inflate.
+
+See also: cuwi generate help, cuwi help daemon, Mojo::Server::Hypnotoad
+and Mojolicious or http://mojolicio.us/.

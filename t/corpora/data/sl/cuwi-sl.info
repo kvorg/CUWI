@@ -1,0 +1,37 @@
+ENCODING UTF-8
+NAME en "Test corpus for CUWI - Slovene texts aligned with French"
+NAME sl "Testni korpus CUWI - slovenska besedila poravnana s francoščino"
+
+STRUCTURE text  en "One article from the corpus"
+STRUCTURE text  sl "Posamezen članek iz korpusa"
+STRUCTURE text_id  en "Article identifier"
+STRUCTURE text_id  sl "Identifikator članka"
+STRUCTURE text_jezika  en "The language pair of the article"
+STRUCTURE text_jezika  sl "Jezikovni par članka"
+STRUCTURE text_title   en "Article title in French"
+STRUCTURE text_title   sl "Naslov članka v francoščini"
+STRUCTURE text_naslov  en "Article title in Slovene"
+STRUCTURE text_naslov  sl "Naslov članka v slovenščini"
+STRUCTURE p     en "Paragraph"
+STRUCTURE p     sl "Odstavek"
+STRUCTURE seg   en "Aligned segment"
+STRUCTURE seg   sl "Poravnan segment"
+STRUCTURE s     en "Sentence"
+STRUCTURE s     sl "Stavek"
+
+ATTRIBUTE nword  en "Normalised form of the word"
+ATTRIBUTE nword  sl "Normalizirana oblika besede"
+ATTRIBUTE lemma  en "Lemma (base form) of the word"
+ATTRIBUTE lemma  sl "Lema (osnovna oblika) besede"
+ATTRIBUTE msd-en en "Morphosyntactic description of the word in English"
+ATTRIBUTE msd-en sl "Oblikoskladenjska oznaka besede v angleščini"
+ATTRIBUTE msd-sl en "Morphosyntactic description of the word in Slovene"
+ATTRIBUTE msd-sl sl "Oblikoskladenjska oznaka besede v slovenščini"
+ATTRIBUTE tag    en "TreeTagger PoS tag"
+ATTRIBUTE tag    sl "Oblikoskladenjska oznaka TreeTaggerja"
+
+DESCRIPTION en
+<p>This is a test corpus for CUWI.</p>
+
+DESCRIPTION sl
+<p>Testni korpus CUWI.</p>

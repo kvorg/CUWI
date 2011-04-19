@@ -1,0 +1,19 @@
+NAME "CUWI test corpus: Latin 1, French, aligned"
+ID cuwi-fr
+HOME     /home/jona/Projects-ijs/CQP/t/corpora/data/fr
+INFO     /home/jona/Projects-ijs/CQP/t/corpora/data/fr/cuwi-fr.info
+STRUCTURE text
+STRUCTURE text_id
+STRUCTURE text_jezika
+STRUCTURE text_title
+STRUCTURE text_naslov
+STRUCTURE p
+STRUCTURE seg
+STRUCTURE s
+ATTRIBUTE word
+ATTRIBUTE nword
+ATTRIBUTE lemma
+ATTRIBUTE msd-en
+ATTRIBUTE msd-sl
+ATTRIBUTE tag
+ALIGNED cuwi-sl

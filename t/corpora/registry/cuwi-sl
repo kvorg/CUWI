@@ -1,0 +1,19 @@
+NAME "CUWI test corpus: UTF-8, Slovene, aligned"
+ID cuwi-sl
+HOME     /home/jona/Projects-ijs/CQP/t/corpora/data/sl
+INFO     /home/jona/Projects-ijs/CQP/t/corpora/data/sl/cuwi-sl.info
+STRUCTURE text
+STRUCTURE text_id
+STRUCTURE text_jezika
+STRUCTURE text_title
+STRUCTURE text_naslov
+STRUCTURE p
+STRUCTURE seg
+STRUCTURE s
+ATTRIBUTE word
+ATTRIBUTE nword
+ATTRIBUTE lemma
+ATTRIBUTE msd-en
+ATTRIBUTE msd-sl
+ATTRIBUTE tag
+ALIGNED cuwi-fr

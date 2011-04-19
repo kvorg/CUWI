@@ -1,0 +1,52 @@
+You can install CUWI using CPAN, i.e: cpan install CWB::CUWI
+
+CUWI depends on Mojolicious, which has no out-of-core dependencies. If
+you wish to deploy cuwi without installation, you can:
+
+ * copy the lib directory, cuwi script and config file to your deployment
+   location
+ * copy Mojolicious lib directory in the same location
+ * adjust PERL5LIB env variable to help cuwi script find its modules
+
+CUWI needs its CWB::Model component to be able to find your
+registries. You can rely on CWB::Config, use CORPUS_REGISTRY
+environment variable or set the value in cuwi.json (see
+examples/cuwi.json). The latter expect a colon-delimited list of
+registry directories. Unlike CWB itself, cuwi will ignore registry
+files that look like editor backups and will try to parse corpus info
+files for additional information to deduce corpus encoding and
+generate help/tool-tip information. 
+
+See cuwi pod/man and CWB::Model pod/man for details.
+
+For deployment information, see Mojolicious::Guides::Cookbook.
+
+For customization, see Mojolicious::Guides::Rendering and cuwi help inflate.
+
+See also: cuwi generate help, cuwi help daemon, Mojo::Server::Hypnotoad
+and Mojolicious or http://mojolicio.us/.
+
+Examples:
+---------
+
+* Development mode (single server, low performance, informative error pages):
+
+  PERL5LIB=./lib cuwi daemon --listen http://*:3000
+
+  (see cuwi help daemon for more options)
+
+* Production mode pre-forking server:
+
+    PERL5LIB=./lib cuwi generate hypnotoad # generates hypnotoad.conf
+    # edit hypnotoad.conf and cuwi.json to your leisure
+    mkdir log                              # enables logging
+    # start pre-forking server:
+    PERL5LIB=./lib path-to-mojolicious-bin/hypnotoad cuwi
+    # kill preforking server
+    kill `cat hypnotoad.pid`
+
+  (see Mojo::Server::Hypnotoad for more info)
+
+For production in other deployment modes such as plackup, plackup with
+modperl, cgi, fastcgi, preforking server behind a proxy (nginx,
+apache), see Mojolicious::Guides::Cookbook.

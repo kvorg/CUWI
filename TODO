@@ -48,6 +48,7 @@
 
 * Web interface
 
+** Add generate config helper to cuwi command line, and help
 ** Multicorpora support as needed
 ** cuwi favicon
 ** I18n

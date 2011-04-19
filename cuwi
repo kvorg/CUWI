@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
-use lib qw(/home/jona/Projects-ijs/CQP/lib ./mylib);
+use lib qw(/home/jona/Projects-ijs/CQP/lib ./lib /home/jona/Projects-ijs/CQP/lib-extra ./lib-extra);
 use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/usr/cwb/share/perl5 /home/jona/usr/cwb/lib64/perl5 /home/jona/usr/cwb/lib64/perl5/auto );
 
+our $VERSION = '1.0';
 use Mojolicious::Lite;
 #use CWB::Web::Search;
 use IO::File;
