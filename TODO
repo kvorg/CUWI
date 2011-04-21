@@ -2,9 +2,13 @@
 
 * CWB::Model BUGS:
 
+** Always assume the 'word' attribute, even when missing in registry
 ** In paging with Result objects, the end page calcualation is wrong
 ** Structure handling in Query
 ** Default overrides new for ingorecase
+** Bug in combined query syntax: a* [word="t.*"], add test!
+** enable quoting of CQP escapes for "[rule]" and '[rule]'
+   - change CQP heurisitcs
 
 * CWB::Model
 
@@ -41,17 +45,26 @@
 
 * Web interface BUGS
 
+** fix encoding in structures 
+** add empty spans for missing attributes in result display + test
+** ditto for tokens containing spaces: 
+   http://nl.ijs.si:3000/cqp/ahlib/search?query=*po*&search=rules&show=word&show=mword&show=rules&contextsize=10&display=kwic&listing=all&size=50&startfrom=1
+   -> switch cqp to xm
 ** disable context links for sample and para display modes
 ** sanitize can't/does not work (readonly??) - tests
 ** Display CWB::Model errors = handle errors with web page display
 ** Matches 253 to 253 out of 1454 -> context report should improve
+** make label and checkbox unbreakable in attributes
 
 * Web interface
 
+** Make structural tooltips wider
+** Add help tip about bigcontext links to the previous
 ** Add generate config helper to cuwi command line, and help
 ** Multicorpora support as needed
 ** cuwi favicon
 ** I18n
+** Present multilingual aligned corpora as a single entry?
 ** Cleanup of templates: separation with includes, I18n
 ** Templates for query result exports
    for tab-delmited, cvs, xml, latex, json and data::dump
@@ -89,13 +102,14 @@
            where ALIGNED name is the aligned corpus, aligned by <seg>
    - http://nl2.ijs.si/dsi.html
 
-* Release-cirtical:
+* Release-cirtical (8th of May)
 
 ** bugs
 ** tests
-** multicorpora
 ** sorting
+** colocations MI3 LL
 ** tabular download
 ** max_size, max_query_time
 ** I18n
+** multicorpora
 ** documentation

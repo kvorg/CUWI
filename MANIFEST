@@ -1,10 +1,10 @@
 README
 INSTALL
 TODO
+META.yml
 Build.PL
 cuwi
 cuwi.json
-hypnotoad.conf
 lib/CWB/Model.pm
 lib/Mojolicious/Plugin/TagHelpersExtra.pm
 t/cuwi.t
