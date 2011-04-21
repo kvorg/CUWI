@@ -134,45 +134,32 @@ $sanitize = sub {
       and $self->param('startfrom') <= $maxsize;
 };
 
-$tabulator = sub {
-  my ($string, $c) = (@_);
-  return $c->link_to_here(
-			  { query => $string, display=>'kwic',
-			    search=> (ref $c->param('show') ? 
-				      ${$c->param('show')}[0] :
-				      $c->param('show') )
-			  },
-		      sub { return $string } )
-    if $c and not $string =~ m{/};
-  return  $string unless $string =~ m{/};
+$tabulator = sub { #$c is controller, means generate contex links
+  my ($tokens, $c) = (@_);
   my $st = '<span class="part">'; my $et = '</span>';
-  my @tokens = split(/\s+/, $string);
   my @attrs; @attrs = $c->param('show') if $c;
 
   if ($c and scalar @attrs > 1) {
     #[ [ je, V ] [ bil, K ] ]  [ word, POS ]
-    @tokens = map { [ split '/' ] } @tokens;
     my %query; my $i = 0;
     foreach my $attr (@attrs) {
-      my $query = join(' ', map {$_->[$i]} @tokens ) ;
-      foreach my $j (0 .. scalar @tokens - 1) {
-	$tokens[$j][$i] = $c->link_to_here({query=>$query,
+      my $query = join(' ', map {$_->[$i]} @$tokens ) ;
+      foreach my $j (0 .. scalar @$tokens - 1) {
+	$tokens->[$j][$i] = $c->link_to_here({query=>$query,
 					    search=>$attr,
 					    display=>'kwic'},
-				    sub { return $tokens[$j][$i] });
+				    sub { return $tokens->[$j][$i] });
       }
       $i++;
     }
-    @tokens = map {
-      '<span class="token">' . $st . join("$et$st", @$_) . $et . '</span>';
-    } @tokens;
-  } else {
-    @tokens = map {
-      my @parts = split('/', $_);
-      '<span class="token">' . $st . join("$et$st", @parts) . $et . '</span>';
-    } @tokens;
   }
-  return join(' ', @tokens);
+  return join(' ',
+	      map {
+		'<span class="token">' . 
+		  $st . join("$et$st", @$_) . $et 
+		    . '</span>';
+	      } @$tokens
+	     );
 };
 
 app->start;

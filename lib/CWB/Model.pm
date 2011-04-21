@@ -420,6 +420,7 @@ sub run {
 
   # test CQP connection
   $self->exec("show", 'CQP not answering');
+  $self->exec("set PrintMode sgml", 'Could not set PrintMode to sgml');
 
   # reset CQP settings
   foreach my $att (@{$self->corpus->attributes}) {
@@ -537,30 +538,38 @@ sub run {
     my @kwic = $self->cqp->exec("cat Last $pages");
 
     foreach my $kwic (@kwic) {
-      if ($kwic =~ m{^-->(.*?):\s(.*)$}) { #align - to previous hit
+      next if $kwic =~ m{^[<](attribute|/?CONCORDANCE)}; # SGML info
+      if ($kwic =~ m{^[<]align name="(.*?)">&lt;CONTENT&gt; (.*)&lt;/CONTENT&gt;$}) { #align - to previous hit
 	$self->exception("Found an aligned line without a previous hit:", $kwic)
 	  and next
 	    unless (scalar @{$result->hits});
 	$self->exception("Aligned corpus $1 not found in model, hit was: $2\n")
 	unless ${$self->model->corpora}{$1}->isa('CWB::Model::Corpus');
-	${@{$result->hits}[-1]}{aligns}{$1} = decode(${$self->model->corpora}{$1}->encoding, $2);
+	my $aligned = $1;
+	my $align = decode(${$self->model->corpora}{$aligned}->encoding, $2);
+	$align =~ s{&(l)?g?t;}{$1 ? '<' : '>'}ge; 	#fix sgml escapes
+	${@{$result->hits}[-1]}{aligns}{$aligned} = _tokens($align);
       } else { #kwic
-	$kwic =~ m{^\s*([\d]+):        # cpos
-		   (?:\s+<(.*)>:)?\s+  # structs
-		   (.*?)               # left
-		   \s*::--::\s+        # separator
-		   (.*?)               # match
-		   \s+::--::\s*        # separator
-		   (.*?)               # right
-		   \s*$}x              # tail
+	$kwic = decode($self->corpus->encoding, $kwic);
+	$kwic =~ m{^[<]LINE[>]        # head
+		   [<]MATCHNUM[>]([\d]+)[<]/MATCHNUM[>]    # cpos
+		   (?:[<]STRUCTS[>]([\d]+)[<]/STRUCTS[>])? # structs
+		   [<]CONTENT[>]
+		   (.*?)              # left
+		   [<]MATCH[>]        # separator
+		   (.*?)              # match
+		   [<]/MATCH[>]       # separator
+		   (.*?)              # right
+		   [<]/CONTENT[>]
+		   [<]/LINE[>]$}x     # tail
 	  or $self->exception("Can't parse CQP kwic output, line:", $kwic);
 	my ($cpos, $structs, $left, $match, $right) =
 	  (
 	   $1,
 	   $2,
-	   decode($self->corpus->encoding, $3),
-	   decode($self->corpus->encoding, $4),
-	   decode($self->corpus->encoding, $5),
+	   _tokens($3),
+	   _tokens($4),
+	   _tokens($5),
 	  );
 
 	my $data = {};
@@ -612,6 +621,10 @@ sub run {
 
   $result->time(Time::HiRes::gettimeofday() - $query_start_time);
   return $result;
+}
+
+sub _tokens {
+  return [ map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
 }
 
 sub exec {
