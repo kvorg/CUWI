@@ -5,6 +5,7 @@ use Carp;
 use IO::Dir;
 use IO::File;
 use CWB::Config;
+use utf8;
 
 use Mojo::Base -base;
 
@@ -536,9 +537,14 @@ sub run {
     }
 
     my @kwic = $self->cqp->exec("cat Last $pages");
+    my $attrs = 0;
 
     foreach my $kwic (@kwic) {
-      next if $kwic =~ m{^[<](attribute|/?CONCORDANCE)}; # SGML info
+      if ($kwic =~ m{^[<]attribute type=positional}) { # SGML attr info
+	$attrs++;
+	next;
+      }
+      next if $kwic =~ m{^[<](attribute|/?CONCORDANCE)}; # SGML preamble & info
       if ($kwic =~ m{^[<]align name="(.*?)">&lt;CONTENT&gt; (.*)&lt;/CONTENT&gt;$}) { #align - to previous hit
 	$self->exception("Found an aligned line without a previous hit:", $kwic)
 	  and next
@@ -548,7 +554,7 @@ sub run {
 	my $aligned = $1;
 	my $align = decode(${$self->model->corpora}{$aligned}->encoding, $2);
 	$align =~ s{&(l)?g?t;}{$1 ? '<' : '>'}ge; 	#fix sgml escapes
-	${@{$result->hits}[-1]}{aligns}{$aligned} = _tokens($align);
+	${@{$result->hits}[-1]}{aligns}{$aligned} = _tokens($align, $attrs);
       } else { #kwic
 	$kwic = decode($self->corpus->encoding, $kwic);
 	$kwic =~ m{^[<]LINE[>]        # head
@@ -562,18 +568,18 @@ sub run {
 		   (.*?)              # right
 		   \s*[<]/CONTENT[>]
 		   [<]/LINE[>]\s*$}x  # tail
-	  or $self->exception("Can't parse CQP kwic output, line:", $kwic);
+	  or $self->exception("Can't parse CQP kwic output, $attrs attrs, line:", $kwic);
 	my ($cpos, $structs, $left, $match, $right) =
 	  (
 	   $1,
 	   $2,
-	   _tokens($3),
-	   _tokens($4),
-	   _tokens($5),
+	   _tokens($3, $attrs),
+	   _tokens($4, $attrs),
+	   _tokens($5, $attrs),
 	  );
 
-	$structs =~ s{&(l)?g?t;}{$1 ? '<' : '>'}ge; 	#fix sgml escapes
-
+	$structs =~ s{&(l)?g?t;}{$1 ? '<' : '>'}ge 	#fix sgml escapes
+	   if $structs;
 	my $data = {};
 	if ($structs) {
 	  foreach (split '><', substr($structs, 1, -1) )
@@ -628,7 +634,8 @@ sub run {
 }
 
 sub _tokens {
-  return [ map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
+  return [ map { push @$_, "∅" while scalar @$_ < $_[1]; $_; } # fix missing attrs
+	   map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
 }
 
 sub exec {
