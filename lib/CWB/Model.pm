@@ -552,16 +552,16 @@ sub run {
       } else { #kwic
 	$kwic = decode($self->corpus->encoding, $kwic);
 	$kwic =~ m{^[<]LINE[>]        # head
-		   [<]MATCHNUM[>]([\d]+)[<]/MATCHNUM[>]    # cpos
-		   (?:[<]STRUCTS[>]([\d]+)[<]/STRUCTS[>])? # structs
-		   [<]CONTENT[>]
-		   (.*?)              # left
+		   [<]MATCHNUM[>]([\d]+)[<]/MATCHNUM[>] # cpos
+		   (?:[<]STRUCS[>](.*?)[<]/STRUCS[>])?  # structs
+		   [<]CONTENT[>]\s*
+		   (.*?)\s*           # left
 		   [<]MATCH[>]        # separator
 		   (.*?)              # match
-		   [<]/MATCH[>]       # separator
+		   [<]/MATCH[>]\s*    # separator
 		   (.*?)              # right
-		   [<]/CONTENT[>]
-		   [<]/LINE[>]$}x     # tail
+		   \s*[<]/CONTENT[>]
+		   [<]/LINE[>]\s*$}x  # tail
 	  or $self->exception("Can't parse CQP kwic output, line:", $kwic);
 	my ($cpos, $structs, $left, $match, $right) =
 	  (
@@ -572,12 +572,16 @@ sub run {
 	   _tokens($5),
 	  );
 
+	$structs =~ s{&(l)?g?t;}{$1 ? '<' : '>'}ge; 	#fix sgml escapes
+
 	my $data = {};
 	if ($structs) {
-	  foreach (split '><', $structs) {
-	    m{(\S*)\s(.*)};
-	    $data->{$1} = $2;
-	  }
+	  foreach (split '><', substr($structs, 1, -1) )
+	    # remove heading/trailing <>
+	    {
+	      m{(\S*)\s(.*)};
+	      $data->{$1} = $2;
+	    }
 	}
 
 	push @{$result->hits}, {
