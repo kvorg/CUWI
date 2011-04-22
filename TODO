@@ -45,11 +45,7 @@
 
 * Web interface BUGS
 
-** fix encoding in structures 
 ** add empty spans for missing attributes in result display + test
-** ditto for tokens containing spaces: 
-   http://nl.ijs.si:3000/cqp/ahlib/search?query=*po*&search=rules&show=word&show=mword&show=rules&contextsize=10&display=kwic&listing=all&size=50&startfrom=1
-   -> switch cqp to xm
 ** disable context links for sample and para display modes
 ** sanitize can't/does not work (readonly??) - tests
 ** Display CWB::Model errors = handle errors with web page display
