@@ -191,7 +191,7 @@ is_deeply($r,
 	   aligns     => [],
 	   attributes => [[]],
 	   pages      => { single=>1, },
-	  }, "Query/Result: default structure test.")
+	  }, "Query/Result: default structure test")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 
 # result: context
@@ -247,6 +247,27 @@ is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 # result: display tests (show, all/sample)
 
 # result: display modes
+
+$r = $sl->query(query=>"a*", display=>'wordlist');
+is_deeply($r,
+	  {
+	   corpusname => $sl->name,
+	   query      => '[word="a.*" %c]',
+	   QUERY      => '[word="a.*" %c]',
+	   time       => $r->time,
+	   bigcontext => 'paragraphs',
+	   table => '1',
+	   hits       => [
+			  [[], 8],
+			  @{$r->hits}[1..34],
+			 ],
+	   distinct   => 35,
+	   hitno      => 59,
+	   aligns     => [],
+	   attributes => [[]],
+	   pages      => { single=>1, },
+	  },
+ "Query/Result: display model wordlist - default structure test");
 
 # query/result encoding roundtrip (in queries and all display modes)
 

@@ -611,16 +611,36 @@ sub run {
     my @kwic = $self->cqp->exec("cat Last 1 10000"); # limit max
     warn "Got " . scalar @kwic . " lines.\n";
     my %counts;
+    my $attrs=0;
     foreach my $kwic (@kwic) {
-      $kwic =~ m{::--:: (.*) ::--::}
+      if ($kwic =~ m{^[<]attribute type=positional}) { # SGML attr info
+	$attrs++;
+	next;
+      }
+      next if $kwic =~ m{^[<]/?CONCORDANCE}; # SGML preamble
+      $self->exception("Not expecting alignemnents in frequency wordlists, line:", $kwic)
+      if $kwic =~ m{^[<]align name="(.*?)">&lt;CONTENT&gt; (.*)&lt;/CONTENT&gt;$};
+
+      $kwic =~ m{^[<]LINE[>]        # head
+		 [<]MATCHNUM[>][\d]+[<]/MATCHNUM[>] # cpos
+		 (?:[<]STRUCS[>].*?[<]/STRUCS[>])?  # structs
+		 [<]CONTENT[>]\s*
+		 .*?\s*           # left
+		 [<]MATCH[>]        # separator
+		 (.*?)              # match
+		 [<]/MATCH[>]\s*    # separator
+		 .*?              # right
+		 \s*[<]/CONTENT[>]
+		 [<]/LINE[>]\s*$}x  # tail
 	or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
       my $match = decode($self->corpus->encoding, $1);
       $match = lc($match) if $self->ignorecase;
-      $counts{$match} = 0 unless exists $counts{$match};
-      $counts{$match}++ ;
+      $counts{$match}{count} = 0 unless exists $counts{$match};
+      $counts{$match}{count}++ ;
+      $counts{$match}{value} = _tokens($match, $attrs);
     }
-    @{$result->hits} = map { [$_, $counts{$_}] }
-      reverse sort {$counts{$a} <=> $counts{$b}}  keys %counts;
+    @{$result->hits} = map { [$counts{$_}{value}, $counts{$_}{count}] }
+      reverse sort {$counts{$a}{count} <=> $counts{$b}{count}}  keys %counts;
     # reduce only shows the top frequencies for wordlists
     splice @{$result->hits}, $self->pagesize
       if $self->reduce and $self->pagesize > 0;

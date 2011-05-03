@@ -139,8 +139,8 @@ $tabulator = sub { #$c is controller, means generate contex links
   my $st = '<span class="part">'; my $et = '</span>';
   my @attrs; @attrs = $c->param('show') if $c;
 
-  if ($c and scalar @attrs > 1) {
-    #[ [ je, V ] [ bil, K ] ]  [ word, POS ]
+  if ($c) {
+    #process lines like: [ [ je, V ] [ bil, K ] ]  [ word, POS ]
     my %query; my $i = 0;
     foreach my $attr (@attrs) {
       my $query = join(' ', map {$_->[$i]} @$tokens ) ;

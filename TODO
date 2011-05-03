@@ -9,6 +9,7 @@
 ** Bug in combined query syntax: a* [word="t.*"], add test!
 ** enable quoting of CQP escapes for "[rule]" and '[rule]'
    - change CQP heurisitcs
+** be more robust about failing corpora files
 
 * CWB::Model
 
@@ -56,6 +57,7 @@
 
 ** Make structural tooltips wider
 ** Add help tip about bigcontext links to the previous
+** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
 ** Multicorpora support as needed
 ** cuwi favicon
