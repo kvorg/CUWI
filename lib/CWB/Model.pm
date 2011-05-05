@@ -358,8 +358,8 @@ sub new {
   # instantiate CQP - but should have more than one in the future
   #                   also pass corpus-specific collation to CQP env
   my $old_collate = $ENV{LC_COLLATE};
-  $ENV{LC_COLLATE} = $self->corpus->language . '.' . $self->corpus->Encoding;
-  warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n";
+  $ENV{LC_COLLATE} = ($self->corpus->language ? $self->corpus->language : 'en_US') . '.' . $self->corpus->Encoding;
+  #warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n";
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
   $ENV{LC_COLLATE} = $old_collate;
@@ -627,7 +627,7 @@ sub run {
 				match   => $match,
 				right   => $right,
 				data    => $data,
-			       aligns  => {},
+				aligns  => {},
 			       };
       }
     }
@@ -640,7 +640,7 @@ sub run {
     }
     $result->table(1);
     my @kwic = $self->cqp->exec("cat Last 1 10000"); # limit max
-    warn "Got " . scalar @kwic . " lines.\n";
+    #warn "Got " . scalar @kwic . " lines.\n";
     my %counts;
     my $attrs=0;
     foreach my $kwic (@kwic) {
