@@ -200,7 +200,7 @@ sub _input_x {
 
   elsif (scalar $c->param($name) ) {
     delete $attrs{checked};
-    warn "We have values, deleted default for $name.\n";
+    #warn "We have values, deleted default for $name.\n";
   }
   return $self->_tag('input', name => $name, %attrs, $cb || () );
 }

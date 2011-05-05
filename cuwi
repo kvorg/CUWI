@@ -94,7 +94,13 @@ get "/:corpus/search" => sub {
   $params{startfrom} = $self->param('startfrom');
   $params{reduce} = 1 if $self->param('listing') eq 'sample';
   $params{pagesize} = $self->param('size');
-  warn "Calling query with " . $self->dumper(\%params);
+  if ( $self->param('sort_a') and $self->param('sort_a') ne 'none') {
+    $params{sort}{a}{target}    = $self->param('sort_a');
+    $params{sort}{a}{att}       = $self->param('sort_a_att');
+    $params{sort}{a}{order}     = $self->param('sort_a_order');
+    $params{sort}{a}{direction} = $self->param('sort_a_direction');
+  }
+  #warn "Calling query with " . $self->dumper(\%params);
 
   my $result = $corpus->query(%params);
 
@@ -120,6 +126,11 @@ get "/:corpus/search" => sub {
 # use this to redirect
 $sanitize = sub {
   my $self = shift;
+
+ #ALSO:
+ # and $self->param('sort_a') =~ m/^(left|match|right)$/
+ # and $self->param('sort_a_order') =~ m/^(ascending|descending)$/
+ # and $self->param('sort_a_direction') =~ m/^(natural|reversed)$/
 
   $self->param('contextsize', 7)
     unless $self->param('contextsize')
@@ -286,7 +297,24 @@ __DATA__
     Listing mode</a>: <%= select_field 'listing', [qw/all sample/] %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Results</em>Sets the number or results in the random sample or per page when all the results are being listed.</span>
     Results</a>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %>
+    <br />
     <%= hidden_field startfrom => 1 %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Sorting</em>Select up to 3 sort criteria: for each one you can select position (left/match/right), content (word or any other positional attribute), order (ascending, descending) and direction (from the start or the end - a tergo).</span>
+    Sort</a>:
+    <div class="sort">
+    <%= select_field 'sort_a',           [qw(none left right match)] %>
+    <%= select_field 'sort_a_att',       $corpus->attributes %>
+    <%= select_field 'sort_a_order',     [qw(ascending descending)] %>
+    <%= select_field 'sort_a_direction', [qw(natural reversed)] %><br />
+%#    <%= select_field 'sort_b',           [qw(none left right match)] %>
+%#    <%= select_field 'sort_b_att',       $corpus->attributes %>
+%#    <%= select_field 'sort_b_order',     [qw(ascending descending)] %>
+%#    <%= select_field 'sort_b_direction', [qw(natural reversed)] %><br />
+%#    <%= select_field 'sort_c',           [qw(none left right match)] %>
+%#    <%= select_field 'sort_c_att',       $corpus->attributes %>
+%#    <%= select_field 'sort_c_order',     [qw(ascending descending)] %>
+%#    <%= select_field 'sort_c_direction', [qw(natural reversed)] %>
+    </div>
     <span class="submit"><%= submit_button 'Run Query' %></span>
     </div>
   <% end %>
@@ -518,6 +546,7 @@ div.search, div.show { margin-left: 3.5em;  }
 div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
 div.search > span.label, div.show > span.label { width: 14em; }
 div.show { margin-top: 1ex; }
+div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.nav   { font-weight: bold; font-size: 80%; }

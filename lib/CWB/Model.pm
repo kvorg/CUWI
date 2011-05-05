@@ -98,8 +98,10 @@ our $VERSION = '0.9';
 
 has [qw(name NAME title)];
 has [qw(attributes structures alignements)] => sub { return [] };
-has [qw(description tooltips)]        => sub { return {} };
+has [qw(description tooltips)]              => sub { return {} };
 has encoding => 'utf8';
+has Encoding => 'UTF-8';
+has language => 'en_US';
 
 sub new {
   use Scalar::Util qw(weaken);
@@ -149,6 +151,8 @@ sub new {
     push @{$self->alignements}, $1 if m/ALIGNED\s+([^# \n]*)/ ;
     push @{$self->attributes}, $1  if m/ATTRIBUTE\s+([^# \n]*)/ ;
     push @{$self->structures}, $1  if m/STRUCTURE\s+([^# \n]*)/ ;
+    $self->encoding($1)            if m/^##::\s*charset\s+=\s+"?[^"#\n]+"?/ ;
+    $self->language($1)            if m/^##::\s*language\s+=\s+"?[^"#\n]+"?/ ;
   }
   $fh->close;
   $self->title( ucfirst($self->name) ) unless $self->title;
@@ -163,17 +167,19 @@ sub new {
       ${$self->description}{$lang} .= $_
 	if ($lang);
       $self->encoding($1)
-	if m/ENCODING\s+([^# \n]*)/ ;
+	if m/ENCODING\s+([^# \n]*)/ ; #this should go away
       ${$self->tooltips}{lc($1)}{$2}{$3 ? $3 : 'en'} = $4
 	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }
     $fh->close;
   } else {
-    warn 'Could not access info file for ' . $self->file . ": $@\n";
+    #warn 'Could not access info file for ' . $self->file . ": $@\n";
   }
 
-  $self->encoding('utf8') unless $self->encoding;
-  $self->encoding('utf8') if $self->encoding eq 'UTF-8';
+  $self->encoding('utf8')  unless $self->encoding;
+  $self->Encoding($self->encoding) ;
+  $self->encoding('utf8')  if $self->encoding eq 'UTF-8';
+  $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
   return $self;
 }
@@ -215,6 +221,9 @@ sub new {
 
   $self->NAME(uc($self->name));
   $self->title( ucfirst($self->name) ) unless $self->title;
+  $self->Encoding($self->encoding) ;
+  $self->encoding('utf8')  if $self->encoding eq 'UTF-8';
+  $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
   # generate corpora here
 
@@ -322,6 +331,7 @@ has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
 has align       =>  sub { return [] };
+has sort        =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
 has startfrom   => 1;
@@ -346,8 +356,13 @@ sub new {
   $self->structures(@{$structures}) if $structures;
 
   # instantiate CQP - but should have more than one in the future
+  #                   also pass corpus-specific collation to CQP env
+  my $old_collate = $ENV{LC_COLLATE};
+  $ENV{LC_COLLATE} = $self->corpus->language . '.' . $self->corpus->Encoding;
+  warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n";
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
+  $ENV{LC_COLLATE} = $old_collate;
   # set registry - needed since we can supercede the ENV and CWB::Config
   $cqp->exec("set registry '" . $self->model->registry . "';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
@@ -498,7 +513,23 @@ sub run {
     and grep { $_ } map { $_ eq 's' }
     @{$self->corpus->structures};
 
-  # sort here
+  # sorting
+  if ($self->sort and exists ${$self->sort}{a}) {
+    $self->exec("set ExternalSort on", 'Could not enable ExternalSort');
+    my $sort_cmd = 'sort by ' . ${$self->sort}{a}{att};
+    $sort_cmd .= ' %c';
+    # sort by attribute on start point .. end point ;
+    $sort_cmd .= ' on matchend[1]' if ${$self->sort}{a}{target} eq 'right';
+    $sort_cmd .= ' on match[-1]' if ${$self->sort}{a}{target} eq 'left';
+    $sort_cmd .= ' descending' if ${$self->sort}{a}{order} eq 'descending';
+    $sort_cmd .= ' reverse' if ${$self->sort}{a}{direction} eq 'reversed';
+    warn "Sorting! <<$sort_cmd>>\n";
+    $self->exec($sort_cmd, 'Could not perform sort with ' . $sort_cmd);
+  } else {
+    # set natural sort order
+    $self->exec("set ExternalSort off", 'Could not disable ExternalSort');
+    $self->exec('sort');
+  }
 
   # reduce?
   if ($self->display eq 'kwic'
