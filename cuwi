@@ -242,7 +242,7 @@ __DATA__
 % my $checked = 0;
 % foreach my $att (@{$corpus->attributes}) {
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
-     <%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
+     <span class="ctrl"><%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
   % }
@@ -250,18 +250,19 @@ __DATA__
   % if ($ttip) {
    </a>
   % }
+    </span>
 % }
     </div>
      Ignore:
-      <%= check_box_x ignorecase => 1       %> case
-      <%= check_box_x ignorediacritics => 1 %> diacritics
+      <span class="ctrl"><%= check_box_x ignorecase => 1       %> case</span>
+      <span class="ctrl"><%= check_box_x ignorediacritics => 1 %> diacritics</span>
     <div class="show">
     <span class="label"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:</span>
 % $checked = 0;
 % foreach my $att (@{$corpus->attributes}) {
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
-     <%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
+     <span class="ctrl"><%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
   % }
@@ -269,13 +270,14 @@ __DATA__
   % if ($ttip) {
    </a>
   % }
+   </span>
 % }
     </div>
 % if (scalar @{$corpus->alignements}) {
      Align:
 % foreach my $align (@{$corpus->alignements}) {
   % my $ttip; $ttip = ${$model->corpora}{$align}->title if exists ${$model->corpora}{$align};
-     <%= check_box_x 'align' => $align %>
+     <span class="ctrl"><%= check_box_x 'align' => $align %>
   % if ($ttip) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $align %></em><%= $ttip %></span>
   % }
@@ -283,20 +285,22 @@ __DATA__
   % if ($ttip) {
    </a>
   % }
+  </span>
 % }
  <br />
 %} #alignements
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Context tokens</em>Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.</span>
-    Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>7 %>
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em>Selects the display mode used to display the results.<br /><b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides.<br /><b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit.<br /><b>Paragraphs</b> does the same for paragraphs. Both modes are only available if structural attributes to support them are present in the corpus.<br /><b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</span>
-% my @extras = grep { $_ } map { my $s; $s = 'paragraphs' if $_ eq 'p'; $s = 'sentences' if $_ eq 's'; $s; } 
+    <span class="ctrl"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Context tokens</em>Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.</span>
+    Context tokens</a>: <%= text_field 'contextsize', size=>2, value=>7 %></span>
+    <span class="ctrl"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Display mode</em>Selects the display mode used to display the results.<br /><b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides.<br /><b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit.<br /><b>Paragraphs</b> does the same for paragraphs. Both modes are only available if structural attributes to support them are present in the corpus.<br /><b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards ('?' and '*') i.e. to find different word forms occurances.</span>
+% my @extras = grep { $_ } map { my $s; $s = 'paragraphs' if $_ eq 'p'; $s = 'sentences' if $_ eq 's'; $s; }
 %  @{$corpus->structures};
  Display mode</a>: <%= select_field 'display', ['kwic', @extras, 'wordlist'] %>
+ </span>
     <br />
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Listing mode</em><b>Sample</b> displays a random sample of hits. Hit reload to see a different sample. <b>All</b> lists all the hits with result pages.</span>
-    Listing mode</a>: <%= select_field 'listing', [qw/all sample/] %>
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Results</em>Sets the number or results in the random sample or per page when all the results are being listed.</span>
-    Results</a>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %>
+    <span class="ctrl"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Listing mode</em><b>Sample</b> displays a random sample of hits. Hit reload to see a different sample. <b>All</b> lists all the hits with result pages.</span>
+    Listing mode</a>: <%= select_field 'listing', [qw/all sample/] %></span>
+    <span class="ctrl"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Results</em>Sets the number or results in the random sample or per page when all the results are being listed.</span>
+    Results</a>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span>
     <br />
     <%= hidden_field startfrom => 1 %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Sorting</em>Select up to 3 sort criteria: for each one you can select position (left/match/right), content (word or any other positional attribute), order (ascending, descending) and direction (from the start or the end - a tergo).</span>
@@ -305,7 +309,7 @@ __DATA__
     <%= select_field 'sort_a',           [qw(none left right match)] %>
     <%= select_field 'sort_a_att',       $corpus->attributes %>
     <%= select_field 'sort_a_order',     [qw(ascending descending)] %>
-    <%= select_field 'sort_a_direction', [qw(natural reversed)] %><br />
+    <%= select_field 'sort_a_direction', [qw(natural reversed)] %>
 %#    <%= select_field 'sort_b',           [qw(none left right match)] %>
 %#    <%= select_field 'sort_b_att',       $corpus->attributes %>
 %#    <%= select_field 'sort_b_order',     [qw(ascending descending)] %>
@@ -430,7 +434,7 @@ __DATA__
 <html>
  <head>
   <title>CUWI Search <%= $title ? " $title" : '' =%></title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <link href="<%= '/' . $config->{root} . '/' . 'style.css' %>" rel="stylesheet" type="text/css" />
  </head>
  <body>
@@ -545,6 +549,7 @@ body { font-family: Palatino, Times, serif;
 div.search, div.show { margin-left: 3.5em;  }
 div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
 div.search > span.label, div.show > span.label { width: 14em; }
+span.ctrl { white-space: nowrap; display: inline; }
 div.show { margin-top: 1ex; }
 div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }
@@ -636,6 +641,7 @@ a.tooltip {
     border-bottom: 1px dotted #000000; color: #000000; outline: none;
     cursor: help; text-decoration: none;
     position: relative;
+    white-space: normal;
 }
 a.tooltip span {
     display: none;
