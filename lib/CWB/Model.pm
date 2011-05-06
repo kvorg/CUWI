@@ -143,7 +143,7 @@ sub new {
   $self->NAME(uc($self->name));
 
   my $fh = new IO::File;
-  $fh->open($self->file, '<')
+  $fh->open($self->file, '<:encoding(UTF-8)')
     or croak "CWB::Model::Corpus Exception: Could not open $self->file for reading during corpus init.\n";
   while (<$fh>) {
     $self->title($1)               if m/NAME\s+"([^#]*)"/ ;
