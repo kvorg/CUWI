@@ -325,7 +325,7 @@ use Encode qw(encode decode);
 our $VERSION = '0.9';
 
 has [ qw(corpus model cqp
-	query reduce maxhits identify
+	cpos query reduce maxhits identify
 	l_context r_context debug) ] ;
 has search      => 'word';
 has show        =>  sub { return [] };
@@ -463,6 +463,17 @@ sub run {
     }
   }
 
+  my $bc; my $bigcontext;
+    if (grep { $_ } map { $_ eq 'p' }
+	@{$self->corpus->structures}) {
+      $bc = 'p'; $bigcontext = 'paragraphs';
+    }
+    if (not $bc and grep { $_ } map { $_ eq 's' }
+	@{$self->corpus->structures}) {
+      $bc = 's';
+      $bigcontext = 'sentences';
+    }
+
   if ($self->display ne 'wordlist') {
     $self->exec('set Context ' . $self->context . ';',
 		"Can't set context to '" . $self->context . "'")
@@ -473,10 +484,10 @@ sub run {
     $self->exec('set RightContext ' . $self->r_context . ';',
 		"Can't set right context to '" . $self->r_context . "'")
       if defined $self->r_context;
-  my $ps = join(', ', @{$self->corpus->structures});
-  $self->exec('set PrintStructures "' . $ps . '";',
-	      "Can't set PrintStructures for");
-  } else {
+    my $ps = join(', ', @{$self->corpus->structures});
+    $self->exec('set PrintStructures "' . $ps . '";',
+		"Can't set PrintStructures for $ps");
+  } else { #wordlist
     $self->exec('set Context 0;',
 		"Can't set context to '" . $self->context . "'");
     $self->exec('set PrintStructures ""', "Can't set PrintStructures.");
@@ -488,14 +499,21 @@ sub run {
     if $self->display eq 'paragraphs';
   $self->exec('set Context 0 words;', "Can't set context to 'p''")
     if $self->display eq 'wordlist';
+  $self->exec('set Context ' . $bc . ';',
+	      "Can't set context to '" . $bc . "'")
+    if defined $bc and $self->cpos;
 
-  # execute query (but don't show the results yet)
-  my $_query = encode($self->corpus->encoding, $query);
-  $self->cqp->exec_query($_query); # for tainted execution
-  $self->exception("CQP query for $query failed -",
-		   $self->cqp->error_message)
-    unless $self->cqp->ok;
-
+  my $_query;
+  if ($self->cpos) {
+    $self->undump($self->cpos);
+  } else {
+    # execute query (but don't show the results yet)
+    $_query = encode($self->corpus->encoding, $query);
+    $self->cqp->exec_query($_query); # for tainted execution
+    $self->exception("CQP query for $query failed -",
+		     $self->cqp->error_message)
+      unless $self->cqp->ok;
+  }
   # process results into a result object
   my $result = CWB::Model::Result->new(corpusname => $self->corpus->name)
     or $self->exception("Failed to create a result object.");
@@ -505,16 +523,13 @@ sub run {
   @{$result->attributes} = $self->show;
   @{$result->aligns} = @aligns;
   $result->hitno($self->cqp->exec("size Last"));
+  $result->cpos($self->cpos) if $self->cpos;
 
-  # select context display type for hit context presentation
-  $result->bigcontext('paragraphs') if grep { $_ } map { $_ eq 'p' }
-    @{$self->corpus->structures};
-  $result->bigcontext('sentences') if not $result->bigcontext
-    and grep { $_ } map { $_ eq 's' }
-    @{$self->corpus->structures};
+  # select context display type for hit context presentation - obsoleted?
+  $result->bigcontext($bigcontext);
 
   # sorting
-  if ($self->sort and exists ${$self->sort}{a}) {
+  if ($self->sort and exists ${$self->sort}{a} and not $self->cpos) {
     $self->exec("set ExternalSort on", 'Could not enable ExternalSort');
     my $sort_cmd = 'sort by ' . ${$self->sort}{a}{att};
     $sort_cmd .= ' %c';
@@ -535,7 +550,7 @@ sub run {
   if ($self->display eq 'kwic'
       or $self->display eq 'sentences'
       or $self->display eq 'paragraphs') {
-    if ($self->reduce and $self->pagesize) {
+    if ($self->reduce and $self->pagesize and not $self->cpos) {
       $self->exec("reduce Last to " . $self->pagesize);
       $result->reduce(1);
     }
@@ -543,31 +558,33 @@ sub run {
     # compute page list for navigation
     my $pages = '';
 
-    if ($self->startfrom < 1)
-      { $self->startfrom(1); }     #startfrom may be tainted
-    elsif ($self->startfrom > $result->hitno)
-      { $self->startfrom($result->hitno - 1) ; }
-    else
+    if (not $self->cpos) {
+      if ($self->startfrom < 1)
+	{ $self->startfrom(1); }     #startfrom may be tainted
+      elsif ($self->startfrom > $result->hitno)
+	{ $self->startfrom($result->hitno - 1) ; }
+      else
       { $self->startfrom(int($self->startfrom)); }
 
-    if ( $self->reduce 
-	 or $result->hitno <= $self->pagesize ) {
-      ${$result->pages}{single} = 1;
-    } else {
-      my $thispage = $self->startfrom ? $self->startfrom : 1;
-      my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
-	$self->startfrom + $self->pagesize : undef ;
-      ${$result->pages}{this} = $thispage;
-      ${$result->pages}{next} = $nextpage;
-      ${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
-	$self->startfrom - $self->pagesize : 
-	  ($thispage == 1 ? undef : 1);
-      ${$result->pages}{pagesize} = $self->pagesize;
-      $pages = $thispage . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
-	if $self->pagesize and not $self->reduce;
+      if ( $self->reduce 
+	   or $result->hitno <= $self->pagesize ) {
+	${$result->pages}{single} = 1;
+      } else {
+	my $thispage = $self->startfrom ? $self->startfrom : 1;
+	my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
+	  $self->startfrom + $self->pagesize : undef ;
+	${$result->pages}{this} = $thispage;
+	${$result->pages}{next} = $nextpage;
+	${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
+	  $self->startfrom - $self->pagesize : 
+	    ($thispage == 1 ? undef : 1);
+	${$result->pages}{pagesize} = $self->pagesize;
+	$pages = $thispage . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
+	  if $self->pagesize and not $self->reduce;
+      }
     }
 
-    my @kwic = $self->cqp->exec("cat Last $pages");
+    my @kwic = $self->cqp->exec('cat Last ' . ($pages ? $pages : ''));
     my $attrs = 0;
 
     foreach my $kwic (@kwic) {
@@ -696,6 +713,13 @@ sub exec {
     unless $self->cqp->ok;
 }
 
+sub undump {
+  my ($self, $cpos, $error) = @_;
+  $self->cqp->undump('Last', [$cpos, $cpos]);
+  $self->exception("$error -", $self->cqp->error_message)
+    unless $self->cqp->ok;
+}
+
 sub exception {
   shift;
   return $CWB::Model::exception_handler->('CWB::Model Exception: ' . shift, @_);
@@ -706,7 +730,7 @@ use Mojo::Base -base;
 
 our $VERSION = '0.9';
 
-has [qw(query QUERY time distinct next prev reduce table bigcontext corpusname)] ;
+has [qw(query QUERY time distinct cpos next prev reduce table bigcontext corpusname)] ;
 has hitno       => 0;
 has hits        => sub { return [] } ;
 has pages       => sub { return {} } ;

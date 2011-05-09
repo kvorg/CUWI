@@ -88,6 +88,7 @@
 ** Finish CWB::Model tests
 ** CUWI Webapp tests
 ** Online tests for HTML and CSS syntax checking
+** Use MOJO_CONFIG for test config
 
 * Links: 
 
@@ -101,14 +102,31 @@
            where ALIGNED name is the aligned corpus, aligned by <seg>
    - http://nl2.ijs.si/dsi.html
 
-* Release-critical (8th of May)
+* Public test critical (9th of May)
 
+** CWP 3.2.x - UTF-8 regexps and sorting
 ** bugs
+
+* Release-critical
+
 ** tests
-** sorting
 ** colocations MI3 LL
 ** tabular download
 ** max_size, max_query_time
 ** I18n
 ** multicorpora
 ** documentation
+
+* Future:
+** use drop down menus in help v single pop-up
+** corpus groups
+   - main list lists groups and non-grouped corpora
+   - groups need special description files -> default corpus, links to members
+   - grouped corpora have corpus selectors for corpora within group
+   - alternatively, use SISTER_CORPORA in info files for the drop-down menu
+** structural constraints (with subcorpora)
+
+* May 10:
+** IMP corpora only
+** drop down menu -> radio buttons! (redirect z istim queryjem)
+

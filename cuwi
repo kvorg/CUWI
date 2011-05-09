@@ -4,7 +4,6 @@ use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/u
 
 our $VERSION = '0.9';
 use Mojolicious::Lite;
-#use CWB::Web::Search;
 use IO::File;
 use IO::Dir;
 use CWB::Model;
@@ -20,6 +19,7 @@ my $maxsize = 5000;
 
 my $sanitize;  # param sanitization callback
 my $tabulator; # multi attribute tabulator callback
+my $urlator;   # conditional anchor generator
 
 # config
 # possibly use the config helper?
@@ -54,7 +54,7 @@ get "/style.css" => 'style';
 
 get "/:corpus" => sub {
   my $self = shift;
-  $model->install_exception_handler(sub { $self->stash(exception => [@_]);
+  $model->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
 					  app->log->error(@_); } );
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 
@@ -69,10 +69,14 @@ get "/:corpus" => sub {
 
 get "/:corpus/search" => sub {
   my $self = shift;
-  $model->install_exception_handler(sub { $self->stash(exception => [@_]);
+  $model->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
 					  app->log->error(@_); } );
 
-  $self->app->log->info("Received query: " . $self->param('query'));
+  if ($self->param('cpos')) {
+    $self->app->log->info('Received cpos query: ' . $self->param('cpos'));
+  } else {
+    $self->app->log->info('Received query: ' . $self->param('query'));
+  }
   $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
 
@@ -85,6 +89,8 @@ get "/:corpus/search" => sub {
   $sanitize->($self); # sanitize parameters, set defaults
 #  my %params = %{$self->req->params->to_hash};
   my %params;
+  $params{cpos} = $self->param('cpos') 
+    if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
   $params{query} = $self->param('query');
   $params{search} = $self->param('search');
   $params{ignorecase} = $self->param('ignorecase');
@@ -120,12 +126,21 @@ get "/:corpus/search" => sub {
   $self->param('startfrom', 0)
     unless $self->param('startfrom') < $result->hitno;
 
-  $self->render( template=>'search',
-		 result=>$result,
-		 corpus=>$corpus,
+  if ($self->param('cpos') and $self->param('cpos') =~ m/^\d+$/) {
+    $self->render( template=>'cpos',
+		   result=>$result,
+		   corpus=>$corpus,
+		   tc=>$tabulator,
+		   ur=>$urlator,
+		 ) ;
+  } else {
+    $self->render( template=>'search',
+		   result=>$result,
+		   corpus=>$corpus,
 		 tc=>$tabulator,
-	       );
-} => 'search';
+		 );
+  }
+} ;
 
 # use this to redirect
 $sanitize = sub {
@@ -177,6 +192,14 @@ $tabulator = sub { #$c is controller, means generate contex links
 	     );
 };
 
+$urlator = sub {
+  my $str = shift;
+      return $str unless $str =~ m{^(http|https|ftp|sftp|)://\w+};
+  my $c = shift;
+  return $c->link_to($str, $str);
+};
+
+
 app->start;
 
 __DATA__
@@ -188,9 +211,9 @@ __DATA__
   <p><%== $config->{blurb} %></p>
 % }
 
-% if (stash('exception')) {
+% if (stash('cwbexception')) {
 <div class="exception">
-%= join(' ', @{stash('exception')});
+%= join(' ', @{stash('cwbexception')});
 </div>
 % }
 
@@ -208,9 +231,9 @@ __DATA__
 % layout 'main', title=>'Form';
 %= include 'form', query=>undef, contextsize=>7, size=>50, startfrom=>0, listing=>'all'
 
-% if (stash('exception')) {
+% if (stash('cwbexception')) {
 <div class="exception">
-%= join(' ', @{stash('exception')});
+%= join(' ', @{stash('cwbexception')});
 </div>
 % }
 
@@ -340,6 +363,39 @@ __DATA__
   <% end %>
   </div>
 
+@@ cpos.html.ep
+% layout 'main', title=>'in ' . $corpus->name . ' for position ' . $result->cpos ;
+% if (stash('cwbexception')) {
+<div class="exception">
+%= join(' ', @{stash('cwbexception')});
+</div>
+% }
+% if ($result->hits and defined $result->hits->[0]) {
+%  my $m = $result->hits->[0];
+<div class="structure_report">
+  <table>
+  <tr><th>cpos:</th><td><%= $result->cpos %></td></tr>
+%  foreach my $struct (keys %{$m->{data}}) {
+      <tr><th><%= $struct . ':' %></th><td><%= $ur->($m->{data}{$struct}, $self) %></td></tr>
+%   }
+ </table>
+</div>
+<div class="report">
+  <p>Detailed view for corpus position <b><%= $result->cpos %></b> from a query for <span class="querytext"><%= link_to_here {query => $result->query, cpos => undef} => begin %><%= $result->query %><% end %></span>, retrieved in <%= sprintf('%0.3f', $result->time) %> s.
+  </p>
+</div>
+<div class="matches">
+ <p>
+  <%== $tc->($m->{left}); %>
+  <span class="match"><%== $tc->($m->{match}); %></span>
+  <%== $tc->($m->{right}); %>
+ </p>
+% foreach my $align (keys %{$m->{aligns}}) {
+  <p class="align"><span class="parno"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></a></span><span class="align"><%== $tc->($m->{aligns}{$align}); %></span></p>
+% }
+</div>
+%  }
+
 @@ search.html.ep
 % layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
 <%= include 'form' %>
@@ -360,9 +416,9 @@ __DATA__
 % }
  in <%= sprintf('%0.3f', $result->time) %> s.</p>
   </div>
-% if (stash('exception')) {
+% if (stash('cwbexception')) {
 <div class="exception">
-%= join(' ', @{stash('exception')});
+%= join(' ', @{stash('cwbexception')});
 </div>
 % }
 
@@ -378,7 +434,7 @@ __DATA__
 %  foreach my $m (@{$result->hits}) {
     <tr>
      <td class="head"><span class="no">
-<%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+<%= link_to_here {cpos=>$m->{'cpos'}}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
@@ -400,7 +456,7 @@ __DATA__
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="parno"><%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+     <span class="parno"><%= link_to_here {cpos=>$m->{'cpos'}}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
@@ -599,29 +655,44 @@ span.pagelist > a.here {
  color: red;
 }
 div.report p  { text-align: center; }
+div.structure_report  {
+  background-color: white;
+  padding: 0px;
+  width: 80%;
+  margin-left: auto; margin-right: auto;
+  padding: .4em; padding-bottom: .6em; padding-left: .6em;
+  border-left: solid 3px black;
+  border-top: solid 3px black;
+  border-bottom: solid 3px gray;
+  border-right: solid 3px gray;
+  border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
+}
+div.structure_report table  { padding: .5em; background-color: white; width: 100%; margin-left: auto; margin-right: auto; }
+div.structure_report table th { text-align: left; padding-right: 1em; }
 div.matches   { clear: both; }
 div.matches { background-color: white;
 	      width: 98%;
               padding: 0px;
 	      margin-left: auto; margin-right: auto;
 }
+div.matches p { margin: .25em; margin-left: .5em; margin-right: .5em; }
 div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
 span.no, span.parno   { font-weight: bold; }
 span.parno   { font-weight: bold; vertical-align: top;}
-td  { white-space: nowrap;}
-td.head  { white-space: nowrap; text-align: right;
+div.matches td  { white-space: nowrap;}
+div.matches td.head  { white-space: nowrap; text-align: right;
            padding-left: .3em; padding-right: .3em; }
-td.head a * { text-align: left; white-space: normal; }
-td.left  { text-align: right; vertical-align: text-bottom;}
-td.right { text-align: left;  vertical-align: text-top;}
-td.match { text-align: center; padding-left: .5em; padding-right: .5em;
+div.matches td.head a * { text-align: left; white-space: normal; }
+div.matches td.left  { text-align: right; vertical-align: text-bottom;}
+div.matches td.right { text-align: left;  vertical-align: text-top;}
+div.matches td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
-td.align { white-space: normal; }
-td.count  { text-align: right; padding-left: 1em;}
-tr.total  { font-weight: bold;}
-tr:nth-child(2n+1) { background-color: #F2F2F2; }
+div.matches td.align { white-space: normal; }
+div.matches td.count  { text-align: right; padding-left: 1em;}
+div.matches tr.total  { font-weight: bold;}
+div.matches tr:nth-child(2n+1) { background-color: #F2F2F2; }
 span.token { display: inline-block }
 span.part { display: block; text-align: left; }
 span.token span.part:nth-child(4n+1) { color: black; }
