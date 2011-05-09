@@ -50,11 +50,12 @@
 ** sanitize can't/does not work (readonly??) - tests
 ** Matches 253 to 253 out of 1454 -> context report should improve
 ** make label and checkbox unbreakable in attributes
+** possibly closures for exception handling are buggy
+   - should rethrow the exception and catch it in webapp?
+   - find a way to test all of this
 
 * Web interface
 
-** Make structural tooltips wider
-** Add help tip about bigcontext links to the previous
 ** Add detail display
 ** Add sample implementation with redirect to a fixed sample seeed [till May 8]
 ** Split display modes into search, detail, frequencies, collocations
@@ -94,8 +95,8 @@
 ** http://www.comp.leeds.ac.uk/ssharoff/
 ** http://the.sketchengine.co.uk/
 ** corpus.leeds.ac.uk./natasha mana serge cqp search
-**SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
-**Para corpora:
+** SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
+** Para corpora:
    - http://nl2.ijs.si/index-bi.html
            where ALIGNED name is the aligned corpus, aligned by <seg>
    - http://nl2.ijs.si/dsi.html

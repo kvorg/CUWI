@@ -378,11 +378,12 @@ __DATA__
 %  foreach my $m (@{$result->hits}) {
     <tr>
      <td class="head"><span class="no">
-<%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"tooltip") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
-      cpos: <%= $m->{'cpos'} %>
+<%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+      <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
-      <br /><%= $struct . ': ' . $m->{data}{$struct} %>
+      <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
 %   }
+     <br /><i class="info">Click for detailed view.</i>
      </span><% end %></span></td>
      <td class="left"><%== $tc->($m->{left}); %></td>
      <td class="match"><span class="match"><%== $tc->($m->{match}); %></span></td>
@@ -399,11 +400,12 @@ __DATA__
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="parno"><%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"tooltip") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
-      cpos: <%= $m->{'cpos'} %>
+     <span class="parno"><%= link_to_here {startfrom=>$nr, size=>1, listing=>"all", @single}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+      <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
-      <br /><%= $struct . ': ' . $m->{data}{$struct} %>
+      <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
 %   }
+     <br /><i class="info">Click for detailed view.</i>
       </span><% end %>
      </span>
      <%== $tc->($m->{left}); %>
@@ -659,29 +661,38 @@ div.description h2 {
 
 /* # tooltips from Alexander Dawson,
    # http://sixrevisions.com/css/css-only-tooltips/ */
-a.tooltip {
+a.tooltip, a.infobox {
     border-bottom: 1px dotted #000000; color: #000000; outline: none;
     cursor: help; text-decoration: none;
     position: relative;
     white-space: normal;
 }
-a.tooltip span {
+a.tooltip span, a.infobox span {
     display: none;
     position: absolute;
 }
-a.tooltip:hover span {
+a.tooltip:hover span, a.infobox:hover span {
     display: block;
+    font-weight: normal;
     border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
     font-family: Calibri, Tahoma, Geneva, sans-serif; font-size: 0.7em;
     position: absolute; left: 1em; top: 2em; z-index: 99;
     margin-left: 0; width: 24em;
 }
-a.tooltip:hover img {
+a.infobox:hover span {
+    width: 36em;
+}
+a.infobox:hover i.info {
+    display: inline-block;
+    margin-top: 1ex;
+    border: none;
+}
+a.tooltip:hover img, a.infobox:hover img {
     border: 0; margin: -10px 0 0 -55px;
     float: left; position: absolute;
 }
-a.tooltip:hover em {
+a.tooltip:hover em, a.infobox:hover em {
     font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
     display: block; padding: 0.2em 0 0.6em 0;
 }
