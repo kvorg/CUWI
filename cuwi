@@ -54,6 +54,8 @@ get "/style.css" => 'style';
 
 get "/:corpus" => sub {
   my $self = shift;
+  $model->install_exception_handler(sub { $self->stash(exception => [@_]);
+					  app->log->error(@_); } );
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 
   $self->app->log->info("Redirecting to registry, corpus init aborted.")
@@ -67,6 +69,8 @@ get "/:corpus" => sub {
 
 get "/:corpus/search" => sub {
   my $self = shift;
+  $model->install_exception_handler(sub { $self->stash(exception => [@_]);
+					  app->log->error(@_); } );
 
   $self->app->log->info("Received query: " . $self->param('query'));
   $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
@@ -184,6 +188,12 @@ __DATA__
   <p><%== $config->{blurb} %></p>
 % }
 
+% if (stash('exception')) {
+<div class="exception">
+%= join(' ', @{stash('exception')});
+</div>
+% }
+
 <div class="corpora">
  <h3>Available corpora:</h3>
  <ul>
@@ -197,6 +207,12 @@ __DATA__
 @@ corpus.html.ep
 % layout 'main', title=>'Form';
 %= include 'form', query=>undef, contextsize=>7, size=>50, startfrom=>0, listing=>'all'
+
+% if (stash('exception')) {
+<div class="exception">
+%= join(' ', @{stash('exception')});
+</div>
+% }
 
   <div class="description">
     <%== $corpus->describe('en') %>
@@ -344,6 +360,11 @@ __DATA__
 % }
  in <%= sprintf('%0.3f', $result->time) %> s.</p>
   </div>
+% if (stash('exception')) {
+<div class="exception">
+%= join(' ', @{stash('exception')});
+</div>
+% }
 
 <%= include 'nav' %>
 
@@ -554,6 +575,7 @@ div.show { margin-top: 1ex; }
 div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
+div.exception { margin: 3em; color: Red; }
 div.nav   { font-weight: bold; font-size: 80%; }
 div.nav > a.prev   { float: left; }
 div.nav > a.next   { float: right; }

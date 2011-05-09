@@ -1,4 +1,4 @@
--*- outline -*-
+ -*-
 
 * CWB::Model BUGS:
 
@@ -46,10 +46,8 @@
 
 * Web interface BUGS
 
-** add empty spans for missing attributes in result display + test
 ** disable context links for sample and para display modes
 ** sanitize can't/does not work (readonly??) - tests
-** Display CWB::Model errors = handle errors with web page display
 ** Matches 253 to 253 out of 1454 -> context report should improve
 ** make label and checkbox unbreakable in attributes
 
@@ -57,6 +55,8 @@
 
 ** Make structural tooltips wider
 ** Add help tip about bigcontext links to the previous
+** Add detail display
+** Add sample implementation with redirect to a fixed sample seeed [till May 8]
 ** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
 ** Multicorpora support as needed
@@ -67,7 +67,7 @@
 ** Templates for query result exports
    for tab-delmited, cvs, xml, latex, json and data::dump
 ** Production mode logging of queries - cleanup
-** Sorting, with options:
+** Soritng, with options:
    - by hit string, left / right token
    - ascending, descending, forward, a tergo (reversed)
    - by word or any other atribute
@@ -93,14 +93,14 @@
 ** http://corpus.leeds.ac.uk/paraquery.html
 ** http://www.comp.leeds.ac.uk/ssharoff/
 ** http://the.sketchengine.co.uk/
-** corpus.leeds.ac.uk./ serge cqp search
+** corpus.leeds.ac.uk./natasha mana serge cqp search
 **SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
 **Para corpora:
    - http://nl2.ijs.si/index-bi.html
            where ALIGNED name is the aligned corpus, aligned by <seg>
    - http://nl2.ijs.si/dsi.html
 
-* Release-cirtical (8th of May)
+* Release-critical (8th of May)
 
 ** bugs
 ** tests
