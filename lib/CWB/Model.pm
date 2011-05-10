@@ -97,8 +97,8 @@ use Carp qw(croak cluck);
 our $VERSION = '0.9';
 
 has [qw(name NAME title)];
-has [qw(attributes structures alignements)] => sub { return [] };
-has [qw(description tooltips)]              => sub { return {} };
+has [qw(attributes structures alignements peers)] => sub { return [] };
+has [qw(description tooltips)]                    => sub { return {} };
 has encoding => 'utf8';
 has Encoding => 'UTF-8';
 has language => 'en_US';
@@ -166,6 +166,7 @@ sub new {
 	  or next if m/^DESCRIPTION\s*([^# \n]*)/;
       ${$self->description}{$lang} .= $_
 	if ($lang);
+      push @{$self->peers}, $1  if m/PEER\s+([^# \n]*)/ ;
       $self->encoding($1)
 	if m/ENCODING\s+([^# \n]*)/ ; #this should go away
       ${$self->tooltips}{lc($1)}{$2}{$3 ? $3 : 'en'} = $4
@@ -522,6 +523,7 @@ sub run {
   $result->QUERY($_query);
   @{$result->attributes} = $self->show;
   @{$result->aligns} = @aligns;
+  @{$result->peers} = $self->corpus->peers;
   $result->hitno($self->cqp->exec("size Last"));
   $result->cpos($self->cpos) if $self->cpos;
 
@@ -731,11 +733,9 @@ use Mojo::Base -base;
 our $VERSION = '0.9';
 
 has [qw(query QUERY time distinct cpos next prev reduce table bigcontext corpusname)] ;
-has hitno       => 0;
-has hits        => sub { return [] } ;
-has pages       => sub { return {} } ;
-has attributes  => sub { return [] } ;
-has aligns      => sub { return [] } ;
+has hitno => 0;
+has pages => sub { return {} } ;
+has [qw(hits attributes aligns peers)]  => sub { return [] } ;
 
 sub pagelist {
   my $self = shift;

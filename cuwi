@@ -36,6 +36,20 @@ my $model = CWB::Model->new(
 $model->install_exception_handler(sub { app->log->error(@_); } );
 app->defaults(model => $model);
 
+# peers from config groups
+if ($config->{corpora}{GROUPS} #BUG: optimize traversal
+    and ref $config->{corpora}{GROUPS} eq 'HASH') {
+  app->log->info('Adding groups from config file to CWB Model.');
+  foreach my $group (keys %{$config->{corpora}{GROUPS}}) {
+    my @members = @{$config->{corpora}{GROUPS}{$group}};
+    foreach my $m (@members) {
+      app->log->error("Configuration file error: Group $group includes corpus $m, but no such corpus is present in the registry.")
+	and next unless exists $model->corpora->{$m};
+      push (@{$model->corpora->{$m}->peers}, grep { $_ ne $m } @members);
+    }
+  }
+}
+
 app->log->info('CWB Model instantiated with corpora: ' .
 	       join(', ', $model->list) );
 $config->{root} =~ s{^(.*)/$}{$1};
@@ -69,6 +83,15 @@ get "/:corpus" => sub {
 
 get "/:corpus/search" => sub {
   my $self = shift;
+  if ( $self->param('peer')
+       and $self->param('peer') ne $self->param('corpus') ) {
+    my $query = $self->req->url->query;
+    my $url = '/' . $config->{root} . '/' . $self->param('peer') . '/search?';
+    $self->app->log->info('Redirecting query to peer ' . $self->param('peer') . '.');
+
+    $self->redirect_to($url . $query);
+  }
+
   $model->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
 					  app->log->error(@_); } );
 
@@ -265,6 +288,16 @@ __DATA__
 %   }
   </ul>
 % }
+% my @peers = @{$corpus->peers};
+% my $corpora = $model->corpora;
+% if (@peers) {
+  <h2>Peer Corpora</h2>
+  <ul>
+%   foreach my $p (@peers) {
+    <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->NAME %></b>: <%= $corpora->{$p}->title %></a></li>
+%   }
+  </ul>
+% }
 
 
   </div>
@@ -275,6 +308,10 @@ __DATA__
     <%= form_for "/$config->{root}/" . $corpus->name . "/search", ( method => "get") => begin %>
     <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Query</em>The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored. </span>
     Query:</a>&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
+% if (@{$corpus->peers}) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Corpus</em>In a corpus group, you can send the search to a different corpus in the group by selecting the name of th ecorpus here.</span>
+    Corpus</a>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %>
+% }
     <div class="search">
     <span class="label"><a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em>Search attributes</em>Select the attribute the search is to be performed on. If you need different attributes in the same query, you need to use the CQP syntax. When using CQP syntax, the selected Search attribute is ignored. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Search:</a></span>
