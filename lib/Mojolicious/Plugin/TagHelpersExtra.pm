@@ -18,7 +18,8 @@ sub register {
     $app->helper(link_to_here =>
 		 sub {
 		   my $c = shift;
-		   my $pp = $c->req->params;
+		   my $pp = $c->req->params->clone;
+		   my $url = $c->req->url->clone;
 
 		   # replace
 		   if (defined $_[0] and ref $_[0] eq 'HASH') {
@@ -33,7 +34,7 @@ sub register {
 		       while @{$_[0]};
 		     shift;		   }
 		   $self->_tag('a', 
-			       href => Mojo::ByteStream->new($c->req->url->query($pp))->html_escape,
+			       href => Mojo::ByteStream->new($url->query($pp))->html_escape,
 			       @_)
 		 }
 		);
