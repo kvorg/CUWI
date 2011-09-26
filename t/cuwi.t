@@ -7,9 +7,11 @@ use Test::Mojo;
 $ENV{MOJO_MODE} = 'testing';
 use FindBin;
 $ENV{MOJO_HOME} = "$FindBin::Bin/../";
-require "$ENV{MOJO_HOME}/cuwi";
+# config does not find the correct testing config file when run from script
+$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.testing.json";
+require "$ENV{MOJO_HOME}cuwi";
 
-my $t = Test::Mojo->new;
+my $t = Test::Mojo->new();
 
 # welcome page
 $t->get_ok('/cuwi')

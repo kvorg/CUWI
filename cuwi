@@ -12,7 +12,7 @@ use Encode 'decode';
 
 plugin 'charset' => {charset => 'UTF-8'};
 plugin 'tag_helpers_extra';
-plugin 'pod_renderer';
+#plugin 'pod_renderer';
 
 app->secret('re9phoothieX4dah4chi');
 my $maxsize = 5000;
@@ -23,7 +23,7 @@ my $urlator;   # conditional anchor generator
 
 # config
 # possibly use the config helper?
-my $config = plugin json_config => {
+my $config = plugin JSONConfig => {
         stash_key => 'config',
         default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
     };
@@ -386,19 +386,22 @@ __DATA__
     <%= select_field 'sort_a_att',       $corpus->attributes %>
     <%= select_field 'sort_a_order',     [qw(ascending descending)] %>
     <%= select_field 'sort_a_direction', [qw(natural reversed)] %>
-%#    <%= select_field 'sort_b',           [qw(none left right match)] %>
-%#    <%= select_field 'sort_b_att',       $corpus->attributes %>
-%#    <%= select_field 'sort_b_order',     [qw(ascending descending)] %>
-%#    <%= select_field 'sort_b_direction', [qw(natural reversed)] %><br />
-%#    <%= select_field 'sort_c',           [qw(none left right match)] %>
-%#    <%= select_field 'sort_c_att',       $corpus->attributes %>
-%#    <%= select_field 'sort_c_order',     [qw(ascending descending)] %>
-%#    <%= select_field 'sort_c_direction', [qw(natural reversed)] %>
     </div>
     <span class="submit"><%= submit_button 'Run Query' %></span>
     </div>
   <% end %>
   </div>
+
+@@ commented.out.html
+%#    <%= select_field 'sort_b',           [qw(none left right match)] %>
+%#    <%= select_field 'sort_b_att',       $corpus->attributes %> 
+%#    <%= select_field 'sort_b_order',     [qw(ascending descending)] %> 
+%#    <%= select_field 'sort_b_direction', [qw(natural reversed)] %><br />
+%#    <%= select_field 'sort_c',           [qw(none left right match)] %>
+%#    <%= select_field 'sort_c_att',       $corpus->attributes %>
+%#    <%= select_field 'sort_c_order',     [qw(ascending descending)] %>
+%#    <%= select_field 'sort_c_direction', [qw(natural reversed)] %>
+
 
 @@ cpos.html.ep
 % layout 'main', title=>'in ' . $corpus->name . ' for position ' . $result->cpos ;
