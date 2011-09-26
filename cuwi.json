@@ -1,5 +1,10 @@
 {
-  "registry" : "/home/jona/Projects-ijs/CQP/Corpora/registry",
+  "registry" : "/home/jona/Projects-ijs/CUWI/Corpora/registry:/home/jona/Projects-ijs/CUWI/t/corpora/registry",
   "root"     : "cuwi",
-  "blurb"     : "<p>CUWI (Corpus User's Web interface) is a concordance browser and query engine with a Corpus WorkBench Toolkit backend.</p><p>This page lists all the currently available copora found in CWB registries configured in the CUWI set-up. Select your corpus of choice and perform operations using the provided search form. Search functions are documented using tool-tips.</p><p>In the general principle, a search can be specified either by entering a <a href='http://cogsci.uni-osnabrueck.de/~korpora/ws/CWBdoc/CQP_Tutorial/'>CQP query language statements</a>, where the search-related options are ignored but the display-related options are honoured, or, alternatively, you can limit yourself to simple tokens with optional ? and * place-holders, where the search options can modify the meaning of (all of the) search query tokens.</p><p>Additional tooltips might be available pending information in the corpus registry description file.</p>"
+  "blurb"     : "<p>CUWI (Corpus User's Web interface) is a concordance browser and query engine with a Corpus WorkBench Toolkit backend.</p><p>This page lists all the currently available copora found in CWB registries configured in the CUWI set-up. Select your corpus of choice and perform operations using the provided search form. Search functions are documented using tool-tips.</p><p>In the general principle, a search can be specified either by entering a <a href='http://cogsci.uni-osnabrueck.de/~korpora/ws/CWBdoc/CQP_Tutorial/'>CQP query language statements</a>, where the search-related options are ignored but the display-related options are honoured, or, alternatively, you can limit yourself to simple tokens with optional ? and * place-holders, where the search options can modify the meaning of (all of the) search query tokens.</p><p>Additional tooltips might be available pending information in the corpus registry description file.</p>",
+  "corpora" : {
+    "GROUPS": {
+      "cuwi" : [ "cuwi-sl", "cuwi-fr" ]
+    }  
+  }
 }

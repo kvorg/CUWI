@@ -1,7 +1,7 @@
 NAME "CUWI test corpus: UTF-8, Slovene, aligned"
 ID cuwi-sl
-HOME     /home/jona/Projects-ijs/CQP/t/corpora/data/sl
-INFO     /home/jona/Projects-ijs/CQP/t/corpora/data/sl/cuwi-sl.info
+HOME     /home/jona/Projects-ijs/CUWI/t/corpora/data/sl
+INFO     /home/jona/Projects-ijs/CUWI/t/corpora/data/sl/cuwi-sl.info
 ##:: charset  = "utf8"  # character encoding of corpus data
 ##:: language = "sl_SI" # ISO code for language (de, en, fr, ...)
 STRUCTURE text

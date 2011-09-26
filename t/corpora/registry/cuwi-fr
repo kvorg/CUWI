@@ -1,7 +1,7 @@
 NAME "CUWI test corpus: Latin 1, French, aligned"
 ID cuwi-fr
-HOME     /home/jona/Projects-ijs/CQP/t/corpora/data/fr
-INFO     /home/jona/Projects-ijs/CQP/t/corpora/data/fr/cuwi-fr.info
+HOME     /home/jona/Projects-ijs/CUWI/t/corpora/data/fr
+INFO     /home/jona/Projects-ijs/CUWI/t/corpora/data/fr/cuwi-fr.info
 ##:: charset  = "Latin-1"  # character encoding of corpus data
 ##:: language = "fr_FR" # ISO code for language (de, en, fr, ...)
 STRUCTURE text
