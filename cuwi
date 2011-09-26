@@ -422,6 +422,11 @@ __DATA__
   </p>
 </div>
 <div class="matches">
+%   if (exists $config->{corpora}{$corpus->name}{preview}) {
+%    if (exists $m->{data}{$config->{corpora}{$corpus->name}{preview}}) {
+   <img class="preview" src="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>" />
+%    }
+%   }
  <p>
   <span class="attlabel"><%== $tc->([[$self->param('show')]]); %></span>
   <%== $tc->($m->{left}); %>
@@ -432,11 +437,6 @@ __DATA__
   <p class="align"><span class="parno"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></a></span><span class="align"><%== $tc->($m->{aligns}{$align}); %></span></p>
 % }
 </div>
-%   if (exists $config->{corpora}{$corpus->name}{preview}) {
-%    if (exists $m->{data}{$config->{corpora}{$corpus->name}{preview}}) {
-   <img class="preview" src="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>" />
-%    }
-%   }
 %  }
 
 @@ search.html.ep
@@ -713,8 +713,8 @@ div.structure_report  {
 div.structure_report table  { padding: .5em; background-color: white; width: 100%; margin-left: auto; margin-right: auto; }
 div.structure_report table th { text-align: left; padding-right: 1em; }
 span.attlabel { font-variant:small-caps; font-size: 80%; line-height: 170%; padding-right: 2em; }
-img.preview { display: block; padding: 2em; margin-left: auto; margin-right: auto; }
-div.matches   { clear: both; }
+img.preview { display: block; float: right; padding-top: 0pt; padding: 2em; }
+iv.matches   { clear: both; }
 div.matches { background-color: white;
 	      width: 98%;
               padding: 0px;
