@@ -167,6 +167,7 @@ my $r = $sl->query(query=>'a');
 is_deeply($r,
 	  {
 	   corpusname => $sl->name,
+	   peers => [ [] ],
 	   query      => '[word="a" %c]',
 	   QUERY      => '[word="a" %c]',
 	   time       => $r->time,
@@ -252,6 +253,7 @@ $r = $sl->query(query=>"a*", display=>'wordlist');
 is_deeply($r,
 	  {
 	   corpusname => $sl->name,
+	   peers => [ [] ],
 	   query      => '[word="a.*" %c]',
 	   QUERY      => '[word="a.*" %c]',
 	   time       => $r->time,
