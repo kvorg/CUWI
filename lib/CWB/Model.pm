@@ -26,6 +26,7 @@ sub new {
 }
 
 sub reload {
+  use Carp qw(croak);
   my $self = shift;
 
   # existing virtual corpora cannot be reloaded
@@ -46,6 +47,8 @@ sub reload {
 		  -f $_  and not ( m{/[#]} or m {[#~]$});
 		} map {
 		  my $dirname = $_;
+		  croak "Can't open registry $dirname, bailing out.\n"
+		    unless -r $dirname and -d $dirname and -x $dirname;
 		  map { "$dirname/$_" } IO::Dir->new($dirname)->read;
 		} split (':', $self->registry)#, %virtuals
 	      } ) ;
