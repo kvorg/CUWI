@@ -191,7 +191,7 @@ is_deeply($r,
 	   hitno      => 5,
 	   aligns     => [],
 	   attributes => [[]],
-	   pages      => { single=>1, },
+	   pages      => { single=>1, this=>1 },
 	  }, "Query/Result: default structure test")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 
@@ -267,7 +267,7 @@ is_deeply($r,
 	   hitno      => 59,
 	   aligns     => [],
 	   attributes => [[]],
-	   pages      => { single=>1, },
+	   pages      => { single=>1, this=>1 },
 	  },
  "Query/Result: display model wordlist - default structure test");
 
@@ -276,11 +276,14 @@ is_deeply($r,
 # result: paging
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>50);
 is($r->{hitno}, 42, 'Query/Result: paging to single page: hitno');
-is_deeply($r->{pages}, { single=> 1},
+is_deeply($r->pages, { single=> 1, this=> 1 },
 	  'Query/Result: paging to single page: page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1 ], 'Query/Result: paging to two pages: pages') or
+  diag('Paging data was: ' . Dumper($r->pagelist));;
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>40);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => 41,
            'prev' => undef,
@@ -288,10 +291,14 @@ is_deeply($r->{pages},
            'this' => 1
 	  },
 	  'Query/Result: paging to two pages: first page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 41 ], 'Query/Result: paging to two pages: pages') or
+  diag('Paging data was: ' . Dumper($r->pagelist));;
+
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>40, startfrom=>41);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => undef,
            'prev' => 1,
@@ -299,10 +306,10 @@ is_deeply($r->{pages},
            'this' => 41
 	  },
 	  'Query/Result: paging to two pages: second page\'s page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>40, startfrom=>5);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => undef,
            'prev' => 1,
@@ -310,9 +317,9 @@ is_deeply($r->{pages},
            'this' => 5
 	  },
 	  'Query/Result: paging to two pages: funky intermediate page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>5);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => 6,
            'prev' => undef,
@@ -320,10 +327,10 @@ is_deeply($r->{pages},
            'this' => 1
 	  },
 	  'Query/Result: paging to multiple pages: first page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>5, startfrom=>6);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => 11,
            'prev' => 1,
@@ -331,10 +338,10 @@ is_deeply($r->{pages},
            'this' => 6
 	  },
 	  'Query/Result: paging to multiple pages: second page\'s page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>5, startfrom=>7);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => 12,
            'prev' => 2,
@@ -342,10 +349,10 @@ is_deeply($r->{pages},
            'this' => 7
 	  },
 	  'Query/Result: paging to multiple pages: funky intermediate page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>5, startfrom=>37);
-is_deeply($r->{pages},
+is_deeply($r->pages,
 	  {
            'next' => undef,
            'prev' => 32,
@@ -353,7 +360,7 @@ is_deeply($r->{pages},
            'this' => 37
 	  },
 	  'Query/Result: paging to multiple pages: funky late intermediate page info') or
-  diag('Paging data was: ' . Dumper($r->{pages}));
+  diag('Paging data was: ' . Dumper($r->pages));
 
 # result: alignement, alignement encoding
 
