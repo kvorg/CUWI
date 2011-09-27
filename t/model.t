@@ -274,6 +274,86 @@ is_deeply($r,
 # query/result encoding roundtrip (in queries and all display modes)
 
 # result: paging
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>50);
+is($r->{hitno}, 42, 'Query/Result: paging to single page: hitno');
+is_deeply($r->{pages}, { single=> 1},
+	  'Query/Result: paging to single page: page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>40);
+is_deeply($r->{pages},
+	  {
+           'next' => 41,
+           'prev' => undef,
+           'pagesize' => 40,
+           'this' => 1
+	  },
+	  'Query/Result: paging to two pages: first page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
+		pagesize=>40, startfrom=>41);
+is_deeply($r->{pages},
+	  {
+           'next' => undef,
+           'prev' => 1,
+           'pagesize' => 40,
+           'this' => 41
+	  },
+	  'Query/Result: paging to two pages: second page\'s page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
+		pagesize=>40, startfrom=>5);
+is_deeply($r->{pages},
+	  {
+           'next' => undef,
+           'prev' => 1,
+           'pagesize' => 40,
+           'this' => 5
+	  },
+	  'Query/Result: paging to two pages: funky intermediate page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>5);
+is_deeply($r->{pages},
+	  {
+           'next' => 6,
+           'prev' => undef,
+           'pagesize' => 5,
+           'this' => 1
+	  },
+	  'Query/Result: paging to multiple pages: first page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
+		pagesize=>5, startfrom=>6);
+is_deeply($r->{pages},
+	  {
+           'next' => 11,
+           'prev' => 1,
+           'pagesize' => 5,
+           'this' => 6
+	  },
+	  'Query/Result: paging to multiple pages: second page\'s page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
+		pagesize=>5, startfrom=>7);
+is_deeply($r->{pages},
+	  {
+           'next' => 12,
+           'prev' => 2,
+           'pagesize' => 5,
+           'this' => 7
+	  },
+	  'Query/Result: paging to multiple pages: funky intermediate page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
+		pagesize=>5, startfrom=>37);
+is_deeply($r->{pages},
+	  {
+           'next' => undef,
+           'prev' => 32,
+           'pagesize' => 5,
+           'this' => 37
+	  },
+	  'Query/Result: paging to multiple pages: funky late intermediate page info') or
+  diag('Paging data was: ' . Dumper($r->{pages}));
 
 # result: alignement, alignement encoding
 
