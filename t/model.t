@@ -41,6 +41,8 @@ my $rg = 't/corpora/registry';
 
 my $m = CWB::Model->new(registry => $rg)
   or BAIL_OUT('Can\'t instantiate the model: check the registry or expect major problems.');
+
+# MISSING:
 # test for non-existing registry
 # add tests for multiple registry directories
 # tests for broken registriy files, missing info files
@@ -103,6 +105,9 @@ is($sl->describe('en'), "<p>This is a test corpus for CUWI.</p>\n\n",
    'Corpus info: description localization');
 is($sl->describe('sl'), "<p>Testni korpus CUWI.</p>\n",
    'Corpus info: description localization');
+
+#infofile: peer corpora/alignement
+# MISSING
 
 # Query
 
@@ -246,6 +251,7 @@ ok((scalar @{$r->hits->[0]{left}} == 0
 is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 
 # result: display tests (show, all/sample)
+# MISSING
 
 # result: display modes
 
@@ -272,14 +278,16 @@ is_deeply($r,
  "Query/Result: display model wordlist - default structure test");
 
 # query/result encoding roundtrip (in queries and all display modes)
+# MISSING
 
 # result: paging
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>50);
 is($r->{hitno}, 42, 'Query/Result: paging to single page: hitno');
 is_deeply($r->pages, { single=> 1, this=> 1 },
 	  'Query/Result: paging to single page: page info') or
   diag('Paging data was: ' . Dumper($r->pages));
-is_deeply($r->pagelist, [ 1 ], 'Query/Result: paging to two pages: pages') or
+is_deeply($r->pagelist, [ 1 ], 'Query/Result: paging to single page: pagelist') or
   diag('Paging data was: ' . Dumper($r->pagelist));;
 
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>40);
@@ -292,9 +300,8 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to two pages: first page info') or
   diag('Paging data was: ' . Dumper($r->pages));
-is_deeply($r->pagelist, [ 1, 41 ], 'Query/Result: paging to two pages: pages') or
+is_deeply($r->pagelist, [ 1, 41 ], 'Query/Result: paging to two pages: first page pagelist') or
   diag('Paging data was: ' . Dumper($r->pagelist));;
-
 
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>40, startfrom=>41);
@@ -307,6 +314,9 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to two pages: second page\'s page info') or
   diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 41 ], 'Query/Result: paging to two pages: second page pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));;
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>40, startfrom=>5);
 is_deeply($r->pages,
@@ -318,6 +328,9 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to two pages: funky intermediate page info') or
   diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 41 ], 'Query/Result: paging to two pages: funky intermediate page pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));;
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0, pagesize=>5);
 is_deeply($r->pages,
 	  {
@@ -328,6 +341,21 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to multiple pages: first page info') or
   diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: first page pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));
+is_deeply($r->pagelist(3), [ 1, 6, '...', 41 ], 'Query/Result: paging to multiple pages: first page pagelist ellipsis: 3') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(3) ));
+is_deeply($r->pagelist(4), [ 1, 6, 11, '...', 41 ], 'Query/Result: paging to multiple pages: first page pagelist ellipsis: 4') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(4) ));
+is_deeply($r->pagelist(5), [ 1, 6, 11, 16, '...', 41 ], 'Query/Result: paging to multiple pages: first page pagelist ellipsis: 5') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(5) ));
+is_deeply($r->pagelist(6), [ 1, 6, 11, 16, 21, '...', 41 ], 'Query/Result: paging to multiple pages: first page pagelist ellipsis: 6') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(6) ));
+is_deeply($r->pagelist(8), [ 1, 6, 11, 16, 21, 26, 31, '...', 41 ], 'Query/Result: paging to multiple pages: first page pagelist ellipsis: 8') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(8) ));
+is_deeply($r->pagelist(9), [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: first page pagelist non-ellipsis: 9') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(9) ));
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>5, startfrom=>6);
 is_deeply($r->pages,
@@ -339,6 +367,21 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to multiple pages: second page\'s page info') or
   diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: second page pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));
+is_deeply($r->pagelist(3), [ 1, 6, '...', 41 ], 'Query/Result: paging to multiple pages: second page pagelist ellipsis: 3') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(3) ));
+is_deeply($r->pagelist(4), [ 1, 6, 11, '...', 41 ], 'Query/Result: paging to multiple pages: second page pagelist ellipsis: 4') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(4) ));
+is_deeply($r->pagelist(5), [ 1, 6, 11, 16, '...', 41 ], 'Query/Result: paging to multiple pages: second page pagelist ellipsis: 5') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(5) ));
+is_deeply($r->pagelist(6), [ 1, 6, 11, 16, 21, '...', 41 ], 'Query/Result: paging to multiple pages: second page pagelist ellipsis: 6') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(6) ));
+is_deeply($r->pagelist(8), [ 1, 6, 11, 16, 21, 26, 31, '...', 41 ], 'Query/Result: paging to multiple pages: second page pagelist ellipsis: 8') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(8) ));
+is_deeply($r->pagelist(9), [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: second page pagelist non-ellipsis: 9') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(9) ));
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>5, startfrom=>7);
 is_deeply($r->pages,
@@ -350,6 +393,24 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to multiple pages: funky intermediate page info') or
   diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));
+is_deeply($r->pagelist(3), [ 1, 2, 7, '...', 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist ellipsis: 3') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(3) ));
+is_deeply($r->pagelist(4), [ 1, 2, 7, '...', 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist ellipsis: 4') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(4) ));
+is_deeply($r->pagelist(5), [ 1, 2, 7, 12, '...', 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist ellipsis: 5') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(5) ));
+is_deeply($r->pagelist(6), [ 1, 2, 7, 12, 17, '...', 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist ellipsis: 6') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(6) ));
+is_deeply($r->pagelist(8), [ 1, 2, 7, 12, 17, 22, 27, '...', 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist ellipsis: 8') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(8) ));
+is_deeply($r->pagelist(9), [ 1, 2, 7, 12, 17, 22, 27, 32, '...', 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist ellipsis: 9') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(9) ));
+is_deeply($r->pagelist(10), [ 1, 2, 7, 12, 17, 22, 27, 32, 37, 41 ], 'Query/Result: paging to multiple pages: funky intermediate pagelist non-ellipsis: 10') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(10) ));
+
+
 $r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
 		pagesize=>5, startfrom=>37);
 is_deeply($r->pages,
@@ -361,6 +422,46 @@ is_deeply($r->pages,
 	  },
 	  'Query/Result: paging to multiple pages: funky late intermediate page info') or
   diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));
+is_deeply($r->pagelist(3), [ 1, 6, '...', 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist ellipsis: 3') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(3) ));
+is_deeply($r->pagelist(4), [ 1, 6, 11, '...', 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist ellipsis: 4') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(4) ));
+is_deeply($r->pagelist(5), [ 1, 6, 11, 16, '...', 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist ellipsis: 5') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(5) ));
+is_deeply($r->pagelist(6), [ 1, 6, 11, 16, 21, '...', 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist ellipsis: 6') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(6) ));
+is_deeply($r->pagelist(8), [ 1, 6, 11, 16, 21, 26, 31, '...', 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist ellipsis: 8') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(8) ));
+is_deeply($r->pagelist(9), [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: funky late intermediate pagelist non-ellipsis: 9') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(9) ));
+
+$r = $sl->query(query=>'a*', context=>'3 words', ignorecase=>0,
+		pagesize=>5, startfrom=>36);
+is_deeply($r->pages,
+	  {
+           'next' => 41,
+           'prev' => 31,
+           'pagesize' => 5,
+           'this' => 36
+	  },
+	  'Query/Result: paging to multiple pages: late page info') or
+  diag('Paging data was: ' . Dumper($r->pages));
+is_deeply($r->pagelist, [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist') or
+  diag('Paging data was: ' . Dumper($r->pagelist));
+is_deeply($r->pagelist(3), [ 1, '...', 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist ellipsis: 3') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(3) ));
+is_deeply($r->pagelist(4), [ 1, '...', 31, 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist ellipsis: 4') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(4) ));
+is_deeply($r->pagelist(5), [ 1, '...', 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist ellipsis: 5') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(5) ));
+is_deeply($r->pagelist(6), [ 1, '...', 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist ellipsis: 6') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(6) ));
+is_deeply($r->pagelist(8), [ 1, '...', 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist ellipsis: 8') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(8) ));
+is_deeply($r->pagelist(9), [ 1, 6, 11, 16, 21, 26, 31, 36, 41 ], 'Query/Result: paging to multiple pages: late pagelist non-ellipsis: 9') or
+  diag('Paging data was: ' . Dumper( $r->pagelist(9) ));
 
 # result: alignement, alignement encoding
 
@@ -377,7 +478,9 @@ is_deeply($sl->query(query=>'a', align=>['cuwi-fr'])->hits->[0]{aligns}{'cuwi-fr
    'Query/Result: aligned corpus whitespace and encoding');
 
 # virtual corpora
+# MISSING
 
 # model reloading
+# MISSING
 
 done_testing();

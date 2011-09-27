@@ -754,25 +754,37 @@ sub pagelist {
     }
   } else {
     my $maxpages = shift;
+    #warn "Maxpages: $maxpages";
+    $maxpages--;                        #we produce one more
+    $maxpages = 2 unless $maxpages > 2; #not usefull to produce less than 3
+    #warn "Maxpages: $maxpages";
     $page = ${$self->pages}{this}
       - int($maxpages / 2) * ${$self->pages}{pagesize};
+    #warn "Page: $page";
     # if near beginning
     $page = 1 if $page < 1;
+    #warn "Page: $page";
     # if near end
     $page = $self->hitno - $maxpages * ${$self->pages}{pagesize} + 1
       if $page + $maxpages * ${$self->pages}{pagesize} > $self->hitno;
+    #warn "Page: $page";
     $page = 1 if $page < 1;  #not enough pages
+    #warn "Page: $page";
     my $lastpage  = $page + $maxpages * ${$self->pages}{pagesize};
-    my $finalpage = $self->hitno - 
+    #warn "Lastpage: $lastpage";
+    my $finalpage = $self->hitno -
       ($self->hitno ? 1 : $self->hitno % ${$self->pages}{pagesize});
     $lastpage = $self->hitno
       if $lastpage > $self->hitno; #not enough pages
+    #warn "Finalpage: $finalpage";
     push @pages, 1, '...' if $page != 1;
     while ($page < $lastpage - 1) {
+      #warn "Pushing $page as < $lastpage";
       push @pages, $page;
       $page += ${$self->pages}{pagesize};
-      push @pages, '...', $finalpage if $page > $lastpage - 1 and $page < $self->hitno -1;
+      push @pages, '...' if $page > $lastpage - 1 and $page < $self->hitno -1;
     }
+    push @pages, $finalpage;
   }
   return \@pages;
 }
