@@ -456,7 +456,7 @@ __DATA__
    <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % }
 % elsif ($result->hitno > ${$result->pages}{pagesize}) {
-   <p>Matches <b><%= ${$result->pages}{this} ? ${$result->pages}{this} : 1 %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
+   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % } else {
    <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
 % }
@@ -492,7 +492,7 @@ __DATA__
      <td class="right"><%== $tc->($m->{right}); %></td>
     </tr>
 %   foreach my $align (keys %{$m->{aligns}}) {
-    <tr><td class="head"><span class="no"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></td><td colspan="3" class="align"><%== $tc->($m->{aligns}{$align}); %></td></tr>
+    <tr><td class="head"><span class="no"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignement to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></td><td colspan="3" class="align"><%== $tc->($m->{aligns}{$align}); %></td></tr>
 %   }
 %  }
   </table>

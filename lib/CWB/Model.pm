@@ -574,6 +574,7 @@ sub run {
       if ( $self->reduce 
 	   or $result->hitno <= $self->pagesize ) {
 	${$result->pages}{single} = 1;
+	${$result->pages}{this} = 1;
       } else {
 	my $thispage = $self->startfrom ? $self->startfrom : 1;
 	my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
@@ -657,6 +658,7 @@ sub run {
 
   } elsif ( $self->display eq 'wordlist' ) {
     ${$result->pages}{single} = 1;
+    ${$result->pages}{this} = 1;
     if ($self->reduce and $self->pagesize) {
       $result->reduce(1);
     }
