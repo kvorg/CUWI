@@ -1,21 +1,27 @@
- -*-
+ -*- outline -*-
 
 * CWB::Model BUGS:
 
 ** Always assume the 'word' attribute, even when missing in registry
-** In paging with Result objects, the end page calcualation is wrong
+** In paging with Result objects, the end page calculation is wrong
 ** Structure handling in Query
+   (what???)
 ** Default overrides new for ingorecase
 ** Bug in combined query syntax: a* [word="t.*"], add test!
 ** enable quoting of CQP escapes for "[rule]" and '[rule]'
    - change CQP heurisitcs
-** be more robust about failing corpora files
+** Better tests/fails for failing/missing registry specifications
+** Clean up newlines at the end of description
 
 * CWB::Model
 
 ** Tests
-** Add a handle for literal matching (no regexps) with %l
+** Implement max_size and max_querytime
+** Native CQP and cwb-corpus-scan interfaces
+** Possibly keep wordlists with paging and progressive building
+** Concordance support
 ** Info files: translateable names/titles
+** Add a handle for literal matching (no regexps) with %l
 ** Multicorpora
     - created with an external API from existing corpora
     - shuld send queries to multiple corpora and queue or mix the results
@@ -23,8 +29,7 @@
       (and thus reusable for virtual corpora; pagesize and this needed)
     - corpus offsets should be included for virtual paging
 ** Test cwb beta release compatibiliy
-** Sorting (hopefully no perl fail-over)
-** Implement max_size and max_querytime
+** Sorting with multiple sort keys
 ** Wordlist and sorting/prunning using CQP features better
 ** Implement cached queries:
    - CWB::Model::Corpus keeps a pool of ageing Query objects, matched on query
@@ -35,60 +40,56 @@
     /codist[lemma, "go", word];
 ** Non-blocking high performant queries using
     Mojo::IOLoop->timer(0, sub { poll query or render-cb ; reset timer; }
+    or suitable newer solutions
     The query should have a flag when still running and refuse new request
     from the query cache API
-** Ugly workaround for sample/reduce display mode context links:
-    Chained query on full context, then original search
-** Paging and progressive building for bigger wordlists, or:
-** Native CQP and cwb-corpus-scan interfaces
-** Concordance support
-** Cleanup newlines at the end of descritpion
 
 * Web interface BUGS
 
-** disable context links for sample and para display modes
+** disable context links for biggest display mode (sentence or paragraph)
 ** sanitize can't/does not work (readonly??) - tests
-** Matches 253 to 253 out of 1454 -> context report should improve
 ** make label and checkbox unbreakable in attributes
+   (css?)
 ** possibly closures for exception handling are buggy
    - should rethrow the exception and catch it in webapp?
    - find a way to test all of this
 
 * Web interface
 
-** Add detail display
+** Use click-to popu-up for help
+** cuwi favicon
+** When more than 7 attributes are present, switch display to 4 drop-down lists 
+   (possibly list selection performs a direct query redirect)
+** Log cleanup:
+   Production mode logging of queries and performance -> info
+   Development: info->debug
 ** Add sample implementation with redirect to a fixed sample seeed [till May 8]
+   [check status and add tests]
+** Sorting, with options:
+   - with 2 or three sort keys
 ** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
 ** Multicorpora support as needed
-** cuwi favicon
-** I18n
 ** Present multilingual aligned corpora as a single entry?
+   automatically with a drop-down menu to select the search corpus
 ** Cleanup of templates: separation with includes, I18n
+** I18n
 ** Templates for query result exports
    for tab-delmited, cvs, xml, latex, json and data::dump
-** Production mode logging of queries - cleanup
-** Soritng, with options:
-   - by hit string, left / right token
-   - ascending, descending, forward, a tergo (reversed)
-   - by word or any other atribute
-   - with 2 or three sort keys
-** More sorting and groupig for wordlists:
-   - by frequency, by object found (using column headings for sort)
-   - 2 or 3 sort keys = grouping
-** When more than 7 attributes are present, switch display to 4 drop-down lists 
-** Query compositing, see: http://nl2.ijs.si/fpj.html
-** Use compositing or subcorpus to limit to structural atts with links
 ** Concordance support
    - probaly by supporting cwb-scan-corpus and disk-related
      long-polled results, see CWB::Model TODO
+** More sorting and grouping for wordlists:
+   - by frequency, by object found (using column headings for sort)
+   - 2 or 3 sort keys = grouping
+** Query compositing, see: http://nl2.ijs.si/fpj.html
+** Use compositing or subcorpus to limit to structural atts with links
 
 * Tests
 
 ** Finish CWB::Model tests
 ** CUWI Webapp tests
 ** Online tests for HTML and CSS syntax checking
-** Use MOJO_CONFIG for test config
 
 * Links: 
 
@@ -102,11 +103,6 @@
            where ALIGNED name is the aligned corpus, aligned by <seg>
    - http://nl2.ijs.si/dsi.html
 
-* Public test critical (9th of May)
-
-** CWP 3.2.x - UTF-8 regexps and sorting
-** bugs
-
 * Release-critical
 
 ** tests
@@ -118,15 +114,10 @@
 ** documentation
 
 * Future:
-** use drop down menus in help v single pop-up
 ** corpus groups
    - main list lists groups and non-grouped corpora
    - groups need special description files -> default corpus, links to members
    - grouped corpora have corpus selectors for corpora within group
    - alternatively, use SISTER_CORPORA in info files for the drop-down menu
 ** structural constraints (with subcorpora)
-
-* May 10:
-** IMP corpora only
-** drop down menu -> radio buttons! (redirect z istim queryjem)
 
