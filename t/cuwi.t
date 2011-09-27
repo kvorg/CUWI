@@ -12,6 +12,7 @@ $ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.testing.json";
 require "$ENV{MOJO_HOME}cuwi";
 
 my $t = Test::Mojo->new();
+$t->app->log->level('error');
 
 # welcome page
 $t->get_ok('/cuwi')
