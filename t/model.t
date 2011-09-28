@@ -498,6 +498,7 @@ is_deeply($r->pagelist(11), [ 1, '...', 901, 951, 1001, 1051,
 	  'Query/Result: paging to many pages: funky late page pagelist elipsis') or
   diag('Paging data was: ' . Dumper($r->pagelist(11)));
 
+# result: check number of hits against 2 or more pages for 0-based page offsets
 
 # result: alignement, alignement encoding
 

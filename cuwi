@@ -320,9 +320,7 @@ __DATA__
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
      <span class="ctrl"><%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
-  % }
- &nbsp;<%= $att %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span><% } %>&nbsp;<%= $att %>
   % if ($ttip) {
    </a>
   % }
@@ -340,9 +338,7 @@ __DATA__
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
      <span class="ctrl"><%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span>
-  % }
-&nbsp;<%= $att %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $att %></em><%= $ttip %></span><% } %>&nbsp;<%= $att %>
   % if ($ttip) {
    </a>
   % }
@@ -355,9 +351,7 @@ __DATA__
   % my $ttip; $ttip = ${$model->corpora}{$align}->title if exists ${$model->corpora}{$align};
      <span class="ctrl"><%= check_box_x 'align' => $align %>
   % if ($ttip) {
-    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $align %></em><%= $ttip %></span>
-  % }
-&nbsp;<%= $align %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/icons/Help.png" alt="Help" height="48" width="48" /><em><%= $align %></em><%= $ttip %></span><% } %>&nbsp;<%= $align %>
   % if ($ttip) {
    </a>
   % }
