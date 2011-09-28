@@ -754,36 +754,33 @@ sub pagelist {
     }
   } else {
     my $maxpages = shift;
-    #warn "Maxpages: $maxpages";
     $maxpages--;                        #we produce one more
     $maxpages = 2 unless $maxpages > 2; #not usefull to produce less than 3
-    #warn "Maxpages: $maxpages";
-    $page = ${$self->pages}{this}
-      - int($maxpages / 2) * ${$self->pages}{pagesize};
-    #warn "Page: $page";
+    $page = (${$self->pages}{this}
+	     - (${$self->pages}{this} % ${$self->pages}{pagesize}))
+      - int($maxpages / 2) * ${$self->pages}{pagesize} + 1;
     # if near beginning
-    $page = 1 if $page < 1;
-    #warn "Page: $page";
-    # if near end
-    $page = $self->hitno - $maxpages * ${$self->pages}{pagesize} + 1
-      if $page + $maxpages * ${$self->pages}{pagesize} > $self->hitno;
-    #warn "Page: $page";
-    $page = 1 if $page < 1;  #not enough pages
-    #warn "Page: $page";
+    $page = 1 if $page < 1;  # near beginning
     my $lastpage  = $page + $maxpages * ${$self->pages}{pagesize};
-    #warn "Lastpage: $lastpage";
-    my $finalpage = $self->hitno -
-      ($self->hitno ? 1 : $self->hitno % ${$self->pages}{pagesize});
-    $lastpage = $self->hitno
-      if $lastpage > $self->hitno; #not enough pages
-    #warn "Finalpage: $finalpage";
-    push @pages, 1, '...' if $page != 1;
+    my $finalpage = $self->hitno + 1 -
+      ($self->hitno % ${$self->pages}{pagesize});
+    $lastpage = $finalpage 
+      if $lastpage > $finalpage; #not enough pages
+    # if near end
+    $page = $lastpage - (($maxpages -1) * ${$self->pages}{pagesize})
+	if (($page + ($maxpages * ${$self->pages}{pagesize})) > $lastpage);
+    $page = 1 if $page < 1;  # not enough pages
+    if ($page != 1) {
+      push @pages, 1;
+      push @pages, '...' unless $page == 1 + ${$self->pages}{pagesize};
+      # skip dots for second page start
+    }
     while ($page < $lastpage - 1) {
-      #warn "Pushing $page as < $lastpage";
       push @pages, $page;
       $page += ${$self->pages}{pagesize};
-      push @pages, '...' if $page > $lastpage - 1 and $page < $self->hitno -1;
     }
+    push @pages, '...' #insert if there is at least a single uncovered page
+      if $page < $finalpage - ${$self->pages}{pagesize} + 1;
     push @pages, $finalpage;
   }
   return \@pages;
