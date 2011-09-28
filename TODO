@@ -46,6 +46,7 @@
 
 * Web interface BUGS
 
+** fix 51 to 42 out of 43 bug in kwic output
 ** disable context links for biggest display mode (sentence or paragraph)
 ** sanitize can't/does not work (readonly??) - tests
 ** make label and checkbox unbreakable in attributes
