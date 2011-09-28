@@ -524,7 +524,6 @@ __DATA__
 %  my $nr = 1;
   %  foreach my $m (@{$result->hits}) {
     <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%== $tc->($m->[0], $self) %></td><td class="count"><%= $m->[1] %></td></tr>
-  %#  <tr><td><%= $self->dumper($m) %></td></tr>
   %  }
   </table>
 % } else {
