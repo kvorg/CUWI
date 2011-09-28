@@ -585,7 +585,7 @@ sub run {
 	  $self->startfrom - $self->pagesize : 
 	    ($thispage == 1 ? undef : 1);
 	${$result->pages}{pagesize} = $self->pagesize;
-	$pages = $thispage . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
+	$pages = $thispage -1 . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
 	  if $self->pagesize and not $self->reduce;
       }
     }
