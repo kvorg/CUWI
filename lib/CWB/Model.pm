@@ -663,7 +663,7 @@ sub run {
       $result->reduce(1);
     }
     $result->table(1);
-    my @kwic = $self->cqp->exec("cat Last 1 10000"); # limit max
+    my @kwic = $self->cqp->exec("cat Last 0 10000"); # limit max, 0-based
     #warn "Got " . scalar @kwic . " lines.\n";
     my %counts;
     my $attrs=0;
