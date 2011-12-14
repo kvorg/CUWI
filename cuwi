@@ -183,8 +183,7 @@ $sanitize = sub {
       and $self->param('size') <= $maxsize;
   $self->param('startfrom', 1)
     unless $self->param('startfrom')
-      and '' . $self->param('startfrom') =~ m{[0-9]+}
-      and $self->param('startfrom') <= $maxsize;
+      and '' . $self->param('startfrom') =~ m{[0-9]+};
 };
 
 $tabulator = sub { #$c is controller, means generate contex links
@@ -421,7 +420,7 @@ __DATA__
 <div class="matches">
 %   if (exists $config->{corpora}{$corpus->name}{preview}) {
 %    if (exists $m->{data}{$config->{corpora}{$corpus->name}{preview}}) {
-   <img class="preview" src="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>" />
+   <a href="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>"><img class="preview" src="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>" /></a>
 %    }
 %   }
  <p>
@@ -709,7 +708,7 @@ div.structure_report  {
 div.structure_report table  { padding: .5em; background-color: white; width: 100%; margin-left: auto; margin-right: auto; }
 div.structure_report table th { text-align: left; padding-right: 1em; }
 span.attlabel { font-variant:small-caps; font-size: 80%; line-height: 170%; padding-right: 2em; }
-img.preview { display: block; float: right; padding-top: 0pt; padding: 2em; }
+img.preview { display: block; float: left; padding-top: 0pt; padding: 2em; width: 50%; }
 iv.matches   { clear: both; }
 div.matches { background-color: white;
 	      width: 98%;
@@ -717,7 +716,7 @@ div.matches { background-color: white;
 	      margin-left: auto; margin-right: auto;
 }
 div.matches p { margin: .25em; margin-left: .5em; margin-right: .5em; }
-div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; }
+div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; clear: right;}
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
 span.no, span.parno   { font-weight: bold; }

@@ -46,7 +46,10 @@
 
 * Web interface BUGS
 
-** fix 51 to 42 out of 43 bug in kwic output
+** wordlist: quote metacharacters in string links 
+** fix wierd behavior with last page on \. search on imp-goo
+** cuwi favicon
+** help icon
 ** disable context links for biggest display mode (sentence or paragraph)
 ** sanitize can't/does not work (readonly??) - tests
 ** make label and checkbox unbreakable in attributes
@@ -58,7 +61,7 @@
 * Web interface
 
 ** Use click-to popu-up for help
-** cuwi favicon
+** Additional grid interface as per http://nl.ijs.si/jos/cqp/uni
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
 ** Log cleanup:
@@ -121,4 +124,14 @@
    - grouped corpora have corpus selectors for corpora within group
    - alternatively, use SISTER_CORPORA in info files for the drop-down menu
 ** structural constraints (with subcorpora)
+** user registration, storable queries, diff between storable queries etc.
+ From the list:
+Message:
+From our experience working interactively in CQP, it's even more useful to
+be able to run subqueries, i.e. filter query results either by collocates
+(tokens with a certain property within a specified range, e.g. a finite
+verb within 3 words) or by another CQP query.  This could easily be
+implemented using "set keyword" and subqueries in CQP, but the results
+would have to be stored as saved queries (because they can't easily be
+reproduced when they're dropped from the cache).
 

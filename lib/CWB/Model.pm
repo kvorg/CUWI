@@ -231,14 +231,13 @@ sub new {
 
   # generate corpora here
 
-  # virtual attributes, structures, alignements: 
+  # virtual attributes, structures, alignements:
   # use superset here and filter when passing to subcorpus
 }
 
 sub registry { croak "CWB::Model::Corpus::Virtual syntax error: no registry in virtual corpora.\n" }
 
 sub file { croak "CWB::Model::Corpus::Virtual syntax error: no file in virtual corpora.\n" }
-
 
 sub reload {
   my $self;
