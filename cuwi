@@ -118,6 +118,7 @@ get "/:corpus/search" => sub {
   $params{search} = $self->param('search');
   $params{ignorecase} = $self->param('ignorecase');
   $params{ignorediacritics} = $self->param('ignorediacritics');
+  $params{ignoremeta} = $self->param('ignoremeta') || 0;
   $params{show} = ref $self->param('show') eq 'ARRAY' ?
     $self->param('show') : [ $self->param('show') ] ;
   $params{align} = ref $self->param('align') eq 'ARRAY' ?
@@ -198,8 +199,9 @@ $tabulator = sub { #$c is controller, means generate contex links
       my $query = join(' ', map {$_->[$i]} @$tokens ) ;
       foreach my $j (0 .. scalar @$tokens - 1) {
 	$tokens->[$j][$i] = $c->link_to_here({query=>$query,
-					    search=>$attr,
-					    display=>'kwic'},
+					      search=>$attr,
+					      display=>'kwic',
+					      ignoremeta=>1},
 				    sub { return $tokens->[$j][$i] });
       }
       $i++;
@@ -414,7 +416,7 @@ __DATA__
  </table>
 </div>
 <div class="report">
-  <p>Detailed view for corpus position <b><%= $result->cpos %></b> from a query for <span class="querytext"><%= link_to_here {query => $result->query, cpos => undef} => begin %><%= $result->query %><% end %></span>, retrieved in <%= sprintf('%0.3f', $result->time) %> s.
+  <p>Detailed view for corpus position <b><%= $result->cpos %></b> from a query for <span class="querytext"><%= link_to_here {query => $result->query, cpos => undef, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>, retrieved in <%= sprintf('%0.3f', $result->time) %> s.
   </p>
 </div>
 <div class="matches">
@@ -444,14 +446,14 @@ __DATA__
 % if ($result->reduce) {
   out of <b><%= $result->distinct %></b>
 % }
- distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
+ distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % } elsif ($result->reduce) {
-   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
+   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % }
 % elsif ($result->hitno > ${$result->pages}{pagesize}) {
-   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
+   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % } else {
-   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query} => begin %><%= $result->query %><% end %></span>
+   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % }
  in <%= sprintf('%0.3f', $result->time) %> s.</p>
   </div>
@@ -473,7 +475,7 @@ __DATA__
 %  foreach my $m (@{$result->hits}) {
     <tr>
      <td class="head"><span class="no">
-<%= link_to_here {cpos=>$m->{'cpos'}}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+<%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
@@ -495,7 +497,7 @@ __DATA__
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="parno"><%= link_to_here {cpos=>$m->{'cpos'}}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+     <span class="parno"><%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
@@ -530,15 +532,15 @@ __DATA__
 @@ nav.html.ep
 % if ($result->hitno and not ${$result->pages}{single}) {
   <div class="nav">
-    <%= link_to_here { startfrom => ${$result->pages}{prev} } => (class=>'prev') => begin %>Prev<% end %>
-    <%= link_to_here { startfrom => ${$result->pages}{next} } => (class=>'next') => begin %>Next<% end %>
+    <%= link_to_here { startfrom => ${$result->pages}{prev}, ignoremeta => 0 } => (class=>'prev') => begin %>Prev<% end %>
+    <%= link_to_here { startfrom => ${$result->pages}{next}, ignoremeta => 0 } => (class=>'next') => begin %>Next<% end %>
    <span class="pagelist">
      % foreach my $page (@{$result->pagelist(11)}) {
      %  if ($page eq '...') {
           . . .
      %    next;
      %  }
-       <%= link_to_here { startfrom => $page } 
+       <%= link_to_here { startfrom => $page, ignoremeta => 0 } 
             => (class=> ( ${$result->pages}{this} == $page ? 'here' : 'pg') )
             => begin %><%= $page %><% end %>
      % }

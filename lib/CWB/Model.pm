@@ -337,6 +337,7 @@ has align       =>  sub { return [] };
 has sort        =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
+has ignoremeta => 0;
 has startfrom   => 1;
 has pagesize    => 25;
 has context     => 25;
@@ -416,7 +417,7 @@ sub run {
 		       s/[?]/\\?/g;
 		       s/(\[|\])/\\$1/g;
 		       s/"/""/gm;
-		     } elsif (not m{^\[}) {
+		     } elsif (not m{^\[} and not $self->ignoremeta) {
 		       s/(?<!\\)[*]/.*/g;
 		       s/(?<!\\)[?]/./g;
 		       s/(\[|\])/\\$1/g;
@@ -426,9 +427,10 @@ sub run {
 		     . (defined $self->search ?
 			$self->search : 'word')
 		       . '="' . $_ . '"'
-		       . ( ( $self->ignorecase or $self->ignorediacritics ) ? ' %' : '' )
+		       . ( ( $self->ignorecase or $self->ignorediacritics or $self->ignoremeta ) ? ' %' : '' )
 		       . ( $self->ignorecase ? 'c' : '' )
 		       . ( $self->ignorediacritics  ? 'd' : '' )
+		       . ( $self->ignoremeta  ? 'l' : '' )
 		      . ']'
 		     } split('\s+', $query)
 		  );
