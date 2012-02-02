@@ -16,6 +16,7 @@
 * CWB::Model
 
 ** Tests
+** spook: sub-searches (based on existing search)
 ** Implement max_size and max_querytime
 ** Native CQP and cwb-corpus-scan interfaces
 ** Possibly keep wordlists with paging and progressive building
@@ -60,6 +61,19 @@
 
 * Web interface
 
+** spook: Templates for query result exports
+   for tab-delmited, cvs, xml, latex, json and data::dump
+** spook: web homes for corpus groups
+** spook: statistical corpus data at entry page (copora data size in kb, number of keywoards (pojavnice, različnice, leme in datoteke)
+** spook: more on home page:
+    potem pa še vnaprej pripravljene besedne sezname (urejene po abecedi in pogostosti) na vsak jezik in vsak podkorpus, se pravi za: an, ne, fr, it, sl(-an), sl(-ne), sl(-fr), sl(-it), sl(-sl), sl(-all). 
+** spook: home page info:
+    navodila za uporabo v slovenščini s čimveč primeri različnih tipov iskanj
+** spook: password protected groups
+** spook: sub-searches (based on existing search)
+** spook: structural attribute limited search
+** spook: bilingual search support
+    Iskalnik mora omogočati iskanje po obeh jezikih hkrati, se pravi npr. Spook-an: president on aligned Spook-sl: predsednik. 
 ** Use click-to popu-up for help
 ** Additional grid interface as per http://nl.ijs.si/jos/cqp/uni
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
@@ -78,8 +92,6 @@
    automatically with a drop-down menu to select the search corpus
 ** Cleanup of templates: separation with includes, I18n
 ** I18n
-** Templates for query result exports
-   for tab-delmited, cvs, xml, latex, json and data::dump
 ** Concordance support
    - probaly by supporting cwb-scan-corpus and disk-related
      long-polled results, see CWB::Model TODO
