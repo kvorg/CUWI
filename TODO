@@ -24,6 +24,7 @@
 ** Info files: translateable names/titles
 ** Add a handle for literal matching (no regexps) with %l
 ** Multicorpora
+    spook:
     - created with an external API from existing corpora
     - shuld send queries to multiple corpora and queue or mix the results
     - paging calculation should be optional, wrapped up in a function
@@ -47,7 +48,7 @@
 
 * Web interface BUGS
 
-** wordlist: quote metacharacters in string links 
+** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo
 ** cuwi favicon
 ** help icon
@@ -62,9 +63,10 @@
 * Web interface
 
 ** short ID for structural attribute (auth year?) in [result]
+   sane default + changeable from info file or conf
 ** spook: subcorpus selection: slo, slo*, slo_* ... per et
 ** spook: Templates for query result exports
-   for tab-delmited, cvs, xml, latex, json and data::dump
+   for excel/oocalc, tab-delmited, cvs, xml, latex, json, data::dump, yaml
 ** spook: web homes for corpus groups
 ** spook: statistical corpus data at entry page (copora data size in kb, number of keywoards (pojavnice, različnice, leme in datoteke)
 ** spook: more on home page:
@@ -75,10 +77,14 @@
 ** spook: password protected groups
 ** spook: sub-searches (based on existing search)
 ** spook: structural attribute limited search (links + CQP, then add-on fields)
+   "sito za strukturne atribute: maska + link v rezultatih"
 ** spook: bilingual search support
     Iskalnik mora omogočati iskanje po obeh jezikih hkrati, se pravi npr. Spook-an: president on aligned Spook-sl: predsednik. 
     glej: http://nl2.ijs.si/index-bi.html
-** Use click-to popu-up for help
+** spook
+** imp: Use click-to popu-up for help
+   (via js binding + help at bottom always)
+** imp: sortable frequency lists
 ** Additional grid interface as per http://nl.ijs.si/jos/cqp/uni
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
