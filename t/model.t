@@ -34,7 +34,7 @@ my ($cqp_version) = grep { m{^Version:\s+.*$} }`$cqp -v`;
 $cqp_version =~ s{^Version:\s+(.*)$}{$1};
 like($cqp_version, qr{^[2-9][.]}, 'cqp executable: version 2.0.0 or later');
 # Available testing corpora
-my $c_num = 2;
+my $c_num = 3;
 my $rg = 't/corpora/registry';
 
 # Model
@@ -82,6 +82,12 @@ ok(scalar @{$sl->structures} == 8, 'Corpus: structures parsing');
 is_deeply([sort @{$sl->alignements}],
 	  [sort qw(cuwi-fr)],
 	  'Corpus: alignement names');
+my $slnw = ${$m->corpora}{'cuwi-sl-noword'};
+isa_ok($slnw, 'CWB::Model::Corpus::Filebased',
+       'CWB::Model::Corpus instantiation');
+cmp_ok(scalar @{$slnw->attributes}, '==', 6, 'Corpus: attributes parsing');
+ok(grep {$_ eq 'word'} @{$slnw->attributes},
+   'Corpus: added missing "word" attribute.');
 
 # Info file parsing
 

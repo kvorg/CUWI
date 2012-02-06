@@ -15,7 +15,7 @@ has registry => sub {
   return $ENV{CORPUS_REGISTRY} ? $ENV{CORPUS_REGISTRY} : $CWB::Config::Registry;
 } ;
 has corpora => sub {
-  return { } ; 
+  return { } ;
 };
 
 sub new {
@@ -159,6 +159,9 @@ sub new {
   }
   $fh->close;
   $self->title( ucfirst($self->name) ) unless $self->title;
+  push @{$self->attributes}, 'word'
+    unless grep { $_ eq 'word' } @{$self->attributes};
+
 
   if ($self->infofile and
       $fh->open($self->infofile, '<:encoding(UTF-8)') ) {

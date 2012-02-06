@@ -2,7 +2,6 @@
 
 * CWB::Model BUGS:
 
-** Always assume the 'word' attribute, even when missing in registry
 ** In paging with Result objects, the end page calculation is wrong
 ** Structure handling in Query
    (what???)
