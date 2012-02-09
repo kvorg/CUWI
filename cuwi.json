@@ -5,6 +5,14 @@
   "corpora" : {
     "GROUPS": {
       "cuwi" : [ "cuwi-sl", "cuwi-fr" ]
+    },
+    "VIRTUALS": {
+      "cuwoos": {
+        "subcorpora": [ "cuwi-sl", "cuwi-fr" ],
+        "options": {
+          "interleaved": 1
+        }
+      }
     }  
   }
 }

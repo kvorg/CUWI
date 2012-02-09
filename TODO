@@ -14,14 +14,6 @@
 
 * CWB::Model
 
-** Tests
-** spook: sub-searches (based on existing search)
-** Implement max_size and max_querytime
-** Native CQP and cwb-corpus-scan interfaces
-** Possibly keep wordlists with paging and progressive building
-** Concordance support
-** Info files: translateable names/titles
-** Add a handle for literal matching (no regexps) with %l
 ** Multicorpora
     spook:
     - created with an external API from existing corpora
@@ -29,6 +21,14 @@
     - paging calculation should be optional, wrapped up in a function
       (and thus reusable for virtual corpora; pagesize and this needed)
     - corpus offsets should be included for virtual paging
+** spook: sub-searches (based on existing search)
+** Tests
+** Implement max_size and max_querytime
+** Native CQP and cwb-corpus-scan interfaces
+** Possibly keep wordlists with paging and progressive building
+** Concordance support
+** Info files: translateable names/titles
+** Add a handle for literal matching (no regexps) with %l
 ** Test cwb beta release compatibiliy
 ** Sorting with multiple sort keys
 ** Wordlist and sorting/prunning using CQP features better

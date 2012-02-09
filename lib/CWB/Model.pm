@@ -59,7 +59,13 @@ sub reload {
 # factory for virtual corpora
 sub virtual {
   my $self = shift;
-  my $corpus = CWB::Model::Corpus::Virtual->new(model => $self, @_);
+  my $name = shift;
+
+  croak "CWB::Model Exception: Could not instantiate CWB::Model::Corpus::Virtual $name: name exists in the model."
+    and return undef
+      if exists ${$self->corpora}{$name};
+
+  my $corpus = CWB::Model::Corpus::Virtual->new(model => $self, $name => @_);
   ${$self->corpora}{$corpus->name} = $corpus;
   return $corpus;
 }
@@ -99,7 +105,7 @@ use Carp qw(croak cluck);
 
 our $VERSION = '0.9';
 
-has [qw(name NAME title)];
+has [qw(name NAME title model)];
 has [qw(attributes structures alignements peers)] => sub { return [] };
 has [qw(description tooltips)]                    => sub { return {} };
 has encoding => 'utf8';
@@ -137,7 +143,7 @@ use Carp;
 
 our $VERSION = '0.9';
 
-has [qw(file infofile model)];
+has [qw(file infofile)];
 
 sub new {
   my $self = shift->SUPER::new(file => shift, model => shift);
@@ -217,9 +223,12 @@ has qw(interleaved model);
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
 #   possibly title attributes, structures, description, tooltips
 sub new {
-  croak "CWB::Model::Corpus::Virtual syntax error: not called as ->new(model => <model>, 'name' => [<corpora>], %opts)" unless scalar @_ >= 3 and ((scalar @_) % 2) == 0;
-  my ($this, $name, $subcorpora) = (shift, shift, shift);
+  my $this = shift;
+  croak "CWB::Model::Corpus::Virtual syntax error: not called as ->new(model => <model>, 'name' => [<corpora>], %opts)" unless scalar @_ >= 3 and $_[0] eq 'model' and ((scalar @_) % 2) == 0;
+  shift; my $model = shift;
+  my ($name, $subcorpora) = (shift, shift);
   my $self = $this->SUPER::new(name => $name,
+			       model => $model,
 			       subcorpora => $subcorpora,
 			       @_
 			      );

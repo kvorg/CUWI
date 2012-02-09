@@ -50,6 +50,22 @@ if ($config->{corpora}{GROUPS} #BUG: optimize traversal
   }
 }
 
+# virtauls from config
+if ($config->{corpora}{VIRTUALS} #BUG: optimize traversal
+    and ref $config->{corpora}{VIRTUALS} eq 'HASH') {
+  app->log->info('Adding virtual corpora from config file to CWB Model.');
+  foreach my $virtual (keys %{$config->{corpora}{VIRTUALS}}) {
+    $model->virtual($virtual,
+		    ((ref ($config->{corpora}{VIRTUALS}{$virtual}{subcorpora}) eq 'ARRAY') ?
+		    $config->{corpora}{VIRTUALS}{$virtual}{subcorpora} :
+		    []),
+		    ((ref ($config->{corpora}{VIRTUALS}{$virtual}{options}) eq 'HASH') ?
+		    %{$config->{corpora}{VIRTUALS}{$virtual}{options}} :
+		    ())
+		   );
+  }
+}
+
 app->log->info('CWB Model instantiated with corpora: ' .
 	       join(', ', $model->list) );
 $config->{root} =~ s{^(.*)/$}{$1};
