@@ -522,6 +522,13 @@ is_deeply($sl->query(query=>'a', align=>['cuwi-fr'])->hits->[0]{aligns}{'cuwi-fr
    'Query/Result: aligned corpus whitespace and encoding');
 
 # virtual corpora
+# PLEASE ADD THIS BY HAND, NO CONF FILE HERE
+my $virt = ${$m->corpora}{'cuwoos'};
+isa_ok($virt, 'CWB::Corpus::Virtual', 'Virtual Corpus: Instantiation');
+is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
+is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
+is($virt->title, '', 'Virtual Corpus: title parsing');
+
 # MISSING
 
 # model reloading

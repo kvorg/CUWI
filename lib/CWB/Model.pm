@@ -66,6 +66,7 @@ sub virtual {
       if exists ${$self->corpora}{$name};
 
   my $corpus = CWB::Model::Corpus::Virtual->new(model => $self, $name => @_);
+  croak "CWB::Model Exception: Could not instantiate CWB::Model::Corpus::Virtual $name: object instantiation failed." unless defined $corpus and $corpus->can('subcorpora');
   ${$self->corpora}{$corpus->name} = $corpus;
   return $corpus;
 }
