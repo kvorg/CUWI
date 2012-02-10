@@ -243,6 +243,7 @@ sub new {
   $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
   # generate corpora here
+  $self->reload;
 
   # virtual attributes, structures, alignements:
   # use superset here and filter when passing to subcorpus
@@ -253,16 +254,17 @@ sub registry { croak "CWB::Model::Corpus::Virtual syntax error: no registry in v
 sub file { croak "CWB::Model::Corpus::Virtual syntax error: no file in virtual corpora.\n" }
 
 sub reload {
-  my $self;
+  my $self = shift;
   $CWB::Model::exception_handler->("Could not map subcorpora from model instances - no model passed to virtual coprus.\n") unless $self->model;
 
-  return $self->_subcorpora =
+  return $self->_subcorpora(
     {
      map {
-           $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - missing among model's corpora.\n") unless ${$self->model}{$_};
-	   ($_ => ${$self->model}{$_})
+           $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - missing among model's corpora.\n") unless ${$self->model->corpora}{$_};
+	   ($_ => ${$self->model->corpora}{$_})
 	 } @{$self->subcorpora}
-    };
+    }
+			   );
 }
 
 sub _map_opts {
@@ -280,7 +282,7 @@ sub query {
   # single subcorpus: virtual corpus mapping
   if (scalar @{$self->subcorpora} == 1) {
     cluck 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
-    return ${$self->subcorpora}[0]->query($self->_map_opts(${$self->subcorpora}[0], @_));
+    return ${$self->_subcorpora}[0]->query($self->_map_opts(${$self->_subcorpora}[0], @_));
   }
   # interleave 0/1support here
   # support in Filecorpus query by hitssonly => 1
@@ -296,6 +298,7 @@ sub query {
   # multiple corpora: hitnums are needed for paging and interleaved (slow)
   my %hitinfo;
   foreach my $subcorpus (@{$self->subcorpora}) {
+    $subcorpus = ${$self->_subcorpora}{$subcorpus};
     $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($subcorpus, $self->_map_opts(%opts), hitsonly=>1);
   }
   my $result = CWB::Model::Result->new;
@@ -305,6 +308,7 @@ sub query {
   unless ($self->interlaved) {
     my $offset = 0;
     foreach my $subcorpus (@{$self->subcorpora}) {
+      $subcorpus = ${$self->_subcorpora}{$subcorpus};
       $hitinfo{$subcorpus->name}{start} =
 	($opts{startfrom} - $offset > 1
 	  and $opts{startfrom} - $offset <= $hitinfo{$subcorpus->name}{hits}) ?
@@ -317,6 +321,7 @@ sub query {
   } else {
   # interleaved
     foreach my $subcorpus (@{$self->subcorpora}) {
+      $subcorpus = ${$self->_subcorpora}{$subcorpus};
       # manipulate start and pagesize here for paging and ratii
       my $r = $subcorpus->query($subcorpus, $self->_map_opts(%opts));
       $result->hitno($result->hitno + $r->hitno);
@@ -342,7 +347,8 @@ our $VERSION = '0.9';
 
 has [ qw(corpus model cqp
 	cpos query reduce maxhits identify
-	l_context r_context debug) ] ;
+	l_context r_context
+	hitsonly debug) ] ;
 has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
@@ -546,6 +552,11 @@ sub run {
 
   # select context display type for hit context presentation - obsoleted?
   $result->bigcontext($bigcontext);
+
+  # hitsonly
+  if ($self->hitsonly) {
+    return $result;
+  }
 
   # sorting
   if ($self->sort and exists ${$self->sort}{a} and not $self->cpos) {
