@@ -270,6 +270,7 @@ sub reload {
 sub _map_opts {
   my $self = shift;
   my $subcorpus = shift;
+  $DB::single = 2;
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
   # this should map virtual options (atts, structures, aligns) to actual ones
   # and will be called at query time
@@ -555,6 +556,7 @@ sub run {
 
   # hitsonly
   if ($self->hitsonly) {
+    $result->time(Time::HiRes::gettimeofday() - $query_start_time);
     return $result;
   }
 
