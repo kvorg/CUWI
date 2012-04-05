@@ -268,6 +268,30 @@ sub reload {
 			   );
 }
 
+sub _make_result {
+    my $self = shift;
+    my %opts = @_;
+
+    my $result = CWB::Model::Result->new(corpusname => $self->name)
+      or $self->exception("Failed to create a result object.");
+
+    @{$result->attributes} = [];
+    @{$result->peers} = $self->peers;
+    $result->hitno(0);
+    $result->distinct(0);
+
+    # select context display type for hit context presentation - obsoleted?
+    #$result->bigcontext($bigcontext);
+
+    # hitsonly
+    #if ($self->hitsonly) {
+    #  $result->time(Time::HiRes::gettimeofday() - $query_start_time);
+    #  return $result;
+    #}
+    return $result;
+}
+
+
 sub _map_opts {
   my $self = shift;
   my $subcorpus = shift;
@@ -305,7 +329,7 @@ sub query {
     $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, %opts), hitsonly=>1);
 #    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
   }
-  my $result = CWB::Model::Result->new;
+  my $result = $self->_make_result(%opts);
   # sequential subcorpora: check into which subcorpus we fall
   # rethink to be more objective and query hits on the fly
   unless ($self->interleaved) {
@@ -327,12 +351,14 @@ sub query {
       $subcorpus = ${$self->_subcorpora}{$subcorpus};
       # manipulate start and pagesize here for paging and ratii
       my $r = $subcorpus->query($self->_map_opts($subcorpus, %opts));
+      $result->query($r->query) unless $result->query;
+      $result->QUERY($r->QUERY) unless $result->QUERY;
       $result->hitno($result->hitno + $r->hitno);
-      $result->distinct($result->distinct + $r->distinct);
+      $result->distinct($result->distinct + $r->distinct) if $r->distinct;
       push @{$result->hits}, @{$r->hits};
     }
   }
-  $result->attributes($opts{show});
+  $result->attributes(exists $opts{show} ? $opts{show} : [[]]);
   $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
 
   # finalize pages

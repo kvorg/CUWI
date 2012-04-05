@@ -49,18 +49,18 @@ isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: Instantiation');
 is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
 is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
 is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
-my $r = $virt->query(query=>'a*');
+my $r = $virt->query(query=>'a*', pagesize=>5);
 is_deeply($r,
 	  {
 	   corpusname => $virt->name,
 	   peers => [ [] ],
 	   query      => '[word="a.*" %c]',
 	   QUERY      => '[word="a.*" %c]',
-	   time       => $r->time,
-	   bigcontext => 'paragraphs',
+	   # time       => $r->time,
+	   # bigcontext => 'paragraphs',
 	   hits       => [
 			  {
-			   cpos=>783,
+			   cpos=>26,
 			   data=>{
 				  'text_id' => 'LMD298',
 				  text_jezika => 'fra_slv',
@@ -68,15 +68,18 @@ is_deeply($r,
 				  text_title => "Le droit international sacrifi\é au combat contre le terrorisme. Violence et résistances à Guantánamo.",
 				 },
 			   aligns=>{},
-			   left=>[ ['potrdil'], ['gladovno'], ['stavko'], [','] ],
-			   match=>[['a']],
-			   right=>[['jo'], ['je'], ['pripisal'], ['le'], ['76'], ['uje']]
+			   left=>[ ['rajočim'], ['oblastnikom'], [':'], ['od'] ],
+			   match=>[['angleških']],
+			   right=>[['sufražetk'], ['leta'], ['1909'], ['do'], [] ]
 			  },
-			  @{$r->hits}[1..4],
+			  @{$r->hits}[1..11],
 			 ],
-	   hitno      => 5,
+	   hitno      => 326,
 	   aligns     => [],
 	   attributes => [[]],
-	   pages      => { single=>1, this=>1 },
+	   # missing paging
+	   pages      => $r->pages,
+           # a bit unclean
+	   distinct   => 0,
 	  }, "Virtual Query/Result: default structure test (interleaved)")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
