@@ -203,6 +203,7 @@ sub registry { shift->model->registry };
 # change api to reuse query without reopening corpora?
 sub query {
   my $self = shift;
+  $DB::single = 2;
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
   return CWB::Model::Query->new(corpus => $self, model => $self->model, @_)->run;
 }
@@ -270,10 +271,10 @@ sub reload {
 sub _map_opts {
   my $self = shift;
   my $subcorpus = shift;
-  $DB::single = 2;
-  croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
+  cluck 'CWB::Model::Corpus::Virtual syntax error: not called as $corpus->query(query => <query>, %opts) in subquery ops processing;' unless @_ >= 2 and scalar @_ % 2 == 0;
   # this should map virtual options (atts, structures, aligns) to actual ones
   # and will be called at query time
+  $DB::single = 2;
   return(@_, identify=>1);
 }
 
@@ -282,7 +283,8 @@ sub query {
   $CWB::Model::exception_handler->("Query called on a virtual corpus with no subcorpora, aborting.\n") unless scalar @{$self->subcorpora};
   # single subcorpus: virtual corpus mapping
   if (scalar @{$self->subcorpora} == 1) {
-    cluck 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
+    croak 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
+    #cluck
     return ${$self->_subcorpora}[0]->query($self->_map_opts(${$self->_subcorpora}[0], @_));
   }
   # interleave 0/1support here
@@ -298,15 +300,15 @@ sub query {
 
   # multiple corpora: hitnums are needed for paging and interleaved (slow)
   my %hitinfo;
-  foreach my $subcorpus (@{$self->subcorpora}) {
-    $subcorpus = ${$self->_subcorpora}{$subcorpus};
-    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($subcorpus, $self->_map_opts(%opts), hitsonly=>1);
+  foreach my $subname (@{$self->subcorpora}) {
+    my $subcorpus = ${$self->_subcorpora}{$subname};
+    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, %opts), hitsonly=>1);
+#    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
   }
   my $result = CWB::Model::Result->new;
-
   # sequential subcorpora: check into which subcorpus we fall
   # rethink to be more objective and query hits on the fly
-  unless ($self->interlaved) {
+  unless ($self->interleaved) {
     my $offset = 0;
     foreach my $subcorpus (@{$self->subcorpora}) {
       $subcorpus = ${$self->_subcorpora}{$subcorpus};
@@ -324,7 +326,7 @@ sub query {
     foreach my $subcorpus (@{$self->subcorpora}) {
       $subcorpus = ${$self->_subcorpora}{$subcorpus};
       # manipulate start and pagesize here for paging and ratii
-      my $r = $subcorpus->query($subcorpus, $self->_map_opts(%opts));
+      my $r = $subcorpus->query($self->_map_opts($subcorpus, %opts));
       $result->hitno($result->hitno + $r->hitno);
       $result->distinct($result->distinct + $r->distinct);
       push @{$result->hits}, @{$r->hits};

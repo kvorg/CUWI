@@ -536,44 +536,6 @@ is_deeply($sl->query(query=>'a', align=>['cuwi-fr'])->hits->[0]{aligns}{'cuwi-fr
    ],
    'Query/Result: aligned corpus whitespace and encoding');
 
-# virtual corpora
-$m->virtual(cuwoos => [ 'cuwi-sl', 'cuwi-fr' ], interleaved => 1);
-my $virt = ${$m->corpora}{'cuwoos'};
-isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: Instantiation');
-is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
-is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
-is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
-#BUG STILL$r = $virt->query(query=>'a*');
-is_deeply($r,
-	  {
-	   corpusname => $virt->name,
-	   peers => [ [] ],
-	   query      => '[word="a.*" %c]',
-	   QUERY      => '[word="a.*" %c]',
-	   time       => $r->time,
-	   bigcontext => 'paragraphs',
-	   hits       => [
-			  {
-			   cpos=>783,
-			   data=>{
-				  'text_id' => 'LMD298',
-				  text_jezika => 'fra_slv',
-				  text_naslov => 'Mednarodno pravo prilagojeno boju proti terorizmu. Nasilje in upor v Guantanamu.',
-				  text_title => "Le droit international sacrifi\é au combat contre le terrorisme. Violence et résistances à Guantánamo.",
-				 },
-			   aligns=>{},
-			   left=>[ ['potrdil'], ['gladovno'], ['stavko'], [','] ],
-			   match=>[['a']],
-			   right=>[['jo'], ['je'], ['pripisal'], ['le'], ['76'], ['uje']]
-			  },
-			  @{$r->hits}[1..4],
-			 ],
-	   hitno      => 5,
-	   aligns     => [],
-	   attributes => [[]],
-	   pages      => { single=>1, this=>1 },
-	  }, "Virtual Query/Result: default structure test (interleaved)")
-  or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 
 # MISSING
 
