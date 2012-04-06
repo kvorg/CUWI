@@ -49,7 +49,7 @@ isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: Instantiation');
 is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
 is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
 is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
-my $r = $virt->query(query=>'a*', pagesize=>5);
+my $r = $virt->query(query=>'a*', pagesize => 6, startfrom => 0);
 is_deeply($r,
 	  {
 	   corpusname => $virt->name,
@@ -73,7 +73,7 @@ is_deeply($r,
 			   match=>[['angleških']],
 			   right=>[['sufražetk'], ['leta'], ['1909'], ['do'], [] ]
 			  },
-			  @{$r->hits}[1..11],
+			  @{$r->hits}[1..7],
 			 ],
 	   hitno      => 326,
 	   aligns     => [],

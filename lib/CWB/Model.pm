@@ -350,7 +350,10 @@ sub query {
     foreach my $subcorpus (@{$self->subcorpora}) {
       $subcorpus = ${$self->_subcorpora}{$subcorpus};
       my $sc_name = $subcorpus->name;
-      my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts));
+      my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts,
+						 startfrom => $offset,
+						 pagesize => $pagesize
+						));
       $_->{subcorpus_name} = $sc_name foreach (@{$r->hits});
       $result->query($r->query) unless $result->query;
       $result->QUERY($r->QUERY) unless $result->QUERY;
