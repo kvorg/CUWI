@@ -60,6 +60,7 @@ is_deeply($r,
 	   # bigcontext => 'paragraphs',
 	   hits       => [
 			  {
+			   subcorpus_name => 'cuwi-sl',
 			   cpos=>26,
 			   data=>{
 				  'text_id' => 'LMD298',

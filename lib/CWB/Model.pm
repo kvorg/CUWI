@@ -295,11 +295,19 @@ sub _make_result {
 sub _map_opts {
   my $self = shift;
   my $subcorpus = shift;
-  cluck 'CWB::Model::Corpus::Virtual syntax error: not called as $corpus->query(query => <query>, %opts) in subquery ops processing;' unless @_ >= 2 and scalar @_ % 2 == 0;
-  # this should map virtual options (atts, structures, aligns) to actual ones
-  # and will be called at query time
+  my $opts = shift;
+  my %buts = @_;
+  my %opts;
+
+  cluck 'CWB::Model::Corpus::Virtual syntax error: not called as $corpus->query(query => <query>, \%opts, [%buts]) in subquery ops processing;' if @_ > 0 and scalar @_ % 2 != 0;
+  # this should map virtual options (atts, structures, aligns) to actual ones,
+  # allow for call time overrides
+  # and will be called (multiple times) at query time
+  foreach (keys %$opts) {
+    $opts{$_} = (exists $buts{$_} ? $buts{$_} : $opts->{$_});
+  }
   $DB::single = 2;
-  return(@_, identify=>1);
+  return(%opts);
 }
 
 sub query {
@@ -309,7 +317,7 @@ sub query {
   if (scalar @{$self->subcorpora} == 1) {
     croak 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
     #cluck
-    return ${$self->_subcorpora}[0]->query($self->_map_opts(${$self->_subcorpora}[0], @_));
+    return ${$self->_subcorpora}[0]->query($self->_map_opts(${$self->_subcorpora}[0], \@_));
   }
   # interleave 0/1support here
   # support in Filecorpus query by hitssonly => 1
@@ -321,19 +329,37 @@ sub query {
   #        we should store ratio per corpora with result to enable paging
   #        and support ratio
   my %opts = @_;
+  $opts{startfrom} ||= 0;
 
   # multiple corpora: hitnums are needed for paging and interleaved (slow)
+  # for this reason alone virtual query with caching is needed
   my %hitinfo;
   foreach my $subname (@{$self->subcorpora}) {
     my $subcorpus = ${$self->_subcorpora}{$subname};
-    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, %opts), hitsonly=>1);
+    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, \%opts), hitsonly=>1);
 #    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
   }
   my $result = $self->_make_result(%opts);
   # sequential subcorpora: check into which subcorpus we fall
   # rethink to be more objective and query hits on the fly
-  unless ($self->interleaved) {
-    my $offset = 0;
+  my $offset   = sprintf('%d', ($opts{startfrom} / @{$self->subcorpora})) + 0;
+  my $pagesize = sprintf('%d', ($opts{pagesize}  / @{$self->subcorpora})) + 0;
+  # that was naive: ratio not taken into account
+  if ($self->interleaved) {
+    # interleaved
+    foreach my $subcorpus (@{$self->subcorpora}) {
+      $subcorpus = ${$self->_subcorpora}{$subcorpus};
+      my $sc_name = $subcorpus->name;
+      my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts));
+      $_->{subcorpus_name} = $sc_name foreach (@{$r->hits});
+      $result->query($r->query) unless $result->query;
+      $result->QUERY($r->QUERY) unless $result->QUERY;
+      $result->hitno($result->hitno + $r->hitno);
+      $result->distinct($result->distinct + $r->distinct) if $r->distinct;
+      push @{$result->hits}, @{$r->hits};
+    }
+  } else {
+    # sequential
     foreach my $subcorpus (@{$self->subcorpora}) {
       $subcorpus = ${$self->_subcorpora}{$subcorpus};
       $hitinfo{$subcorpus->name}{start} =
@@ -344,18 +370,6 @@ sub query {
 	$opts{startfrom} - $offset < 1 ?
 	  $opts{pagesize} + $opts{startfrom} - $offset : $opts{pagesize};
       $offset += 0;
-    }
-  } else {
-  # interleaved
-    foreach my $subcorpus (@{$self->subcorpora}) {
-      $subcorpus = ${$self->_subcorpora}{$subcorpus};
-      # manipulate start and pagesize here for paging and ratii
-      my $r = $subcorpus->query($self->_map_opts($subcorpus, %opts));
-      $result->query($r->query) unless $result->query;
-      $result->QUERY($r->QUERY) unless $result->QUERY;
-      $result->hitno($result->hitno + $r->hitno);
-      $result->distinct($result->distinct + $r->distinct) if $r->distinct;
-      push @{$result->hits}, @{$r->hits};
     }
   }
   $result->attributes(exists $opts{show} ? $opts{show} : [[]]);
@@ -375,7 +389,7 @@ use Encode qw(encode decode);
 our $VERSION = '0.9';
 
 has [ qw(corpus model cqp
-	cpos query reduce maxhits identify
+	cpos query reduce maxhits
 	l_context r_context
 	hitsonly debug) ] ;
 has search      => 'word';
@@ -637,7 +651,7 @@ sub run {
 	${$result->pages}{this} = $thispage;
 	${$result->pages}{next} = $nextpage;
 	${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
-	  $self->startfrom - $self->pagesize : 
+	  $self->startfrom - $self->pagesize :
 	    ($thispage == 1 ? undef : 1);
 	${$result->pages}{pagesize} = $self->pagesize;
 	$pages = $thispage -1 . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)

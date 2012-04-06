@@ -15,6 +15,8 @@
 * CWB::Model
 
 ** Multicorpora
+    - add result structures to identify provenence of a result line
+    - extract virtual query magic into CWB::Model::Query::Virtual
     spook:
     - created with an external API from existing corpora
     - shuld send queries to multiple corpora and queue or mix the results
