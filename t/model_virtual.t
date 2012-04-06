@@ -78,9 +78,14 @@ is_deeply($r,
 	   hitno      => 326,
 	   aligns     => [],
 	   attributes => [[]],
-	   # missing paging
-	   pages      => $r->pages,
+	   pages      => {
+			  'next' => 7,
+			  'prev' => undef,
+			  'pagesize' => 6,
+			  'this' => 1
+			 },
            # a bit unclean
 	   distinct   => 0,
 	  }, "Virtual Query/Result: default structure test (interleaved)")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+done_testing();

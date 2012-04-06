@@ -379,6 +379,7 @@ sub query {
   $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
 
   # finalize pages
+  $result->page_setup(%opts);
 
   return $result;
 }
@@ -636,30 +637,13 @@ sub run {
     my $pages = '';
 
     if (not $self->cpos) {
-      if ($self->startfrom < 1)
-	{ $self->startfrom(1); }     #startfrom may be tainted
-      elsif ($self->startfrom > $result->hitno)
-	{ $self->startfrom($result->hitno - 1) ; }
-      else
-      { $self->startfrom(int($self->startfrom)); }
-
-      if ( $self->reduce 
-	   or $result->hitno <= $self->pagesize ) {
-	${$result->pages}{single} = 1;
-	${$result->pages}{this} = 1;
-      } else {
-	my $thispage = $self->startfrom ? $self->startfrom : 1;
-	my $nextpage = $self->startfrom + $self->pagesize <= $result->hitno  - 1?
-	  $self->startfrom + $self->pagesize : undef ;
-	${$result->pages}{this} = $thispage;
-	${$result->pages}{next} = $nextpage;
-	${$result->pages}{prev} = $self->startfrom - $self->pagesize >= 1 ?
-	  $self->startfrom - $self->pagesize :
-	    ($thispage == 1 ? undef : 1);
-	${$result->pages}{pagesize} = $self->pagesize;
-	$pages = $thispage -1 . ' ' . ($nextpage ? $nextpage - 1 : $result->hitno)
-	  if $self->pagesize and not $self->reduce;
-      }
+      $self->startfrom($result->page_setup(
+				      startfrom => $self->startfrom,
+				      pagesize => $self->pagesize,
+				      reduce => $self->reduce,
+				     ));
+      $pages = (${$result->pages}{this} -1 . ' ' . (${$result->pages}{next} ? ${$result->pages}{next} - 1 : $result->hitno))
+	if $self->pagesize and not $self->reduce;
     }
 
     my @kwic = $self->cqp->exec('cat Last ' . ($pages ? $pages : ''));
@@ -856,6 +840,39 @@ sub pagelist {
     push @pages, $finalpage;
   }
   return \@pages;
+}
+
+sub page_setup {
+  my $result = shift;
+  cluck ('CWB::Model::Result::pages helper not called with %opts,' . "\n" .
+    "please ensure even number of arguments in the form of\n" .
+     ' ->pages(startfrom=>3 ...);' . "\n")
+       if @_ > 0 and scalar @_ % 2 != 0;
+  my %data = @_;
+
+  if (not $data{startfrom} or $data{startfrom} < 1)
+    { $data{startfrom} = 1; }     #startfrom may be tainted
+  elsif ($data{startfrom} > $result->hitno)
+    { $data{startfrom} = $result->hitno - 1 ; }
+  else
+    { $data{startfrom} = int($data{startfrom}); }
+
+  if ( $data{reduce}
+       or $result->hitno <= $data{pagesize} ) {
+    ${$result->pages}{single} = 1;
+    ${$result->pages}{this} = 1;
+  } else {
+    my $thispage = $data{startfrom} ? $data{startfrom} : 1;
+    my $nextpage = $data{startfrom} + $data{pagesize} <= $result->hitno  - 1 ?
+	  $data{startfrom} + $data{pagesize} : undef ;
+    ${$result->pages}{this} = $thispage;
+    ${$result->pages}{next} = $nextpage;
+    ${$result->pages}{prev} = $data{startfrom} - $data{pagesize} >= 1 ?
+      $data{startfrom} - $data{pagesize} :
+	($thispage == 1 ? undef : 1);
+    ${$result->pages}{pagesize} = $data{pagesize};
+  }
+  return ${$result->pages}{this};
 }
 
 1;
