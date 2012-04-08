@@ -223,7 +223,8 @@ has _subcorpora => sub { return {}; };
 has qw(interleaved model);
 
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
-#   possibly title attributes, structures, description, tooltips
+#   possibly title peers
+#   attributes, structures, description, tooltips
 sub new {
   my $this = shift;
   croak "CWB::Model::Corpus::Virtual syntax error: not called as ->new(model => <model>, 'name' => [<corpora>], %opts)" unless scalar @_ >= 3 and $_[0] eq 'model' and ((scalar @_) % 2) == 0;
@@ -248,6 +249,7 @@ sub new {
 
   # virtual attributes, structures, alignements:
   # use superset here and filter when passing to subcorpus
+  #   unless overruled in the specification
 }
 
 sub registry { croak "CWB::Model::Corpus::Virtual syntax error: no registry in virtual corpora.\n" }
