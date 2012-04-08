@@ -88,4 +88,30 @@ is_deeply($r,
 	   distinct   => 0,
 	  }, "Virtual Query/Result: default structure test (interleaved)")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+#diag(Dumper($virt->subcorpora));
+$virt->reload;
+$r = $virt->query(query=>'a*', pagesize => 6, startfrom => 7);
+is_deeply($r,
+	  {
+	   corpusname => $virt->name,
+	   peers => [ [] ],
+	   query      => '[word="a.*" %c]',
+	   QUERY      => '[word="a.*" %c]',
+	   # time       => $r->time,
+	   # bigcontext => 'paragraphs',
+	   hits       => [@{$r->hits}],
+	   hitno      => 326,
+	   aligns     => [],
+	   attributes => [[]],
+	   pages      => {
+			  'next' => 13,
+			  'prev' => 1,
+			  'pagesize' => 6,
+			  'this' => 7
+			 },
+           # a bit unclean
+	   distinct   => 0,
+	  }, "Virtual Query/Result: re-query")
+  or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+
 done_testing();

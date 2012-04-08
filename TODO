@@ -67,7 +67,8 @@
    sane default + changeable from info file or conf
 ** spook: subcorpus selection: slo, slo*, slo_* ... per et
 ** spook: Templates for query result exports
-   for excel/oocalc, tab-delmited, cvs, xml, latex, json, data::dump, yaml
+   for excel/oocalc, tab-delmited, csv, xml, latex, json, data::dump, yaml
+   (Spreadsheet::Write for csv and Excel)
 ** spook: web homes for corpus groups
 ** spook: statistical corpus data at entry page (copora data size in kb, number of keywoards (pojavnice, različnice, leme in datoteke)
 ** spook: more on home page:

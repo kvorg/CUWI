@@ -347,8 +347,8 @@ sub query {
   # that was naive: ratio not taken into account
   if ($self->interleaved) {
     # interleaved
-    foreach my $subcorpus (@{$self->subcorpora}) {
-      $subcorpus = ${$self->_subcorpora}{$subcorpus};
+    foreach  (@{$self->subcorpora}) {
+      my $subcorpus = ${$self->_subcorpora}{$_};
       my $sc_name = $subcorpus->name;
       my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts,
 						 startfrom => $offset,
@@ -363,8 +363,8 @@ sub query {
     }
   } else {
     # sequential
-    foreach my $subcorpus (@{$self->subcorpora}) {
-      $subcorpus = ${$self->_subcorpora}{$subcorpus};
+    foreach (@{$self->subcorpora}) {
+      my $subcorpus = ${$self->_subcorpora}{$_};
       $hitinfo{$subcorpus->name}{start} =
 	($opts{startfrom} - $offset > 1
 	  and $opts{startfrom} - $offset <= $hitinfo{$subcorpus->name}{hits}) ?
