@@ -49,6 +49,10 @@ isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: Instantiation');
 is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
 is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
 is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
+is_deeply($virt->attributes,
+	  [ qw( msd-sl nword word tag msd-en lemma ) ],
+	  "Virtual Corpus: attributes")
+  or diag("CWB::Model::Result structure was:\n" . Dumper($virt->attributes));
 my $r = $virt->query(query=>'a*', pagesize => 6, startfrom => 0);
 is_deeply($r,
 	  {

@@ -221,6 +221,7 @@ our $VERSION = '0.9';
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
 has qw(interleaved model);
+has propagate => 'superset';
 
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
 #   possibly title peers
@@ -260,7 +261,7 @@ sub reload {
   my $self = shift;
   $CWB::Model::exception_handler->("Could not map subcorpora from model instances - no model passed to virtual coprus.\n") unless $self->model;
 
-  return $self->_subcorpora(
+  $self->_subcorpora(
     {
      map {
            $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - missing among model's corpora.\n") unless ${$self->model->corpora}{$_};
@@ -268,6 +269,32 @@ sub reload {
 	 } @{$self->subcorpora}
     }
 			   );
+
+  if ($self->propagate) {
+    my %attributes = ();
+    my %structures = ();
+    my %alignements = ();
+    foreach my $subname (@{$self->subcorpora}) {
+      my $subcorpus = ${$self->_subcorpora}{$subname};
+      foreach (@{$subcorpus->attributes}) {
+	$attributes{$_}++;
+      }
+      foreach (@{$subcorpus->structures}) {
+	$structures{$_}++;
+      }
+      foreach (@{$subcorpus->alignements}) {
+	$alignements{$_}++;
+      }
+    }
+    if ($self->propagate eq 'superset') {
+      @{$self->attributes} = keys %attributes;
+      @{$self->structures} = keys %structures;
+      @{$self->alignements} = keys %alignements;
+    }
+
+  }
+
+  return $self;
 }
 
 sub _make_result {
