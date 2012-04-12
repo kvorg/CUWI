@@ -271,25 +271,39 @@ sub reload {
 			   );
 
   if ($self->propagate) {
-    my %attributes = ();
-    my %structures = ();
-    my %alignements = ();
+    my %attributes = ();  my @attributes;
+    my %structures = ();  my @structures;
+    my %alignements = (); my @alignements;
     foreach my $subname (@{$self->subcorpora}) {
       my $subcorpus = ${$self->_subcorpora}{$subname};
       foreach (@{$subcorpus->attributes}) {
 	$attributes{$_}++;
+	push @attributes, $_ if $attributes{$_} == 1;
       }
       foreach (@{$subcorpus->structures}) {
 	$structures{$_}++;
+	push @structures, $_ if $structures{$_} == 1;
       }
       foreach (@{$subcorpus->alignements}) {
 	$alignements{$_}++;
+	push @alignements, $_ if $alignements{$_} == 1;
       }
     }
     if ($self->propagate eq 'superset') {
-      @{$self->attributes} = keys %attributes;
-      @{$self->structures} = keys %structures;
-      @{$self->alignements} = keys %alignements;
+      @{$self->attributes} = @attributes;
+      @{$self->structures} = @structures;
+      @{$self->alignements} = @alignements;
+    } else { #subset
+	my $scn = scalar @{$self->corpra};
+	foreach (@attributes) {
+	    push @{$self->attributes}, $_ if $attributes{$_} = $scn;
+	}
+	foreach (@structures) {
+	    push @{$self->structures}, $_ if $structures{$_} = $scn;
+	}
+	foreach (@alignements) { #probably makes no sense
+	    push @{$self->alignements}, $_ if $alignements{$_} = $scn;
+	}
     }
 
   }
