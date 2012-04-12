@@ -306,7 +306,27 @@ sub reload {
 	push @{$self->alignements}, $_ if $alignements{$_} = $scn;
       }
     }
+
     #tooltips
+    my $propagate_level;
+    $propagate_level = sub {
+      my ($target, $source) = @_;
+      foreach (keys %$source) {
+	next if exists $target->{$_};
+	if (ref $source->{$_} eq 'HASH') {
+	  $target->{$_} = {};
+	  $propagate_level->($target->{$_}, $source->{$_});
+	} else {
+	  $target->{$_} = $source->{$_};
+	}
+      }
+    };
+
+    foreach my $subname (@{$self->subcorpora}) {
+      my $subcorpus = ${$self->_subcorpora}{$subname};
+      $propagate_level->($self->tooltips, $subcorpus->tooltips)
+    }
+
   }
 
   return $self;

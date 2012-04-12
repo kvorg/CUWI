@@ -50,9 +50,73 @@ is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
 is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
 is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
 is_deeply($virt->attributes,
-	  [ qw( msd-sl nword word tag msd-en lemma ) ],
+	  [ qw(  word nword  lemma msd-en msd-sl tag ) ],
 	  "Virtual Corpus: attributes")
   or diag("CWB::Model::Result structure was:\n" . Dumper($virt->attributes));
+is_deeply($virt->tooltips,
+	  {
+	   'attribute' => {
+			   'msd-sl' => {
+					'en' => 'Morphosyntactic description of the word in Slovene',
+					'sl' => "Oblikoskladenjska oznaka besede v sloven\x{161}\x{10d}ini"
+				       },
+			   'nword' => {
+				       'en' => 'Normalised form of the word',
+				       'sl' => 'Normalizirana oblika besede'
+				      },
+			   'lemma' => {
+				       'en' => 'Lemma (base form) of the word',
+				       'sl' => 'Lema (osnovna oblika) besede'
+				      },
+			   'msd-en' => {
+					'en' => 'Morphosyntactic description of the word in English',
+					'sl' => "Oblikoskladenjska oznaka besede v angle\x{161}\x{10d}ini"
+				       },
+			   'tag' => {
+				     'en' => 'TreeTagger PoS tag',
+				     'sl' => 'Oblikoskladenjska oznaka TreeTaggerja'
+				    }
+			  },
+	   'structure' => {
+			   'text_jezika' => {
+					     'en' => 'The language pair of the article',
+					     'sl' => "Jezikovni par \x{10d}lanka"
+					    },
+			   'p' => {
+				   'en' => 'Paragraph',
+				   'sl' => 'Odstavek'
+				  },
+			   'text' => {
+				      'en' => 'One article from the corpus',
+				      'sl' => "Posamezen \x{10d}lanek iz korpusa"
+				     },
+			   'seg' => {
+				     'en' => 'Aligned segment',
+				     'sl' => 'Poravnan segment'
+				    },
+			   'text_naslov' => {
+					     'en' => 'Article title in Slovene',
+					     'sl' => "Naslov \x{10d}lanka v sloven\x{161}\x{10d}ini"
+					    },
+			   'text_title' => {
+					    'en' => 'Article title in French',
+					    'sl' => "Naslov \x{10d}lanka v franco\x{161}\x{10d}ini"
+					   },
+			   's' => {
+				   'en' => 'Sentence',
+				   'sl' => 'Stavek'
+				  },
+			   'text_id' => {
+					 'en' => 'Article identifier',
+					 'sl' => "Identifikator \x{10d}lanka"
+					}
+                        }
+ },
+	  "Virtual Corpus: tooltip propagation")
+  or diag("CWB::Model::Virtual->tooltips was:\n" . Dumper($virt->tooltips));
+is($virt->tooltip(attribute => 'nword', 'en'), 'Normalised form of the word', 'Virtual Corpus: tooltip call')
+    or diag("CWB::Model::Virtual->tooltip(attribute => 'nword', 'en') was:\n" . Dumper($virt->tooltip(attribute => 'nword', 'en') ));
+
 my $r = $virt->query(query=>'a*', pagesize => 6, startfrom => 0);
 is_deeply($r,
 	  {
