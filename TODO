@@ -4,8 +4,7 @@
 
 ** Bail out gracefully on faulty (virtual) corpora.
 ** In paging with Result objects, the end page calculation is wrong
-** Structure handling in Query
-   (what???)
+** Structure handling in Query: structure searches
 ** Default overrides new for ingorecase
 ** Bug in combined query syntax: a* [word="t.*"], add test!
 ** enable quoting of CQP escapes for "[rule]" and '[rule]'
@@ -19,16 +18,15 @@
     - add result structures to identify provenence of a result line
     - extract virtual query magic into CWB::Model::Query::Virtual
     spook:
-    - created with an external API from existing corpora
-    - shuld send queries to multiple corpora and queue or mix the results
-    - paging calculation should be optional, wrapped up in a function
-      (and thus reusable for virtual corpora; pagesize and this needed)
-    - corpus offsets should be included for virtual paging
+    - fix paging calculation,  should be optional, wrapped up in a function
 ** spook: sub-searches (based on existing search)
-** Tests
+   aka Support for chained query support -> store previous queries in link/params
+** spook: any needed support for form-based alignement and structural queries
+** Add sorting to wordlists
 ** Implement max_size and max_querytime
 ** Native CQP and cwb-corpus-scan interfaces
 ** Possibly keep wordlists with paging and progressive building
+** Test coverage
 ** Concordance support
 ** Info files: translateable names/titles
 ** Add a handle for literal matching (no regexps) with %l
@@ -39,7 +37,7 @@
    - CWB::Model::Corpus keeps a pool of ageing Query objects, matched on query
    - queries are reused with different show options, paging etc.
    - possibly used to support chained queries
-** Support for chained query support, list-oriented queries and macros, i.e. 
+** Support for list-oriented queries and macros, i.e. 
     /codist["whose", pos];
     /codist[lemma, "go", word];
 ** Non-blocking high performant queries using
@@ -52,8 +50,7 @@
 
 ** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo
-** cuwi favicon
-** help icon
+** cuwi favicon, help icon
 ** disable context links for biggest display mode (sentence or paragraph)
 ** sanitize can't/does not work (readonly??) - tests
 ** make label and checkbox unbreakable in attributes
@@ -64,31 +61,35 @@
 
 * Web interface
 
-** short ID for structural attribute (auth year?) in [result]
-   sane default + changeable from info file or conf
-** spook: subcorpus selection: slo, slo*, slo_* ... per et
 ** spook: Templates for query result exports
    for excel/oocalc, tab-delmited, csv, xml, latex, json, data::dump, yaml
    (Spreadsheet::Write for csv and Excel)
-** spook: web homes for corpus groups
+** spook: subcorpus selection: slo, slo*, slo_* ... per et
+   AKA: Present multilingual aligned corpora as a single entry?
+   automatically with a drop-down menu to select the search corpus
 ** spook: statistical corpus data at entry page (copora data size in kb, number of keywoards (pojavnice, različnice, leme in datoteke)
+   cwb-describe-corpus -s 
 ** spook: more on home page:
     potem pa še vnaprej pripravljene besedne sezname (urejene po abecedi in pogostosti) na vsak jezik in vsak podkorpus, se pravi za: an, ne, fr, it, sl(-an), sl(-ne), sl(-fr), sl(-it), sl(-sl), sl(-all). 
     seznami naj bodo txt datoteke (precanned, download)
-** spook: home page info:
-    navodila za uporabo v slovenščini s čimveč primeri različnih tipov iskanj
-** spook: password protected groups
-** spook: sub-searches (based on existing search)
+   cwb-lexdecode -P lemma -fr `pwd`/Corpora/registry SPOOK_FRASLV-FRA | sort -n
 ** spook: structural attribute limited search (links + CQP, then add-on fields)
    "sito za strukturne atribute: maska + link v rezultatih"
 ** spook: bilingual search support
     Iskalnik mora omogočati iskanje po obeh jezikih hkrati, se pravi npr. Spook-an: president on aligned Spook-sl: predsednik. 
-    glej: http://nl2.ijs.si/index-bi.html
-** spook
-** imp: Use click-to popu-up for help
+    glej: http://nl2.ijs.si/index-bi.htlm
+** spook: password protected groups
+** spook: sub-searches (based on existing search)
+** short ID for structural attribute (auth year?) in [result]
+   sane default + changeable from info file or conf
+** spook: web homes for corpus groups
+** spook: home page info:
+    navodila za uporabo v slovenščini s čimveč primeri različnih tipov iskanj
+** imp: Use click-to pop-up for help
    (via js binding + help at bottom always)
 ** imp: sortable frequency lists
-** Additional grid interface as per http://nl.ijs.si/jos/cqp/uni
+** Additional grid query compositing interface
+   as per http://nl.ijs.si/jos/cqp/uni
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
 ** Log cleanup:
@@ -100,9 +101,6 @@
    - with 2 or three sort keys
 ** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
-** Multicorpora support as needed
-** Present multilingual aligned corpora as a single entry?
-   automatically with a drop-down menu to select the search corpus
 ** Cleanup of templates: separation with includes, I18n
 ** I18n
 ** Concordance support
@@ -134,12 +132,12 @@
 
 * Release-critical
 
+** spook stuff, multicorpora
 ** tests
 ** colocations MI3 LL
-** tabular download
+** tabular download formats
 ** max_size, max_query_time
 ** I18n
-** multicorpora
 ** documentation
 
 * Future:

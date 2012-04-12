@@ -50,8 +50,8 @@ is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
 is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
 is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
 is_deeply($virt->attributes,
-	  [ qw(  word nword  lemma msd-en msd-sl tag ) ],
-	  "Virtual Corpus: attributes")
+	  [ qw( word nword lemma msd-en msd-sl tag ) ],
+	  "Virtual Corpus: attribute propagation")
   or diag("CWB::Model::Result structure was:\n" . Dumper($virt->attributes));
 is_deeply($virt->tooltips,
 	  {
