@@ -271,6 +271,7 @@ sub reload {
 			   );
 
   if ($self->propagate) {
+    # property propagation
     my %attributes = ();  my @attributes;
     my %structures = ();  my @structures;
     my %alignements = (); my @alignements;
@@ -294,18 +295,18 @@ sub reload {
       @{$self->structures} = @structures;
       @{$self->alignements} = @alignements;
     } else { #subset
-	my $scn = scalar @{$self->corpra};
-	foreach (@attributes) {
-	    push @{$self->attributes}, $_ if $attributes{$_} = $scn;
-	}
-	foreach (@structures) {
-	    push @{$self->structures}, $_ if $structures{$_} = $scn;
-	}
-	foreach (@alignements) { #probably makes no sense
-	    push @{$self->alignements}, $_ if $alignements{$_} = $scn;
-	}
+      my $scn = scalar @{$self->corpra};
+      foreach (@attributes) {
+	push @{$self->attributes}, $_ if $attributes{$_} = $scn;
+      }
+      foreach (@structures) {
+	push @{$self->structures}, $_ if $structures{$_} = $scn;
+      }
+      foreach (@alignements) { #probably makes no sense
+	push @{$self->alignements}, $_ if $alignements{$_} = $scn;
+      }
     }
-
+    #tooltips
   }
 
   return $self;
@@ -794,7 +795,10 @@ sub run {
       $counts{$match}{value} = _tokens($match, $attrs);
     }
     @{$result->hits} = map { [$counts{$_}{value}, $counts{$_}{count}] }
-      reverse sort {$counts{$a}{count} <=> $counts{$b}{count}}  keys %counts;
+      reverse sort {
+	my $c = ($counts{$a}{count} <=> $counts{$b}{count});
+	$c ? $c : ($b cmp $a )
+	       }  keys %counts;
     # reduce only shows the top frequencies for wordlists
     splice @{$result->hits}, $self->pagesize
       if $self->reduce and $self->pagesize > 0;
