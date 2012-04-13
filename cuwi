@@ -513,9 +513,14 @@ __DATA__
 % if ($self->param('display') eq 'kwic') {
   <table>
 %  my $nr = ${$result->{pages}}{this};
+%  my $subcorpus; 
 %  my @single = ( contextsize=>50 );
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
+%  if ($m->{subcorpus_name} and $m->{subcorpus_name} ne $subcorpus) {
+%    $subcorpus = $m->{subcorpus_name};
+    <tr><td colspan="4" class="subcorpus"><%= $subcorpus %></td></tr>
+%  }
     <tr>
      <td class="head"><span class="no">
 <%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
@@ -762,6 +767,7 @@ div.matches { background-color: white;
 }
 div.matches p { margin: .25em; margin-left: .5em; margin-right: .5em; }
 div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; clear: right;}
+td.subcorpus { font-weight: bold; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
 span.no, span.parno   { font-weight: bold; }

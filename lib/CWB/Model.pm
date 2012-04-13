@@ -396,6 +396,9 @@ sub _map_opts {
 }
 
 sub query {
+  use Time::HiRes;
+  my $query_start_time = Time::HiRes::gettimeofday();
+
   my $self = shift;
   $CWB::Model::exception_handler->("Query called on a virtual corpus with no subcorpora, aborting.\n") unless scalar @{$self->subcorpora};
   # single subcorpus: virtual corpus mapping
@@ -465,6 +468,7 @@ sub query {
 
   # finalize pages
   $result->page_setup(%opts);
+  $result->time(Time::HiRes::gettimeofday() - $query_start_time);
 
   return $result;
 }
