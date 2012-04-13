@@ -212,7 +212,7 @@ sub new {
       push @{${$self->stats}{structures}}, [ $1, $2 ]
 	if m/s-ATT\s+(\w+)\s+(\d+)/;
       push @{${$self->stats}{alignements}}, [ $1, $2 ]
-	if m/a-ATT\s+(\w+)\s+(\d+)/;
+	if m/a-ATT\s+([^ \t]+)\s+(\d+)/;
     }
   }
 

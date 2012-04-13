@@ -319,32 +319,29 @@ __DATA__
 
 % if (keys %{$corpus->stats}) {
   <h2>Statistics</h2>
-  <ul>
+  <table class="stats">
 %  if (${$corpus->stats}{tokens}) {
-    <li>Size (tokens): <%= 1 + ${$corpus->stats}{tokens}  %></li>
+    <tr><td>Size (tokens):</td><td class="num"><%= 1 + ${$corpus->stats}{tokens}  %></td></tr>
 %  }
 %  if (scalar @{${$corpus->stats}{attributes}}) {
-    <li>Positional attributes:<ul>
+    <tr><th>Positional attributes:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{attributes}}) {
-      <li> <%= $att->[0] %>: <%= $att->[1] %> attributes, <%= $att->[2] %> types</li>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> attributes </td><td class="num"><%= $att->[2] %></td><td> types </td></tr>
 %   }
-    </ul></li>
 %  }
 %  if (scalar @{${$corpus->stats}{structures}}) {
-    <li>Structural attributes:<ul>
+    <tr><th>Structural attributes:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{structures}}) {
-      <li> <%= $att->[0] %>: <%= $att->[1] %> regions</li>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> regions </td></tr>
 %   }
-    </ul></li>
 %  }
 %  if (scalar @{${$corpus->stats}{alignements}}) {
-    <li>Alignement attributes:<ul>
+    <tr><th>Alignement attributes:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{alignements}}) {
-      <li> <%= $att->[0] %>: <%= $att->[1] %> alignement blocks</li>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> alignement blocks </td></tr>
 %   }
-    </ul></li>
 %  }
-  </ul>
+  </table>
 %}
 
   </div>
@@ -816,6 +813,19 @@ div.description {
 div.description h2 {
   text-align: left;
   margin-left: 0px;
+}
+div.description > table.stats {
+  margin-left: 1.5em;
+}
+div.description > table.stats > tr > th {
+  padding-top: .7em;
+  padding-left: 0em;
+}
+div.description table.stats tr td.num {
+  text-align: right;
+}
+div.description table.stats tr td {
+  padding-right: 1em;
 }
 
 /* # tooltips from Alexander Dawson,
