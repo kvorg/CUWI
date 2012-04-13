@@ -523,7 +523,7 @@ __DATA__
 %  }
     <tr>
      <td class="head"><span class="no">
-<%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+<%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>

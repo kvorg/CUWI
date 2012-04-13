@@ -21,13 +21,19 @@ sub register {
 		   my $pp = $c->req->params->clone;
 		   my $url = $c->req->url->clone;
 
+		   # path
+		   if (defined $_[0] and not ref $_[0]) {
+		       $url->path($_[0]) if $_[0];
+		       shift;
+		   }
+
 		   # replace
 		   if (defined $_[0] and ref $_[0] eq 'HASH') {
 		       while ( my($param, $value) = each %{$_[0]} ) {
 			 $pp->remove($param); $pp->append($param=>$value);
 		       }
 		       shift;
-		     }
+		   }
 		   # add
 		   elsif (defined $_[0] and ref $_[0] eq 'ARRAY') {
 		     $pp->append(shift @{$_[0]} => shift @{$_[0]})
@@ -271,8 +277,12 @@ be sublimated into L<Mojolicous::Plugin::TagHelpers> without warning!
     <%= link_to_here (class => 'link') => begin %>Reload<% end %>
     <%= link_to_here { page=>++$self->param('page') } => begin %>Next<% end %>
     <%= link_to_here [ colour=>'blue', colour=>'red' => begin %>More colours<% end %>
+    <%= link_to_here '../'>See the parent<% end %>
 
 Generate link to the current URL, including the query.
+
+A first string parameter is passed as a path modificator. Empty
+strings are ignored.
 
 Hashref arguments replace, arrayref arguments append query values.
 
