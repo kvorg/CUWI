@@ -317,6 +317,36 @@ __DATA__
 % }
 
 
+% if (keys %{$corpus->stats}) {
+  <h2>Statistics</h2>
+  <ul>
+%  if (${$corpus->stats}{tokens}) {
+    <li>Size (tokens): <%= 1 + ${$corpus->stats}{tokens}  %></li>
+%  }
+%  if (scalar @{${$corpus->stats}{attributes}}) {
+    <li>Positional attributes:<ul>
+%   foreach my $att (@{${$corpus->stats}{attributes}}) {
+      <li> <%= $att->[0] %>: <%= $att->[1] %> attributes, <%= $att->[2] %> types</li>
+%   }
+    </ul></li>
+%  }
+%  if (scalar @{${$corpus->stats}{structures}}) {
+    <li>Structural attributes:<ul>
+%   foreach my $att (@{${$corpus->stats}{structures}}) {
+      <li> <%= $att->[0] %>: <%= $att->[1] %> regions</li>
+%   }
+    </ul></li>
+%  }
+%  if (scalar @{${$corpus->stats}{alignements}}) {
+    <li>Alignement attributes:<ul>
+%   foreach my $att (@{${$corpus->stats}{alignements}}) {
+      <li> <%= $att->[0] %>: <%= $att->[1] %> alignement blocks</li>
+%   }
+    </ul></li>
+%  }
+  </ul>
+%}
+
   </div>
 
 

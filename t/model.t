@@ -92,10 +92,10 @@ ok(grep {$_ eq 'word'} @{$slnw->attributes},
 # Info file parsing
 
 can_ok($sl, qw(tooltip describe));
-#  is(${${$m->corpora}{'cuwi-sl'}->title}{en},
+#  is(${${$m->corpora}{'cuwi-sl'}->{title}{en},
 #     'Test corpus for CUWI - Slovene texts aligned with French',
 #    'Corpus title, localized');
-#  is(${${$m->corpora}{'cuwi-sl'}->title}{fr},
+#  is(${${$m->corpora}{'cuwi-sl'}->{title}{fr},
 #     'Testni korpus CUWI - slovenska besedila poravnana s francoščino',
 #    'Corpus title, localized, UTF-8');
 is($sl->tooltip(attribute => 'nword', 'en'), 'Normalised form of the word',
@@ -114,6 +114,18 @@ is($sl->describe('sl'), "<p>Testni korpus CUWI.</p>\n",
 
 #infofile: peer corpora/alignement
 # MISSING
+
+# Stats via cwb-describe-corpus -s
+is_deeply($sl->stats,
+	  {
+	      tokens => '3733',
+	      attributes => ${$sl->stats}{attributes},
+	      structures => ${$sl->stats}{structures},
+	      alignements => []
+	  },
+   'Corpus stats: statistics via cwb-describe-corpus -s')
+    or diag("CWB::Model::Result structure was:\n" . Dumper($sl->stats));
+
 
 # Query
 

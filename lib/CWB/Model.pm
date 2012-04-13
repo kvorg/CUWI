@@ -108,7 +108,7 @@ our $VERSION = '0.9';
 
 has [qw(name NAME title model)];
 has [qw(attributes structures alignements peers)] => sub { return [] };
-has [qw(description tooltips)]                    => sub { return {} };
+has [qw(description tooltips stats)]              => sub { return {} };
 has encoding => 'utf8';
 has Encoding => 'UTF-8';
 has language => 'en_US';
@@ -195,6 +195,27 @@ sub new {
   $self->encoding('utf8')  if $self->encoding eq 'UTF-8';
   $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
+  my $cwb_describe = 'cwb-describe-corpus -s -r '
+    . $self->model->registry . ' '
+    . $self->NAME ;
+  my $description = `$cwb_describe`;
+  if ($description) {
+      ${$self->stats}{attributes} = [];
+      ${$self->stats}{structures} = [];
+      ${$self->stats}{alignements} = [];
+
+    my @description = split(/^/, $description);
+    foreach (@description) {
+      ${$self->stats}{tokens} = $1 if m/size\s+.tokens.:\s+(\d+)/;
+      push @{${$self->stats}{attributes}}, [ $1, $2, $3 ]
+	if m/p-ATT\s+(\w+)\s+(\d+)\s+tokens,\s+(\d+)/;
+      push @{${$self->stats}{structures}}, [ $1, $2 ]
+	if m/s-ATT\s+(\w+)\s+(\d+)/;
+      push @{${$self->stats}{alignements}}, [ $1, $2 ]
+	if m/a-ATT\s+(\w+)\s+(\d+)/;
+    }
+  }
+
   return $self;
 }
 
@@ -220,7 +241,7 @@ our $VERSION = '0.9';
 
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
-has qw(interleaved model);
+has [qw(interleaved model)];
 has propagate => 'superset';
 
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
