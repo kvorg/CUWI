@@ -8,19 +8,38 @@ use IO::File;
 use IO::Dir;
 use CWB::Model;
 use Encode 'decode';
-
+use Mojo::Loader;
 
 plugin 'charset' => {charset => 'UTF-8'};
 plugin 'tag_helpers_extra';
 #plugin 'pod_renderer';
 
 app->secret('re9phoothieX4dah4chi');
+app->types->type(perl => 'application/perl');
+app->types->type(csv => 'application/csv');
+app->types->type(xsl => 'application/excel');
 my $maxsize = 5000;
 
 my $sanitize;  # param sanitization callback
 my $tabulator; # multi attribute tabulator callback
 my $columnator; # multi attribute tabulator callback for table columns export
 my $urlator;   # conditional anchor generator
+my $table_export;
+
+my $loader = Mojo::Loader->new;
+if ( my $e = $loader->load('Spreadsheet::Write') ) {
+  if (ref $e) {
+    app->log->info("Module Spreadsheet::Write not available: $e. " .
+		   "Install Spreadsheet::Write if you need cvs and excel table result exports.")
+  } else {
+    app->log->info("Module Spreadsheet::Write loder said: $e.");
+    $table_export = 1;
+  }
+}
+
+    $table_export = 1;
+
+
 
 # config
 # possibly use the config helper?
@@ -184,18 +203,34 @@ get "/:corpus/search" => sub {
 		   tc=>$tabulator,
 		   ur=>$urlator,
 		 ) ;
-  } elsif ($self->param('format') and grep { $ eq $self->param('format') } qw(xls xlsx csv)  ) {
+  } elsif ($self->param('format') and grep { $_ eq $self->param('format') } qw(xls xlsx csv json perl)  ) {
     # XXX MISSING probably needing an action, not a template for these
     #    (Spreadsheet::Write for csv and Excel)
-    $self->render( template=>'search_' . $self->param('format') ,
-		   result=>$result,
-		   corpus=>$corpus,
-		   tc=>$tabulator,
+    given ($self->param('format')) {
+      when ('json') { $self->render(json => { %{$result} } ); }
+      when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
+      when ('csv')  {
+	use Spreadsheet::Write;
+
+	my $h=Spreadsheet::Write->new(
+				      file    => '/tmp/results.xls',
+				      format  => 'csv',
+				      sheet   => 'Results',
+				     );
+	foreach (@{$result->hits}) {
+	  $h->addrow( join(' ', @{$_->{left}}), $_->{match}, join(' ', @{$_->{right}}) );
+	}
+
+	$self->render(text => `cat /tmp/results.xls`, format=>'csv' );
+      }
+      dafault { $self->render(text=>'This was impossible, so you are not reading it.');  }
+    }
   } else {
     $self->render( template=>'search',
 		   result=>$result,
 		   corpus=>$corpus,
 		   tc=>$tabulator,
+		   table_export=>$table_export,
 		 );
   }
 } ;
@@ -546,6 +581,15 @@ __DATA__
 %= join(' ', @{stash('cwbexception')});
 </div>
 % }
+
+<div class="exports">
+ <%= link_to_here { format=>'json' } => begin %><span> JSON </span><% end %>
+ <%= link_to_here { format=>'perl' } => begin %><span> Perl </span><% end %>
+% if ($table_export) {
+ <%= link_to_here { format=>'csv' } => begin %><span> CSV </span><% end %>
+ <%= link_to_here { format=>'xls' } => begin %><span> Excel </span><% end %>
+% }
+</div>
 
 <%= include 'nav' %>
 
