@@ -65,6 +65,10 @@ if ($config->{corpora}{VIRTUALS} #BUG: optimize traversal
 		   );
     $corpus->description($config->{corpora}{VIRTUALS}{$virtual}{description})
       if $config->{corpora}{VIRTUALS}{$virtual}{description};
+    $corpus->peers($config->{corpora}{VIRTUALS}{$virtual}{peers})
+      if $config->{corpora}{VIRTUALS}{$virtual}{peers};
+    $corpus->tooltips($config->{corpora}{VIRTUALS}{$virtual}{tooltips})
+      if $config->{corpora}{VIRTUALS}{$virtual}{tooltips};
   }
 }
 
