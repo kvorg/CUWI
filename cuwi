@@ -344,6 +344,18 @@ __DATA__
   </table>
 %}
 
+% if ($corpus->can('subcorpora')) {
+  <h2>Subcorpora</h2>
+  <ul>
+ <ul>
+% my $corpora = $model->corpora;
+% foreach my $corpusname ( sort @{$corpus->subcorpora} ) {
+   <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a> </li>
+% }
+ </ul>
+% }
+
+
   </div>
 
 
