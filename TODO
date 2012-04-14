@@ -15,7 +15,6 @@
 * CWB::Model
 
 ** Multicorpora
-    - add result structures to identify provenence of a result line
     - extract virtual query magic into CWB::Model::Query::Virtual
     spook:
     - fix paging calculation,  should be optional, wrapped up in a function
@@ -62,29 +61,25 @@
 
 * Web interface
 
+** spook: worldlist query handling
 ** spook: Templates for query result exports
    for excel/oocalc, tab-delmited, csv, xml, latex, json, data::dump, yaml
    (Spreadsheet::Write for csv and Excel)
-** spook: subcorpus selection: slo, slo*, slo_* ... per et
-   AKA: Present multilingual aligned corpora as a single entry?
-   automatically with a drop-down menu to select the search corpus
-** spook: statistical corpus data at entry page (copora data size in kb, number of keywoards (pojavnice, različnice, leme in datoteke)
-   cwb-describe-corpus -s 
+** spook: bilingual search support
+    Iskalnik mora omogočati iskanje po obeh jezikih hkrati, se pravi npr. Spook-an: president on aligned Spook-sl: predsednik. 
+    glej: http://nl2.ijs.si/index-bi.htlm
+** spook: structural attribute limited search (links + CQP, then add-on fields)
+   "sito za strukturne atribute: maska + link v rezultatih"
+** spook: password protected groups
 ** spook: more on home page:
     potem pa še vnaprej pripravljene besedne sezname (urejene po abecedi in pogostosti) na vsak jezik in vsak podkorpus, se pravi za: an, ne, fr, it, sl(-an), sl(-ne), sl(-fr), sl(-it), sl(-sl), sl(-all). 
     seznami naj bodo txt datoteke (precanned, download)
    cwb-lexdecode -P lemma -fr `pwd`/Corpora/registry SPOOK_FRASLV-FRA | sort -n
    optional: samo po naročilu!
-** spook: structural attribute limited search (links + CQP, then add-on fields)
-   "sito za strukturne atribute: maska + link v rezultatih"
-** spook: bilingual search support
-    Iskalnik mora omogočati iskanje po obeh jezikih hkrati, se pravi npr. Spook-an: president on aligned Spook-sl: predsednik. 
-    glej: http://nl2.ijs.si/index-bi.htlm
-** spook: password protected groups
 ** spook: sub-searches (based on existing search)
 ** short ID for structural attribute (auth year?) in [result]
    sane default + changeable from info file or conf
-** spook: web homes for corpus groups
+** spook: web homes for corpus groups ??
 ** spook: home page info:
     navodila za uporabo v slovenščini s čimveč primeri različnih tipov iskanj
 ** imp: Use click-to pop-up for help

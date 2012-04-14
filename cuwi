@@ -19,6 +19,7 @@ my $maxsize = 5000;
 
 my $sanitize;  # param sanitization callback
 my $tabulator; # multi attribute tabulator callback
+my $columnator; # multi attribute tabulator callback for table columns export
 my $urlator;   # conditional anchor generator
 
 # config
@@ -183,11 +184,18 @@ get "/:corpus/search" => sub {
 		   tc=>$tabulator,
 		   ur=>$urlator,
 		 ) ;
+  } elsif ($self->param('format') and grep { $ eq $self->param('format') } qw(xls xlsx csv)  ) {
+    # XXX MISSING probably needing an action, not a template for these
+    #    (Spreadsheet::Write for csv and Excel)
+    $self->render( template=>'search_' . $self->param('format') ,
+		   result=>$result,
+		   corpus=>$corpus,
+		   tc=>$tabulator,
   } else {
     $self->render( template=>'search',
 		   result=>$result,
 		   corpus=>$corpus,
-		 tc=>$tabulator,
+		   tc=>$tabulator,
 		 );
   }
 } ;
