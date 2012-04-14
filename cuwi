@@ -140,6 +140,7 @@ get "/:corpus/search" => sub {
   $params{cpos} = $self->param('cpos') 
     if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
   $params{query} = $self->param('query');
+  $params{class} = $self->param('class');
   $params{search} = $self->param('search');
   $params{ignorecase} = $self->param('ignorecase');
   $params{ignorediacritics} = $self->param('ignorediacritics');
@@ -376,8 +377,12 @@ __DATA__
     <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Query</em>The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored. </span>
     Query:</a>&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
 % if (@{$corpus->peers}) {
-    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Corpus</em>In a corpus group, you can send the search to a different corpus in the group by selecting the name of th ecorpus here.</span>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Corpus</em>In a corpus group, you can send the search to a different corpus in the group by selecting the name of the ecorpus here.</span>
     Corpus</a>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %>
+% }
+% if ($corpus->can('classes') and 0 + keys %{$corpus->classes}) {
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Corpus</em>In a virtual corpus, you can select a subclass of subcorpora here.</span>
+    Subcorpora</a>: <%= select_field 'class', [$self->param('class') ? $self->param('class') : ${$corpus->classnames}[0] , @{$corpus->classnames}] %>
 % }
     <div class="search">
     <span class="label"><a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Search attributes</em>Select the attribute the search is to be performed on. If you need different attributes in the same query, you need to use the CQP syntax. When using CQP syntax, the selected Search attribute is ignored. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
@@ -413,6 +418,10 @@ __DATA__
 % }
     </div>
 % if (scalar @{$corpus->alignements}) {
+% if ($corpus->can('general_align') and $corpus->general_align) {
+     <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Align</em>Display any available alignements.</span>  Align:</a>
+     <span class="ctrl"><%= check_box_x 'align' => 1 %></span>
+% } else {
      Align:
 % foreach my $align (@{$corpus->alignements}) {
   % my $ttip; $ttip = ${$model->corpora}{$align}->title if exists ${$model->corpora}{$align};
@@ -423,6 +432,7 @@ __DATA__
    </a>
   % }
   </span>
+%  }
 % }
  <br />
 %} #alignements

@@ -66,7 +66,7 @@ sub virtual {
       if exists ${$self->corpora}{$name};
 
   my $corpus = CWB::Model::Corpus::Virtual->new(model => $self, $name => @_);
-  croak "CWB::Model Exception: Could not instantiate CWB::Model::Corpus::Virtual $name: object instantiation failed." unless defined $corpus and $corpus->can('subcorpora');
+  croak "CWB::Model Exception: Could not instantiate CWB::Model::Corpus::Virtual $name: object instantiation failed." unless defined $corpus and ref $corpus and $corpus->can('subcorpora');
   ${$self->corpora}{$corpus->name} = $corpus;
   return $corpus;
 }
@@ -241,7 +241,9 @@ our $VERSION = '0.9';
 
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
-has [qw(interleaved model)];
+has classes => sub { return {}; };
+has classnames => sub { return []; };
+has [qw(model interleaved general_align)];
 has propagate => 'superset';
 
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
@@ -267,11 +269,15 @@ sub new {
   $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
   # generate corpora here
-  $self->reload;
+  if ($self->classes and not $self->classnames) {
+    @{$self->classnames} = sort keys %{$self->classes};
+  }
 
   # virtual attributes, structures, alignements:
   # use superset here and filter when passing to subcorpus
   #   unless overruled in the specification
+
+  $self->reload;
 }
 
 sub registry { croak "CWB::Model::Corpus::Virtual syntax error: no registry in virtual corpora.\n" }
@@ -401,6 +407,12 @@ sub query {
 
   my $self = shift;
   $CWB::Model::exception_handler->("Query called on a virtual corpus with no subcorpora, aborting.\n") unless scalar @{$self->subcorpora};
+
+  my %opts = @_;
+  $opts{startfrom} ||= 0;
+  $opts{align} = $self->alignements
+    if ($opts{align} and $self->general_align);
+
   # single subcorpus: virtual corpus mapping
   if (scalar @{$self->subcorpora} == 1) {
     croak 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
@@ -416,27 +428,34 @@ sub query {
   #        compose hits and tables here (are tables generic?)
   #        we should store ratio per corpora with result to enable paging
   #        and support ratio
-  my %opts = @_;
-  $opts{startfrom} ||= 0;
 
   # multiple corpora: hitnums are needed for paging and interleaved (slow)
   # for this reason alone virtual query with caching is needed
   my %hitinfo;
-  foreach my $subname (@{$self->subcorpora}) {
+  my @subcorpora = @{$self->subcorpora};
+  if (exists $opts{class}) {
+    @subcorpora = @{${$self->classes}{$opts{class}}}
+      if ( exists ${$self->classes}{$opts{class}} );
+    delete $opts{class};
+  }
+  foreach my $subname (@subcorpora) {
     my $subcorpus = ${$self->_subcorpora}{$subname};
+      $CWB::Model::exception_handler->("Query called on a virtual corpus with class containing nonexisting subcorpus $subname, skipping subicorpus.\n") and next
+	unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
     $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, \%opts), hitsonly=>1);
 #    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
   }
   my $result = $self->_make_result(%opts);
   # sequential subcorpora: check into which subcorpus we fall
   # rethink to be more objective and query hits on the fly
-  my $offset   = sprintf('%d', ($opts{startfrom} / @{$self->subcorpora})) + 0;
-  my $pagesize = sprintf('%d', ($opts{pagesize}  / @{$self->subcorpora})) + 0;
+  my $offset   = sprintf('%d', ($opts{startfrom} / @subcorpora)) + 0;
+  my $pagesize = sprintf('%d', ($opts{pagesize}  / @subcorpora)) + 0;
   # that was naive: ratio not taken into account
   if ($self->interleaved) {
     # interleaved
-    foreach  (@{$self->subcorpora}) {
+    foreach  (@subcorpora) {
       my $subcorpus = ${$self->_subcorpora}{$_};
+      next unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
       my $sc_name = $subcorpus->name;
       my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts,
 						 startfrom => $offset,
@@ -451,7 +470,7 @@ sub query {
     }
   } else {
     # sequential
-    foreach (@{$self->subcorpora}) {
+    foreach (@subcorpora) {
       my $subcorpus = ${$self->_subcorpora}{$_};
       $hitinfo{$subcorpus->name}{start} =
 	($opts{startfrom} - $offset > 1
