@@ -17,8 +17,8 @@ plugin 'tag_helpers_extra';
 app->secret('re9phoothieX4dah4chi');
 app->types->type(perl => 'application/perl');
 app->types->type(csv => 'application/csv');
-app->types->type(xsl => 'application/excel');
-my $maxsize = 5000;
+app->types->type(xls => 'application/excel');
+my $maxsize = 50000;
 
 my $sanitize;  # param sanitization callback
 my $tabulator; # multi attribute tabulator callback
@@ -27,19 +27,14 @@ my $urlator;   # conditional anchor generator
 my $table_export;
 
 my $loader = Mojo::Loader->new;
-if ( my $e = $loader->load('Spreadsheet::Write') ) {
-  if (ref $e) {
-    app->log->info("Module Spreadsheet::Write not available: $e. " .
-		   "Install Spreadsheet::Write if you need cvs and excel table result exports.")
-  } else {
-    app->log->info("Module Spreadsheet::Write loder said: $e.");
-    $table_export = 1;
-  }
+my $e = $loader->load('Spreadsheet::Write');
+if (ref $e) {
+  app->log->info("Module Spreadsheet::Write not available: $e. " .
+		 "Install Spreadsheet::Write if you need cvs and excel table result exports.")
+} else {
+  app->log->info("Module Spreadsheet::Write loder said: $e.");
+  $table_export = 1;
 }
-
-    $table_export = 1;
-
-
 
 # config
 # possibly use the config helper?
@@ -203,27 +198,64 @@ get "/:corpus/search" => sub {
 		   tc=>$tabulator,
 		   ur=>$urlator,
 		 ) ;
-  } elsif ($self->param('format') and grep { $_ eq $self->param('format') } qw(xls xlsx csv json perl)  ) {
-    # XXX MISSING probably needing an action, not a template for these
-    #    (Spreadsheet::Write for csv and Excel)
+  } elsif ($self->param('format') and grep { $_ eq $self->param('format') } qw(xls xls csv json perl)  ) {
+    $self->app->log->info('Exporting as ' . $self->param('format') 
+			  . ' (' . scalar @{$result->hits} . ' hits).');
     given ($self->param('format')) {
       when ('json') { $self->render(json => { %{$result} } ); }
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
-      when ('csv')  {
-	use Spreadsheet::Write;
+      when (/csv|xls/)  {
+	if ($table_export) {
+	  my $h="Spreadsheet::Write"->new(
+				   file    => '/tmp/results.xls',
+				   format  => $self->param('format'),
+				   sheet   => 'Results',
+				  );
+	  my $tabspreader = sub  {
+	    my $attributes = shift;
+	    my ($left, $match, $right) = @_;
 
-	my $h=Spreadsheet::Write->new(
-				      file    => '/tmp/results.xls',
-				      format  => 'csv',
-				      sheet   => 'Results',
-				     );
-	foreach (@{$result->hits}) {
-	  $h->addrow( join(' ', @{$_->{left}}), $_->{match}, join(' ', @{$_->{right}}) );
-	}
+	    $attributes = $attributes->[0] if ref $attributes->[0];
 
-	$self->render(text => `cat /tmp/results.xls`, format=>'csv' );
+	    my $i = 0;
+	    my @row = ();
+	    foreach my $att (@{$attributes}) {
+	      push @row, [ $att,
+			  (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$left}),
+			  (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$match}),
+			  (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i]  : $_->[$i] } @{$right}),
+			];
+	      $i++;
+	    }
+#	    $self->app->log->info('TAB: ' . $self->dumper(@$attributes), $self->dumper(@row));
+	    return @row;
+	  };
+
+	  foreach my $hit (@{$result->hits}) {
+	    my @rows = $tabspreader->($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
+	    $h->addrow( map { {content => $_, format=>'text' } } join (', ', 'cpos: ' . $hit->{cpos} .
+			      (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
+			      (map {$_ . ': ' . $hit->{data}{$_} } keys %{$hit->{data}} )),
+			      @{shift @rows});
+	    if (@rows) {
+	      foreach my $row (@rows) {
+		$h->addrow( map { {content => $_, format=>'text' } } '', @{$row});
+	      }
+	    }
+	    foreach (keys %{$hit->{aligns}}) {
+	      $h->addrow( map { {content => $_, format=>'text' } } '@' . $_, join(' ', map { $_->[0] } @{${$hit->{aligns}}{$_}}));
+	    }
+	  }
+	  $h = undef;
+	  $self->res->headers->header('Content-Disposition' => 'attachment; filename="cuwi_search_results.' . $self->param('format'));
+	  $self->res->headers->content_type('application/' . $self->param('format'));
+	  my $ss = Mojolicious::Static->new(root=>'/tmp');
+	  $ss->serve($self,'results.xls')
+	    or $self->app->log->info('Export failed, file not found.');
+	  $self->rendered;
+	} else { $self->render(text => 'Perl package Spreadsheet::Write not installed. Sorry.') };
       }
-      dafault { $self->render(text=>'This was impossible, so you are not reading it.');  }
+      default { $self->render(text=>'This was impossible, so you are not reading it.');  }
     }
   } else {
     $self->render( template=>'search',
@@ -582,14 +614,17 @@ __DATA__
 </div>
 % }
 
+% if ($result->hitno) {
 <div class="exports">
- <%= link_to_here { format=>'json' } => begin %><span> JSON </span><% end %>
- <%= link_to_here { format=>'perl' } => begin %><span> Perl </span><% end %>
+ Export results:
+ <%= link_to_here { format=>'json', start_from=>1, size=>50000 } => begin %><span> JSON </span><% end %>
+ <%= link_to_here { format=>'perl', start_from=>1, size=>50000 } => begin %><span> Perl </span><% end %>
 % if ($table_export) {
- <%= link_to_here { format=>'csv' } => begin %><span> CSV </span><% end %>
- <%= link_to_here { format=>'xls' } => begin %><span> Excel </span><% end %>
+ <%= link_to_here { format=>'csv', start_from=>1, size=>50000 } => begin %><span> CSV </span><% end %>
+ <%= link_to_here { format=>'xls', start_from=>1, size=>50000 } => begin %><span> Excel </span><% end %>
 % }
 </div>
+% }
 
 <%= include 'nav' %>
 
@@ -807,6 +842,22 @@ div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.exception { margin: 3em; color: Red; }
+
+div.exports {
+  font-size: 80%;
+  margin-bottom: 2ex;
+}
+div.exports > a {
+  font-size: 80%;
+  font-family: sans-serif;
+  text-decoration: none;
+  color: white;
+  background: orange;
+  padding: .35em;
+  margin: .4em;
+  border-radius: .4em;
+}
+
 div.nav   { font-weight: bold; font-size: 80%; }
 div.nav > a.prev   { float: left; }
 div.nav > a.next   { float: right; }
