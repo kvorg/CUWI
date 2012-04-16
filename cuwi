@@ -207,6 +207,7 @@ get "/:corpus/search" => sub {
       when (/csv|xls/)  {
 	if ($table_export) {
 	  my $h="Spreadsheet::Write"->new(
+                                   #BUG HORRIBLE: randomize file and delete it
 				   file    => '/tmp/results.xls',
 				   format  => $self->param('format'),
 				   sheet   => 'Results',
@@ -221,39 +222,52 @@ get "/:corpus/search" => sub {
 	    my @row = ();
 	    foreach my $att (@{$attributes}) {
 	      push @row, [ $att,
-			  (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$left}),
-			  (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$match}),
-			  (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i]  : $_->[$i] } @{$right}),
-			];
+			   (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$left}),
+			   (map { substr($_->[$i], 0, 1) eq '=' ? '<< _' . $_->[$i] . ' >>' : '<< ' . $_->[$i]. ' >>' } @{$match}),
+			   (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i]  : $_->[$i] } @{$right}),
+			 ];
 	      $i++;
 	    }
 #	    $self->app->log->info('TAB: ' . $self->dumper(@$attributes), $self->dumper(@row));
 	    return @row;
 	  };
 
-	  foreach my $hit (@{$result->hits}) {
-	    my @rows = $tabspreader->($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
-	    $h->addrow( map { {content => $_, format=>'text' } } join (', ', 'cpos: ' . $hit->{cpos} .
-			      (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
-			      (map {$_ . ': ' . $hit->{data}{$_} } keys %{$hit->{data}} )),
-			      @{shift @rows});
-	    if (@rows) {
-	      foreach my $row (@rows) {
-		$h->addrow( map { {content => $_, format=>'text' } } '', @{$row});
+	  if (not $result->table) {
+	    # not wordlist
+	    foreach my $hit (@{$result->hits}) {
+	      my @rows = $tabspreader->($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
+	      $h->addrow( map { {content => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
+									 (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
+									 (map {$_ . ': ' . $hit->{data}{$_} } keys %{$hit->{data}} )),
+			  @{shift @rows});
+	      if (@rows) {
+		foreach my $row (@rows) {
+		  $h->addrow( map { {content => $_, type=>'string' } } '', @{$row});
+		}
+	    }
+	      foreach (keys %{$hit->{aligns}}) {
+		$h->addrow( map { {content => $_, type=>'string' } } '@' . $_, join(' ', map { $_->[0] } @{${$hit->{aligns}}{$_}}));
 	      }
 	    }
-	    foreach (keys %{$hit->{aligns}}) {
-	      $h->addrow( map { {content => $_, format=>'text' } } '@' . $_, join(' ', map { $_->[0] } @{${$hit->{aligns}}{$_}}));
+	  } else {
+	    #wordlist
+	    warn ">>> exporting wordlist\n";
+	    foreach my $hit ( @{$result->hits} ) {
+	      $h->addrow(
+			 { content => join(" ", map { @{$_} } @{$hit->[0]} ), type=>'string' },
+			 { content => $hit->[1], type=>'number'}
+			);
 	    }
 	  }
 	  $h = undef;
+
 	  $self->res->headers->header('Content-Disposition' => 'attachment; filename="cuwi_search_results.' . $self->param('format'));
 	  $self->res->headers->content_type('application/' . $self->param('format'));
 	  my $ss = Mojolicious::Static->new(root=>'/tmp');
 	  $ss->serve($self,'results.xls')
 	    or $self->app->log->info('Export failed, file not found.');
 	  $self->rendered;
-	} else { $self->render(text => 'Perl package Spreadsheet::Write not installed. Sorry.') };
+	  } else { $self->render(text => 'Perl package Spreadsheet::Write not installed. Sorry.') };
       }
       default { $self->render(text=>'This was impossible, so you are not reading it.');  }
     }
