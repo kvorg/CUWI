@@ -181,5 +181,24 @@ is_deeply($r,
 	   distinct   => 0,
 	  }, "Virtual Query/Result: re-query")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+$r = $virt->query(query=>'a*', display=>'wordlist');
+is_deeply($r,
+	  {
+	   corpusname => $virt->name,
+	   peers => [ [] ],
+	   query      => '[word="a.*" %c]',
+	   QUERY      => '[word="a.*" %c]',
+	   time       => $r->time,
+	   # bigcontext => 'paragraphs',
+	   hits       => [@{$r->hits}],
+	   hitno      => 326,
+	   aligns     => [],
+	   attributes => [[]],
+	   table => '1',
+	   pages      => { single=>1, this=>1 },
+           # a bit unclean
+	   distinct   => 0,
+	  }, "Virtual Query/Result: wordlist")
+  or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 
 done_testing();

@@ -433,6 +433,8 @@ sub query {
   # for this reason alone virtual query with caching is needed
   my %hitinfo;
   my @subcorpora = @{$self->subcorpora};
+  # BUG: something wierd here:
+  # Use of uninitialized value $opts{"class"} in exists at lib/CWB/Model.pm line 438.
   if (exists $opts{class}) {
     @subcorpora = @{${$self->classes}{$opts{class}}}
       if ( exists ${$self->classes}{$opts{class}} );
@@ -446,48 +448,88 @@ sub query {
 #    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
   }
   my $result = $self->_make_result(%opts);
-  # sequential subcorpora: check into which subcorpus we fall
-  # rethink to be more objective and query hits on the fly
-  my $offset   = sprintf('%d', ($opts{startfrom} / @subcorpora)) + 0;
-  my $pagesize = sprintf('%d', ($opts{pagesize}  / @subcorpora)) + 0;
-  # that was naive: ratio not taken into account
-  if ($self->interleaved) {
-    # interleaved
+  if ($opts{display} and $opts{display} eq 'wordlist') {
+    # handle wordlist
+    $opts{subcorpus => 1}; # disables sorting in subcorpus queries
+    my %counts = ();
     foreach  (@subcorpora) {
       my $subcorpus = ${$self->_subcorpora}{$_};
       next unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
       my $sc_name = $subcorpus->name;
-      my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts,
-						 startfrom => $offset,
-						 pagesize => $pagesize
-						));
-      $_->{subcorpus_name} = $sc_name foreach (@{$r->hits});
+      my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts,));
+
       $result->query($r->query) unless $result->query;
       $result->QUERY($r->QUERY) unless $result->QUERY;
       $result->hitno($result->hitno + $r->hitno);
-      $result->distinct($result->distinct + $r->distinct) if $r->distinct;
-      push @{$result->hits}, @{$r->hits};
-    }
-  } else {
-    # sequential
-    foreach (@subcorpora) {
-      my $subcorpus = ${$self->_subcorpora}{$_};
-      $hitinfo{$subcorpus->name}{start} =
-	($opts{startfrom} - $offset > 1
-	  and $opts{startfrom} - $offset <= $hitinfo{$subcorpus->name}{hits}) ?
-	  $opts{startfrom} - $offset : undef;
-      $hitinfo{$subcorpus->name}{pagesize} =
-	$opts{startfrom} - $offset < 1 ?
-	  $opts{pagesize} + $opts{startfrom} - $offset : $opts{pagesize};
-      $offset += 0;
-    }
-  }
-  $result->attributes(exists $opts{show} ? $opts{show} : [[]]);
-  $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
 
-  # finalize pages
-  $result->page_setup(%opts);
+      # aggregate from result hits back into counts
+      foreach my $hit ( @{$r->hits} ) {
+	my $match = $hit->[2][0];
+	$counts{$match}{count} =   0 unless exists $counts{$match};
+	$counts{$match}{count} +=  $hit->[1];
+	$counts{$match}{value} =   $hit->[0];
+      }
+    }
+    # nasty: copied from query handling
+    @{$result->hits} = map { [$counts{$_}{value}, $counts{$_}{count}] }
+      reverse sort {
+	my $c = ($counts{$a}{count} <=> $counts{$b}{count});
+	$c ? $c : ($b cmp $a )
+	       }  keys %counts;
+
+    ${$result->pages}{single} = 1;
+    ${$result->pages}{this} = 1;
+    $result->table(1);
+    $result->distinct(scalar keys %counts);
+
+  } else {
+    # normal queries
+    my $offset   = sprintf('%d', ($opts{startfrom} / @subcorpora)) + 0;
+    my $pagesize = sprintf('%d', ($opts{pagesize}  / @subcorpora)) + 0;
+    # that was naive: ratio not taken into account
+    if ($self->interleaved) {
+      # interleaved
+      # BUG - missing sentnce / paragraph displays
+      foreach  (@subcorpora) {
+	my $subcorpus = ${$self->_subcorpora}{$_};
+	next unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
+	my $sc_name = $subcorpus->name;
+	my $r = $subcorpus->query($self->_map_opts($subcorpus, \%opts,
+						   startfrom => $offset,
+						   pagesize => $pagesize
+						  ));
+	$_->{subcorpus_name} = $sc_name foreach (@{$r->hits});
+	$result->query($r->query) unless $result->query;
+	$result->QUERY($r->QUERY) unless $result->QUERY;
+	$result->hitno($result->hitno + $r->hitno);
+	$result->distinct($result->distinct + $r->distinct) if $r->distinct;
+	push @{$result->hits}, @{$r->hits};
+      }
+    } else {
+      # sequential NOT FINISHED --- BUG
+      # sequential subcorpora: check into which subcorpus we fall
+      # rethink to be more objective and query hits on the fly
+      foreach (@subcorpora) {
+	my $subcorpus = ${$self->_subcorpora}{$_};
+	$hitinfo{$subcorpus->name}{start} =
+	  ($opts{startfrom} - $offset > 1
+	   and $opts{startfrom} - $offset <= $hitinfo{$subcorpus->name}{hits}) ?
+	     $opts{startfrom} - $offset : undef;
+	$hitinfo{$subcorpus->name}{pagesize} =
+	  $opts{startfrom} - $offset < 1 ?
+	    $opts{pagesize} + $opts{startfrom} - $offset : $opts{pagesize};
+	$offset += 0;
+      }
+    }
+    $result->attributes(exists $opts{show} ? $opts{show} : [[]]);
+    $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
+
+    # finalize pages
+    $result->page_setup(%opts);
+  }
+
   $result->time(Time::HiRes::gettimeofday() - $query_start_time);
+
 
   return $result;
 }
@@ -511,12 +553,13 @@ has align       =>  sub { return [] };
 has sort        =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
-has ignoremeta => 0;
+has ignoremeta  => 0;
 has startfrom   => 1;
 has pagesize    => 25;
 has context     => 25;
 has display     => 'kwic';
 has result      => sub { CWB::Model::Result->new };
+has subcorpus   => 1;
 
 sub new {
   use Scalar::Util qw(weaken);
@@ -724,7 +767,7 @@ sub run {
     $sort_cmd .= ' on match[-1]' if ${$self->sort}{a}{target} eq 'left';
     $sort_cmd .= ' descending' if ${$self->sort}{a}{order} eq 'descending';
     $sort_cmd .= ' reverse' if ${$self->sort}{a}{direction} eq 'reversed';
-    warn "Sorting! <<$sort_cmd>>\n";
+    #warn "Sorting! <<$sort_cmd>>\n";
     $self->exec($sort_cmd, 'Could not perform sort with ' . $sort_cmd);
   } else {
     # set natural sort order
@@ -857,12 +900,25 @@ sub run {
       $counts{$match}{count} = 0 unless exists $counts{$match};
       $counts{$match}{count}++ ;
       $counts{$match}{value} = _tokens($match, $attrs);
+      $counts{$match}{data} = [$match, $attrs] if $self->subcorpus;
     }
-    @{$result->hits} = map { [$counts{$_}{value}, $counts{$_}{count}] }
-      reverse sort {
-	my $c = ($counts{$a}{count} <=> $counts{$b}{count});
-	$c ? $c : ($b cmp $a )
-	       }  keys %counts;
+    if ( not $self->subcorpus) {
+      @{$result->hits} = map { [
+				$counts{$_}{value},
+				$counts{$_}{count}
+			       ] }
+	reverse sort {
+	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
+	  $c ? $c : ($b cmp $a )
+	}  keys %counts;
+    } else { #subcorpus query does not sort (saves time)
+      @{$result->hits} = map { [
+				$counts{$_}{value},
+				$counts{$_}{count},
+			       	$counts{$_}{data},
+			       ] }
+	keys %counts;
+    }
     # reduce only shows the top frequencies for wordlists
     splice @{$result->hits}, $self->pagesize
       if $self->reduce and $self->pagesize > 0;

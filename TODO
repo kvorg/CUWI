@@ -54,6 +54,7 @@
 ** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo
 ** cuwi favicon, help icon
+** move export modules in eval encapsualtion and handle exceptions
 ** disable context links for biggest display mode (sentence or paragraph)
 ** sanitize can't/does not work (readonly??) - tests
 ** make label and checkbox unbreakable in attributes

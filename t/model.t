@@ -82,12 +82,12 @@ ok(scalar @{$sl->structures} == 8, 'Corpus: structures parsing');
 is_deeply([sort @{$sl->alignements}],
 	  [sort qw(cuwi-fr)],
 	  'Corpus: alignement names');
-my $slnw = ${$m->corpora}{'cuwi-sl-noword'};
-isa_ok($slnw, 'CWB::Model::Corpus::Filebased',
-       'CWB::Model::Corpus instantiation');
-cmp_ok(scalar @{$slnw->attributes}, '==', 6, 'Corpus: attributes parsing');
-ok(grep {$_ eq 'word'} @{$slnw->attributes},
-   'Corpus: added missing "word" attribute.');
+#my $slnw = ${$m->corpora}{'cuwi-sl-noword'};
+#isa_ok($slnw, 'CWB::Model::Corpus::Filebased',
+#       'CWB::Model::Corpus instantiation');
+#cmp_ok(scalar @{$slnw->attributes}, '==', 6, 'Corpus: attributes parsing');
+#ok(grep {$_ eq 'word'} @{$slnw->attributes},
+#   'Corpus: added missing "word" attribute.');
 
 # Info file parsing
 
@@ -288,7 +288,7 @@ is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 
 # result: display modes
 
-$r = $sl->query(query=>"a*", display=>'wordlist');
+$r = $sl->query(query=>"a*", search => 'word', show => ['word'], display=>'wordlist');
 is_deeply($r,
 	  {
 	   corpusname => $sl->name,
@@ -299,6 +299,7 @@ is_deeply($r,
 	   bigcontext => 'paragraphs',
 	   table => '1',
 	   hits       => [
+			  'pepe',
 			  [[], 8],
 			  @{$r->hits}[1..35],
 			 ],
@@ -308,7 +309,8 @@ is_deeply($r,
 	   attributes => [[]],
 	   pages      => { single=>1, this=>1 },
 	  },
- "Query/Result: display model wordlist - default structure test");
+ "Query/Result: display model wordlist - default structure test")
+  or diag('Wordlist result data was: ' . Dumper($r) );
 
 # query/result encoding roundtrip (in queries and all display modes)
 # MISSING

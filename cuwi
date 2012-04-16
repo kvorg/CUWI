@@ -136,9 +136,9 @@ get "/:corpus/search" => sub {
 					  app->log->error(@_); } );
 
   if ($self->param('cpos')) {
-    $self->app->log->info('Received cpos query: ' . $self->param('cpos'));
+    $self->app->log->info('Received cpos query: ' . $self->param('cpos') . ' from ' . $self->tx->remote_address . '.');
   } else {
-    $self->app->log->info('Received query: ' . $self->param('query'));
+    $self->app->log->info('Received query: ' . $self->param('query')  . ' from ' . $self->tx->remote_address . '.');
   }
   $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
@@ -832,8 +832,9 @@ RK5CYII=
 body { font-family: Palatino, Times, serif;
        font-size: 120%;
        background-color: #F0F0F0;
+       padding-bottom: 8ex;
 }
-div.search, div.show { margin-left: 3.5em;  }
+div.search, div.show { margin-left: 3.5em; }
 div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
 div.search > span.label, div.show > span.label { width: 14em; }
 span.ctrl { white-space: nowrap; display: inline; }
@@ -895,7 +896,7 @@ div.structure_report table  { padding: .5em; background-color: white; width: 100
 div.structure_report table th { text-align: left; padding-right: 1em; }
 span.attlabel { font-variant:small-caps; font-size: 80%; line-height: 170%; padding-right: 2em; }
 img.preview { display: block; float: left; padding-top: 0pt; padding: 2em; width: 50%; }
-iv.matches   { clear: both; }
+div.matches   { clear: both; }
 div.matches { background-color: white;
 	      width: 98%;
               padding: 0px;
