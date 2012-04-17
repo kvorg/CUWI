@@ -411,8 +411,15 @@ sub query {
 
   my %opts = @_;
   $opts{startfrom} ||= 0;
-  $opts{align} = $self->alignements
-    if ($opts{align} and $self->general_align);
+  if (scalar @{$opts{align}} == 1 
+      and ${$opts{align}}[0] = 1 
+      and $self->general_align) {
+      $opts{align} = $self->alignements;
+#      warn ("Model: gone for align all, align opt was $opts{align}\n");
+  } else {
+      delete $opts{align};
+#      warn ("Model: no align all.\n");
+  }
 
   # single subcorpus: virtual corpus mapping
   if (scalar @{$self->subcorpora} == 1) {
