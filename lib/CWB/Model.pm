@@ -144,7 +144,7 @@ use Carp;
 
 our $VERSION = '0.9';
 
-has [qw(file infofile)];
+has [qw(file infofile datahome)];
 
 sub new {
   my $self = shift->SUPER::new(file => shift, model => shift);
@@ -158,6 +158,7 @@ sub new {
   while (<$fh>) {
     $self->title($1)               if m/NAME\s+"([^#]*)"/ ;
     $self->infofile($1)            if m/INFO\s+([^# \n]*)/ ;
+    $self->datahome($1)            if m/HOME\s+([^# \n]*)/ ;
     push @{$self->alignements}, $1 if m/ALIGNED\s+([^# \n]*)/ ;
     push @{$self->attributes}, $1  if m/ATTRIBUTE\s+([^# \n]*)/ ;
     push @{$self->structures}, $1  if m/STRUCTURE\s+([^# \n]*)/ ;
@@ -450,7 +451,7 @@ sub query {
   my $result = $self->_make_result(%opts);
   if ($opts{display} and $opts{display} eq 'wordlist') {
     # handle wordlist
-    $opts{subcorpus => 1}; # disables sorting in subcorpus queries
+    $opts{subcorpus} = 1; # disables sorting in subcorpus queries
     my %counts = ();
     foreach  (@subcorpora) {
       my $subcorpus = ${$self->_subcorpora}{$_};

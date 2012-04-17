@@ -75,11 +75,9 @@
 ** spook: structural attribute limited search (links + CQP, then add-on fields)
    "sito za strukturne atribute: maska + link v rezultatih"
 ** spook: password protected groups
-** spook: more on home page:
-    potem pa še vnaprej pripravljene besedne sezname (urejene po abecedi in pogostosti) na vsak jezik in vsak podkorpus, se pravi za: an, ne, fr, it, sl(-an), sl(-ne), sl(-fr), sl(-it), sl(-sl), sl(-all). 
-    seznami naj bodo txt datoteke (precanned, download)
-   cwb-lexdecode -P lemma -fr `pwd`/Corpora/registry SPOOK_FRASLV-FRA | sort -n
-   optional: samo po naročilu!
+** spook: frequency lists
+   support encodings (custom server?)
+   make them optional: only by order
 ** spook: sub-searches (based on existing search)
 ** short ID for structural attribute (auth year?) in [result]
    sane default + changeable from info file or conf
