@@ -3,10 +3,15 @@
 
 * CWB::Model BUGS:
 
+** Escapes for ?, handling for single "
+** Check query mangling in detail
 ** Bail out gracefully on faulty corpora:
    - no data files
    - skip non-existing peers (log error)
    - skip non-existing virtaul corpora members (log error)
+** Bail-out gracefully with maxhits:
+    announce in red
+    make a reduce to maxhits
 ** In paging with Result objects, the end page calculation is wrong
 ** Structure handling in Query: structure searches
 ** Default overrides new for ingorecase
@@ -51,6 +56,7 @@
 
 * Web interface BUGS
 
+** Wordlist sorting????
 ** classes: sanitize with the virtual corpus before sending
 ** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo
@@ -87,7 +93,8 @@
     navodila za uporabo v slovenščini s čimveč primeri različnih tipov iskanj
 ** imp: Use click-to pop-up for help
    (via js binding + help at bottom always)
-** imp: sortable frequency lists
+** imp: sortable frequency lists (via js)
+** wordlists: klick on frequency number to get conjunction query
 ** Additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
