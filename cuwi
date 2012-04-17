@@ -274,8 +274,9 @@ get "/:corpus/search" => sub {
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
 	if ($table_export) {
-	  my $tmpdir = File::Temp->newdir('cuwi_tmp_XXXXX', CLEANUP=>0, );
+	  my $tmpdir = File::Temp->newdir('/tmp/cuwi_tmp_XXXXX', CLEANUP=>0, );
 	  my $tmpfile = $tmpdir->dirname . '/' . 'cuwi_search_results.' . $self->param('format');
+	  warn "Tempfile is " . $tmpfile;
 	  my $h="Spreadsheet::Write"->new(
                                    #BUG HORRIBLE: randomize file and delete it
 				   file    => $tmpfile,
@@ -333,7 +334,7 @@ get "/:corpus/search" => sub {
 
 	  $self->res->headers->header('Content-Disposition' => 'attachment; filename="cuwi_search_results.' . $self->param('format'));
 	  $self->res->headers->content_type('application/' . $self->param('format'));
-	  my $ss = Mojolicious::Static->new(root=>'/tmp');
+	  my $ss = Mojolicious::Static->new(root=>'/');
 	  $ss->serve($self, $tmpfile)
 	    or $self->app->log->info('Export failed, file not found.');
 	  $self->rendered;
