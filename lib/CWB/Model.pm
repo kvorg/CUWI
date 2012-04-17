@@ -567,7 +567,7 @@ has pagesize    => 25;
 has context     => 25;
 has display     => 'kwic';
 has result      => sub { CWB::Model::Result->new };
-has subcorpus   => 1;
+has subcorpus   => 0;
 
 sub new {
   use Scalar::Util qw(weaken);
