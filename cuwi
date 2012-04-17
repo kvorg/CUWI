@@ -6,6 +6,7 @@ our $VERSION = '0.9';
 use Mojolicious::Lite;
 use IO::File;
 use IO::Dir;
+use File::Temp;
 use CWB::Model;
 use Encode 'decode';
 use Mojo::Loader;
@@ -273,9 +274,11 @@ get "/:corpus/search" => sub {
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
 	if ($table_export) {
+	  my $tmpdir = File::Temp->newdir('cuwi_tmp_XXXXX', CLEANUP=>0, );
+	  my $tmpfile = $tmpdir->dirname . '/' . 'cuwi_search_results.' . $self->param('format');
 	  my $h="Spreadsheet::Write"->new(
                                    #BUG HORRIBLE: randomize file and delete it
-				   file    => '/tmp/results.xls',
+				   file    => $tmpfile,
 				   format  => $self->param('format'),
 				   sheet   => 'Results',
 				  );
@@ -331,7 +334,7 @@ get "/:corpus/search" => sub {
 	  $self->res->headers->header('Content-Disposition' => 'attachment; filename="cuwi_search_results.' . $self->param('format'));
 	  $self->res->headers->content_type('application/' . $self->param('format'));
 	  my $ss = Mojolicious::Static->new(root=>'/tmp');
-	  $ss->serve($self,'results.xls')
+	  $ss->serve($self, $tmpfile)
 	    or $self->app->log->info('Export failed, file not found.');
 	  $self->rendered;
 	  } else { $self->render(text => 'Perl package Spreadsheet::Write not installed. Sorry.') };
