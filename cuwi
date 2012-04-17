@@ -93,24 +93,47 @@ app->log->info('CWB Model instantiated with corpora: ' .
 	       join(', ', $model->list) );
 
 # frequency data - this could be moved to Model
-app->log->info('Checking frequiencies in '. $config->{var});
-sub MTIME { 9 };
-foreach my $corpus (values %{$model->corpora}) {
-  next unless $corpus->can('datahome');
-  $config->{var} .= '/' unless substr($config->{var}, -1) eq '/';
-  my $var = $config->{var} . $corpus->name . '.';
-  foreach my $att (@{$corpus->attributes}) {
-    my $file = $var . $att . '.freq';
-    app->log->debug("$file vs " .  $corpus->datahome . "/$att.lexicon");
-    if (not -e -r $file or (stat($file))[MTIME] < (stat($corpus->datahome . "/$att.lexicon"))[MTIME]) {
-      app->log->info("Re-generating frequiencies for $att in " . $corpus->name . "to $file.");
-      if (! system ( 'cwb-lexdecode -P ' . $att . ' -f -r ' . $model->registry . ' ' . $corpus->NAME . ' | sort -rn > ' . $file) ) {
-	app->log->error("Re-generating frequiencies for $att in " . $corpus->name . "failed: $?");
+if ( exists $config->{corpora}{OPTIONS}{frequencies}
+     and exists $config->{var}
+     and -d $config->{var} and -w $config->{var} ) {
+  app->log->info('Checking frequiencies in '. $config->{var});
+  sub MTIME { 9 }; sub SIZE { 7 };
+  foreach my $corpus (values %{$model->corpora}) {
+    next unless $corpus->can('datahome');
+    $config->{var} .= '/' unless substr($config->{var}, -1) eq '/';
+    next if ref $config->{corpora}{OPTIONS}{frequencies} eq 'ARRAY'
+      and not grep { $_ eq $corpus->name }
+	@{$config->{corpora}{OPTIONS}{frequencies}};
+    my $var = $config->{var} . $corpus->name . '.';
+    foreach my $att (@{$corpus->attributes}) {
+      my $file = $var . $att . '.freq';
+      app->log->debug("$file vs " .  $corpus->datahome . "/$att.lexicon");
+      unless (-e $file and -r $file and (stat($file))[MTIME] > (stat($corpus->datahome . "/$att.lexicon"))[MTIME]) {
+	if (exists $config->{corpora}{OPTIONS}{maxfreq}
+	    and (stat($corpus->datahome . "/$att.lexicon"))[SIZE] > $config->{corpora}{OPTIONS}{maxfreq} ) {
+	  app->log->info("Skipping frequencies for $att in " . $corpus->name . ", file bigger that config option maxfreq.");
+	} else {
+	  app->log->info("Re-generating frequencies for $att in " . $corpus->name . "to $file.");
+	  if (! system ( 'cwb-lexdecode -P ' . $att . ' -f -r ' . $model->registry . ' ' . $corpus->NAME . ' | sort -rn > ' . $file) ) {
+	    app->log->error("Re-generating frequiencies for $att in " . $corpus->name . " failed: $?");
+	  } else {
+	    ${$corpus->stats}{freqs}{$att} = $file;
+	  }
+	}
       } else {
+	#file exists
 	${$corpus->stats}{freqs}{$att} = $file;
       }
     }
   }
+} elsif ( exists $config->{corpora}{OPTIONS}{frequencies} ) {
+  if ( not exists $config->{var}) {
+    app->log->error("Can not generate frequencies: a var directory needs to be specified in config." );
+  } else {
+    app->log->error("Can not generate frequencies: no writable directory at $config->{var}." )
+  }
+} else {
+  app->log->info('No frequencies requested, none generated.' )
 }
 
 $config->{root} =~ s{^(.*)/$}{$1};
@@ -131,7 +154,7 @@ get "/icons/Help.png" => sub { shift->render_static('icons/Help.png'); };
 get "/:corpus/frequencies/:att" => sub {
   my $self = shift;
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
-  if ( 1 or ${$corpus->stats}{freqs}{$self->param('att')} ) {
+  if ( exists ${$corpus->stats}{freqs}{$self->param('att')} ) {
     $self->res->headers->content_type('text/plain; charset=' . $corpus->encoding);
     my $ss = Mojolicious::Static->new(root=>$config->{var});
     $self->app->log->info("Serving file " . $ss->root .
@@ -465,7 +488,7 @@ __DATA__
     <tr><th>Positional attributes:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{attributes}}) {
     <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> attributes </td><td class="num"><%= $att->[2] %></td><td> types </td>
-% if (1 or exists ${$corpus->stats}{freqs}{$att->[0]}) {
+% if (exists ${$corpus->stats}{freqs}{$att->[0]}) {
    <td><a href="/<%= $config->{root} . '/' . $corpus->name . '/frequencies/' . $att->[0] %>">frequencies</a></td>
 % }
 </tr>
