@@ -3,9 +3,10 @@
 
 * CWB::Model BUGS:
 
-** xsl export: formula parser error: = in string?
-   http://127.0.0.1:3000/cuwi/spook/search?query=av*&class=slv&search=word&show=word&contextsize=7&display=kwic&listing=all&startfrom=1&sort_a=none&sort_a_att=word&sort_a_order=ascending&sort_a_direction=natural&start_from=1&format=xls&size=50000
-** Bail out gracefully on faulty (virtual) corpora.
+** Bail out gracefully on faulty corpora:
+   - no data files
+   - skip non-existing peers (log error)
+   - skip non-existing virtaul corpora members (log error)
 ** In paging with Result objects, the end page calculation is wrong
 ** Structure handling in Query: structure searches
 ** Default overrides new for ingorecase

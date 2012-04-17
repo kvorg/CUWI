@@ -32,7 +32,7 @@ if (ref $e) {
   app->log->info("Module Spreadsheet::Write not available: $e. " .
 		 "Install Spreadsheet::Write if you need cvs and excel table result exports.")
 } else {
-  app->log->info("Module Spreadsheet::Write loder said: $e.");
+  app->log->info("Module Spreadsheet::Write loader said: $e.");
   $table_export = 1;
 }
 
@@ -90,13 +90,13 @@ if ($config->{corpora}{VIRTUALS} #BUG: optimize traversal
 }
 
 app->log->info('CWB Model instantiated with corpora: ' .
-	       join(', ', $model->list) );
+	       join(', ', $model->list) . '.');
 
 # frequency data - this could be moved to Model
 if ( exists $config->{corpora}{OPTIONS}{frequencies}
      and exists $config->{var}
      and -d $config->{var} and -w $config->{var} ) {
-  app->log->info('Checking frequiencies in '. $config->{var});
+  app->log->info('Checking frequencies in '. $config->{var} . ' ...');
   sub MTIME { 9 }; sub SIZE { 7 };
   foreach my $corpus (values %{$model->corpora}) {
     next unless $corpus->can('datahome');
@@ -107,13 +107,13 @@ if ( exists $config->{corpora}{OPTIONS}{frequencies}
     my $var = $config->{var} . $corpus->name . '.';
     foreach my $att (@{$corpus->attributes}) {
       my $file = $var . $att . '.freq';
-      app->log->debug("$file vs " .  $corpus->datahome . "/$att.lexicon");
-      unless (-e $file and -r $file and (stat($file))[MTIME] > (stat($corpus->datahome . "/$att.lexicon"))[MTIME]) {
+#      app->log->debug("$file vs " .  $corpus->datahome . "/$att.lexicon");
+      unless (-e $file and -r $file and (stat($file))[SIZE] > 0 and (stat($file))[MTIME] > (stat($corpus->datahome . "/$att.lexicon"))[MTIME]) {
 	if (exists $config->{corpora}{OPTIONS}{maxfreq}
 	    and (stat($corpus->datahome . "/$att.lexicon"))[SIZE] > $config->{corpora}{OPTIONS}{maxfreq} ) {
 	  app->log->info("Skipping frequencies for $att in " . $corpus->name . ", file bigger that config option maxfreq.");
 	} else {
-	  app->log->info("Re-generating frequencies for $att in " . $corpus->name . "to $file.");
+	  app->log->info("Re-generating frequencies for $att in " . $corpus->name . " to $file.");
 	  if (! system ( 'cwb-lexdecode -P ' . $att . ' -f -r ' . $model->registry . ' ' . $corpus->NAME . ' | sort -rn > ' . $file) ) {
 	    app->log->error("Re-generating frequiencies for $att in " . $corpus->name . " failed: $?");
 	  } else {
@@ -126,6 +126,7 @@ if ( exists $config->{corpora}{OPTIONS}{frequencies}
       }
     }
   }
+  app->log->info('Frequency check done.');
 } elsif ( exists $config->{corpora}{OPTIONS}{frequencies} ) {
   if ( not exists $config->{var}) {
     app->log->error("Can not generate frequencies: a var directory needs to be specified in config." );
@@ -183,6 +184,10 @@ get "/:corpus" => sub {
 
 get "/:corpus/search" => sub {
   my $self = shift;
+
+  # BUG: should not allow cpos on virtual corpora
+
+  # redirect to peer?
   if ( $self->param('peer')
        and $self->param('peer') ne $self->param('corpus') ) {
     my $query = $self->req->url->query;
@@ -192,6 +197,7 @@ get "/:corpus/search" => sub {
     $self->redirect_to($url . $query);
   }
 
+  # BUG: here?
   $model->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
 					  app->log->error(@_); } );
 
@@ -209,7 +215,8 @@ get "/:corpus/search" => sub {
 	unless $self->param('query')
 	  and $corpus and $corpus->isa('CWB::Model::Corpus');
 
-  $sanitize->($self); # sanitize parameters, set defaults
+  # sanitize parameters, set defaults
+  $sanitize->($self); 
 #  my %params = %{$self->req->params->to_hash};
   my %params;
   $params{cpos} = $self->param('cpos') 
@@ -527,7 +534,7 @@ __DATA__
 @@ form.html.ep
   <div class="form">
     <%= form_for "/$config->{root}/" . $corpus->name . "/search", ( method => "get") => begin %>
-    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Query</em>The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored. </span>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Query</em>The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored for that term. If you want full CQP syntax for the whole query, preceede the query with character ~ followed with a space. </span>
     Query:</a>&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
 % if (@{$corpus->peers}) {
     <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Corpus</em>In a corpus group, you can send the search to a different corpus in the group by selecting the name of the ecorpus here.</span>
