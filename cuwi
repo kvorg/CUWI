@@ -274,9 +274,10 @@ get "/:corpus/search" => sub {
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
 	if ($table_export) {
-	  my $tmpdir = File::Temp->newdir('/tmp/cuwi_tmp_XXXXX', CLEANUP=>0, );
+	  my $tmpdir = File::Temp->newdir('/tmp/cuwi_tmp_XXXXX', CLEANUP=>1, );
 	  my $tmpfile = $tmpdir->dirname . '/' . 'cuwi_search_results.' . $self->param('format');
-	  warn "Tempfile is " . $tmpfile;
+	  $self->stash(tmpdir => $tmpdir ); # keep on stash until tx end
+
 	  my $h="Spreadsheet::Write"->new(
                                    #BUG HORRIBLE: randomize file and delete it
 				   file    => $tmpfile,
