@@ -6,6 +6,7 @@ our $VERSION = '0.9';
 use Mojolicious::Lite;
 use IO::File;
 use IO::Dir;
+use File::Spec;
 use File::Temp;
 use CWB::Model;
 use Encode 'decode';
@@ -45,6 +46,13 @@ my $config = plugin JSONConfig => {
     };
 #stuff me in a helper?
 app->log->info("Config parsed.");
+$config->{tmp} = (
+		  ( defined $config->{tmp}
+		    and -d $config->{tmp} and -w defined $config->{tmp} ) ?
+		  $config->{tmp} :
+		  ( $ENV{MOJO_TMPDIR} || File::Spec->tmpdir )
+		 );
+app->log->info("Temporary directory: $config->{tmp}");
 my $model = CWB::Model->new(
 			    ( $config->{registry} ? 
 			     (registry => $config->{registry}) : () )
@@ -267,19 +275,18 @@ get "/:corpus/search" => sub {
 		   ur=>$urlator,
 		 ) ;
   } elsif ($self->param('format') and grep { $_ eq $self->param('format') } qw(xls xls csv json perl)  ) {
-    $self->app->log->info('Exporting as ' . $self->param('format') 
+    $self->app->log->info('Exporting as ' . $self->param('format')
 			  . ' (' . scalar @{$result->hits} . ' hits).');
     given ($self->param('format')) {
       when ('json') { $self->render(json => { %{$result} } ); }
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
 	if ($table_export) {
-	  my $tmpdir = File::Temp->newdir('/tmp/cuwi_tmp_XXXXX', CLEANUP=>1, );
-	  my $tmpfile = $tmpdir->dirname . '/' . 'cuwi_search_results.' . $self->param('format');
-	  $self->stash(tmpdir => $tmpdir ); # keep on stash until tx end
+	  my $tmpdir = File::Temp->newdir(File::Spec->catdir($config->{tmp}, 'cuwi_tmp_XXXXX'), CLEANUP=>1, );
+	  my $tmpfile = File::Spec->catfile($tmpdir->dirname, 'cuwi_search_results.' . $self->param('format'));
+	  $self->stash(tmpdir => $tmpdir ); # stash it until tx end for cleanup
 
 	  my $h="Spreadsheet::Write"->new(
-                                   #BUG HORRIBLE: randomize file and delete it
 				   file    => $tmpfile,
 				   format  => $self->param('format'),
 				   sheet   => 'Results',
