@@ -121,7 +121,7 @@ is_deeply($sl->stats,
 	      tokens => '3733',
 	      attributes => ${$sl->stats}{attributes},
 	      structures => ${$sl->stats}{structures},
-	      alignements => []
+	      alignements => [ [ 'cuwi-fr', '275' ] ],
 	  },
    'Corpus stats: statistics via cwb-describe-corpus -s')
     or diag("CWB::Model::Result structure was:\n" . Dumper($sl->stats));
@@ -178,6 +178,19 @@ is($q->ignorecase(0)->query('on biti')->run->QUERY,
    '[word="on" %d] [word="biti" %d]', 'Query: disabling options');
 isa_ok($q->ignorecase(1), 'CWB::Model::Query',
        'Query: setter returns query object');
+
+# query with structural constraint
+is ($q->query('+ "a.*" :: match.text_naslov="Pierre.*"')->run->QUERY,
+    '"a.*" :: match.text_naslov="Pierre.*"',
+    'Query: full CQP query with structural constraint');
+is ($q->_mangle_search('Pier?e*'), 'Pier.e.*',
+		       'Query: _mangle_search internal function');
+is ($q->struct_constraint_query('Pierre*')->struct_constraint_struct('text_naslov')->query('a*')->run->QUERY,
+    '[word="a.*" %cd] :: match.text_naslov="Pierre.*"',
+    'Query: query with structural constraint');
+
+# query with structural constraint
+TODO
 
 # Result
 ok(($c_num ==
@@ -288,7 +301,7 @@ is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 
 # result: display modes
 
-$r = $sl->query(query=>"a*", search => 'word', show => ['word'], display=>'wordlist');
+$r = $sl->query(query=>"a*", search => 'word', show => [ qw (word tag) ], display=>'wordlist');
 is_deeply($r,
 	  {
 	   corpusname => $sl->name,
@@ -299,14 +312,13 @@ is_deeply($r,
 	   bigcontext => 'paragraphs',
 	   table => '1',
 	   hits       => [
-			  'pepe',
-			  [[], 8],
-			  @{$r->hits}[1..35],
+			  [[], 6],
+			  @{$r->hits}[1..38],
 			 ],
-	   distinct   => 36,
+	   distinct   => 39,
 	   hitno      => 59,
 	   aligns     => [],
-	   attributes => [[]],
+	   attributes => [[ qw(word tag) ]],
 	   pages      => { single=>1, this=>1 },
 	  },
  "Query/Result: display model wordlist - default structure test")

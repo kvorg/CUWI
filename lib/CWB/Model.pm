@@ -551,7 +551,10 @@ use Encode qw(encode decode);
 our $VERSION = '0.9';
 
 has [ qw(corpus model cqp
-	cpos query reduce maxhits
+	cpos query
+        struct_constraint_struct struct_constraint_query struct_within
+	align_query
+        reduce maxhits
 	l_context r_context
 	hitsonly debug) ] ;
 has search      => 'word';
@@ -617,16 +620,9 @@ sub new {
   return $self;
 }
 
-sub run {
-  use Time::HiRes;
-  my $self = shift;
-  $self->exception("No queriable corpus passed to CWB::Model::Query: aborting run. ")
-    and return
-      unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus::Filebased');
-
-  my $query_start_time = Time::HiRes::gettimeofday();
-
-  my $query = $self->query;
+sub _mangle_query {
+  my ($self, $query, $noatt) = @_;
+  my $org = $query;
   if ( $query =~ m{^\s*[~=]}
        or (not $query =~ m{"} and not $query =~ m{^\s*[+]}) ) {
     # simple or mixed query - transform into CQP query
@@ -636,33 +632,82 @@ sub run {
     $qtype = 'simple' if $query =~ s{^=\s*}{};
 
     $query = join(' ',
-		   map {
-		     if ( $qtype eq 'simple' ) {
-		       s/[*]/\\*/g;
-		       s/[?]/\\?/g;
-		       s/(\[|\])/\\$1/g;
-		       s/"/""/gm;
-		     } elsif (not m{^\[} and not $self->ignoremeta) {
-		       s/(?<!\\)[*]/.*/g;
-		       s/(?<!\\)[?]/./g;
-		       s/(\[|\])/\\$1/g;
-		     }
-		     (m{^\[}) ? $_ :
-		   '['
-		     . (defined $self->search ?
-			$self->search : 'word')
-		       . '="' . $_ . '"'
-		       . ( ( $self->ignorecase or $self->ignorediacritics or $self->ignoremeta ) ? ' %' : '' )
-		       . ( $self->ignorecase ? 'c' : '' )
-		       . ( $self->ignorediacritics  ? 'd' : '' )
-		       . ( $self->ignoremeta  ? 'l' : '' )
-		      . ']'
-		     } split('\s+', $query)
-		  );
-    warn("Passing query as $query.\n") if $self->debug;
+		  map {
+		    if ( $qtype eq 'simple' ) {
+		      s/[*]/\\*/g;
+		      s/[?]/\\?/g;
+		      s/(\[|\])/\\$1/g;
+		      s/"/""/gm;
+		    } elsif (not m{^\[} and not $self->ignoremeta) {
+		      s/(?<!\\)[*]/.*/g;
+		      s/(?<!\\)[?]/./g;
+		      s/(\[|\])/\\$1/g;
+		    }
+			  (m{^\[}) ? $_ :
+			    '['
+			      . (defined $self->search ?
+				 $self->search : 'word')
+				. '="' . $_ . '"'
+				  . ( ( $self->ignorecase or $self->ignorediacritics or $self->ignoremeta ) ? ' %' : '' )
+				    . ( $self->ignorecase ? 'c' : '' )
+				      . ( $self->ignorediacritics  ? 'd' : '' )
+					. ( $self->ignoremeta  ? 'l' : '' )
+					  . ']'
+					} split('\s+', $query)
+		 );
+    warn("Mangled query $org as $query.\n") if $self->debug;
   } else { #handle CQP escape
     $query =~ s{^\s*[+]?\s*}{};
   }
+  return $query;
+}
+
+sub _mangle_search {
+  my ($self, $search) = @_;
+  $search =~ s/(?<!\\)[*]/.*/g;
+  $search =~ s/(?<!\\)[?]/./g;
+  $search =~ s/(\[|\])/\\$1/g;
+  return $search;
+}
+
+
+sub run {
+  use Time::HiRes;
+  my $self = shift;
+  $self->exception("No queriable corpus passed to CWB::Model::Query: aborting run. ")
+    and return
+      unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus::Filebased');
+
+  my $query_start_time = Time::HiRes::gettimeofday();
+
+  my $query = $self->_mangle_query($self->query);
+
+  # handle additional constraints
+  my $struct_constraint_struct;
+  my $struct_constraint_query;
+  if ($self->struct_constraint_struct and
+      (grep { $_ eq $self->struct_constraint_struct}
+       @{$self->corpus->structures}) and
+      $self->struct_constraint_query) {
+    $struct_constraint_struct = $self->struct_constraint_struct;
+    $struct_constraint_query = 
+      $self->_mangle_search($self->struct_constraint_query);
+  }
+  my $align_query;
+  $align_query = $self->_mangle_search($self->align_query)
+      if $self->align_query;
+  my $struct_within;
+  $struct_within = $self->struct_within
+    if $self->struct_within and grep { $_ eq $self->struct_within} @{$self->corpus->structures};
+
+  if ($query =~ m{%[cdl]+\s*$}) { 
+    $query =~ s{(.*)(%[^%]+)}{$1 :: $struct_constraint_struct="$struct_constraint_query" $2}
+      if $struct_constraint_struct;
+  } else {
+    $query .= " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
+      if $struct_constraint_struct;
+  }
+  warn("Constructed query $query.\n") if $self->debug;
 
   # test CQP connection
   $self->exec("show", 'CQP not answering');

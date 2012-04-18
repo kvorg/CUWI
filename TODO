@@ -30,8 +30,9 @@
 ** spook: sub-searches (based on existing search)
    aka Support for chained query support -> store previous queries in link/params
 ** spook: any needed support for form-based alignement and structural queries
-** Add sorting to wordlists
-** Implement max_size and max_querytime
+** Add sorting to wordlists (js?)
+** Implement max_size and max_querytime properly
+** Fix all file work to use IO::File and File::Spec
 ** Native CQP and cwb-corpus-scan interfaces
 ** Possibly keep wordlists with paging and progressive building
 ** Test coverage
