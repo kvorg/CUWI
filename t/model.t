@@ -227,7 +227,7 @@ $sr = $sl->query(query=>'njimi [] ta', within=>'p', ignorecase=>1,
 		 struct_constraint_struct=>'text_naslov',
 		 struct_constraint_query=>'Mednarodno*');
 is($sr->QUERY,
-   '[word="njimi" %c] [] [word="ta" %c] within p :CUWI-FR "eux" :: match.text_naslov="Mednarodno.*"',
+   '[word="njimi" %c] [] [word="ta" %c] :CUWI-FR "eux" :: match.text_naslov="Mednarodno.*" within p',
    'Query: full CQP query with all constraints');
 ok(@{$sr->hits} == 1 and ${$sr->hits}[0]{data}{cpos} == 125,
    'Query: full CQP query with all constraints: result');
@@ -343,7 +343,29 @@ is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 
 # result: display modes
 
-$r = $sl->query(query=>"a*", search => 'word', show => [ qw (word tag) ], display=>'wordlist');
+$r = $sl->query(query=>"a*", search => 'word', show => [ qw (word tag) ], display=>'wordlist', ignorecase=>0);
+is_deeply($r,
+	  {
+	   corpusname => $sl->name,
+	   peers => [ [] ],
+	   query      => '[word="a.*"]',
+	   QUERY      => '[word="a.*"]',
+	   time       => $r->time,
+	   bigcontext => 'paragraphs',
+	   table => '1',
+	   hits       => [
+			  [ [[ 'avgusta', 'Ncmsg' ]], 6],
+			  @{$r->hits}[1..28],
+			 ],
+	   distinct   => 29,
+	   hitno      => 42,
+	   aligns     => [],
+	   attributes => [[ qw(word tag) ]],
+	   pages      => { single=>1, this=>1 },
+	  },
+ "Query/Result: display model wordlist - default structure test")
+  or diag('Wordlist result data was: ' . Dumper($r) );
+$r = $sl->query(query=>"a*", search => 'word', show => [ qw (word tag) ], display=>'wordlist', ignorecase=>1);
 is_deeply($r,
 	  {
 	   corpusname => $sl->name,
@@ -354,7 +376,7 @@ is_deeply($r,
 	   bigcontext => 'paragraphs',
 	   table => '1',
 	   hits       => [
-			  [[], 6],
+			  [ [[ 'Ali', 'Cc' ]], 6],
 			  @{$r->hits}[1..38],
 			 ],
 	   distinct   => 39,
@@ -363,7 +385,7 @@ is_deeply($r,
 	   attributes => [[ qw(word tag) ]],
 	   pages      => { single=>1, this=>1 },
 	  },
- "Query/Result: display model wordlist - default structure test")
+ "Query/Result: display model wordlist - default structure test with ignorecase")
   or diag('Wordlist result data was: ' . Dumper($r) );
 
 # query/result encoding roundtrip (in queries and all display modes)

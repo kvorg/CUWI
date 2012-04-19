@@ -60,7 +60,7 @@
 
 * Web interface BUGS
 
-** Wordlist empty????
+** Wordlist -> ignoremeta in links disables ignorecase
 ** classes: sanitize with the virtual corpus before sending
 ** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo

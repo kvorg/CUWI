@@ -796,7 +796,7 @@ sub run {
     if $self->display eq 'sentences';
   $self->exec('set Context p;', "Can't set context to 'p''")
     if $self->display eq 'paragraphs';
-  $self->exec('set Context 0 words;', "Can't set context to 'p''")
+  $self->exec('set Context 0 words;', "Can't set context to '0 words'")
     if $self->display eq 'wordlist';
   $self->exec('set Context ' . $bc . ';',
 	      "Can't set context to '" . $bc . "'")
@@ -973,11 +973,13 @@ sub run {
 		 [<]/LINE[>]\s*$}x  # tail
 	or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
       my $match = decode($self->corpus->encoding, $1);
-      $match = lc($match) if $self->ignorecase;
-      $counts{$match}{count} = 0 unless exists $counts{$match};
-      $counts{$match}{count}++ ;
-      $counts{$match}{value} = _tokens($match, $attrs);
-      $counts{$match}{data} = [$match, $attrs] if $self->subcorpus;
+      warn "MATCH: $match\n";
+      my $matchkey = $match;
+      $matchkey = lc($match) if $self->ignorecase;
+      $counts{$matchkey}{count} = 0 unless exists $counts{$matchkey};
+      $counts{$matchkey}{count}++ ;
+      $counts{$matchkey}{value} = _tokens($match, $attrs);
+      $counts{$matchkey}{data} = [$match, $attrs] if $self->subcorpus;
     }
     if ( not $self->subcorpus) {
       @{$result->hits} = map { [
