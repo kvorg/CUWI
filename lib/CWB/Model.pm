@@ -552,8 +552,8 @@ our $VERSION = '0.9';
 
 has [ qw(corpus model cqp
 	cpos query
-        struct_constraint_struct struct_constraint_query struct_within
-	align_query align_query_what align_query_not
+        struct_constraint_struct struct_constraint_query within
+	align_query align_query_corpus align_query_not
         reduce maxhits
 	l_context r_context
 	hitsonly debug) ] ;
@@ -682,40 +682,52 @@ sub run {
 
   my $query = $self->_mangle_query($self->query);
 
+
   # handle additional constraints
+  # BUG: perhaps some kind of warning should be produced on illogical options,
+  # i.e. inexisting corpora and the like?
+
+  # structural constraint
   my $struct_constraint_struct;
   my $struct_constraint_query;
-  if ($self->struct_constraint_struct and
-      (grep { $_ eq $self->struct_constraint_struct}
-       @{$self->corpus->structures}) and
-      $self->struct_constraint_query) {
+  my $structq = '';
+  if ($self->struct_constraint_struct
+      and (grep { $_ eq $self->struct_constraint_struct}
+	   @{$self->corpus->structures})
+      and $self->struct_constraint_query) {
     $struct_constraint_struct = $self->struct_constraint_struct;
     $struct_constraint_query = 
       $self->_mangle_search($self->struct_constraint_query);
   }
+  $structq = " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
+      if $struct_constraint_struct;
+
+  # query on aligned corpus constraint
   my $align_query;
-  $align_query = $self->_mangle_search($self->align_query)
-      if $self->align_query;
-  if ($query =~ m{%[cdl]+\s*$}) {
-    $query =~ s{(.*)(%[^%]+)}{$1 :$struct_constraint_struct="$struct_constraint_query" $2}
-      if $struct_constraint_struct;
-  } else {
-    $query .= " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
-      if $struct_constraint_struct;
+  my $align_query_corpus;
+  my $alignq = '';
+  if ($self->align_query_corpus
+      and (grep { $_ eq $self->align_query_corpus}
+	   @{$self->corpus->alignements})
+      and $self->align_query) {
+    $align_query = $self->_mangle_search($self->align_query);
+    $align_query_corpus = ${$self->model->corpora}{$self->align_query_corpus}->NAME;
+    $alignq = " :$align_query_corpus " .
+      ( $self->align_query_not ? '! ' : '') .
+	"\"$align_query\"";
   }
+
+  # within structure constraint
+  my $within;
+  my $withinq = '';
+  $within = $self->within
+    if $self->within and (grep { $_ eq $self->within} @{$self->corpus->structures});
+  $withinq = " within $within" if $within;
+
+  # compose query
+  $query .= "$withinq$alignq$structq";
   warn("Constructed query $query.\n") if $self->debug;
 
-  my $struct_within;
-  $struct_within = $self->struct_within
-    if $self->struct_within and grep { $_ eq $self->struct_within} @{$self->corpus->structures};
-  if ($query =~ m{%[cdl]+\s*$}) { 
-    $query =~ s{(.*)(%[^%]+)}{$1 :: $struct_constraint_struct="$struct_constraint_query" $2}
-      if $struct_constraint_struct;
-  } else {
-    $query .= " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
-      if $struct_constraint_struct;
-  }
-  warn("Constructed query $query.\n") if $self->debug;
 
   # test CQP connection
   $self->exec("show", 'CQP not answering');
