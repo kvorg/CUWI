@@ -553,7 +553,7 @@ our $VERSION = '0.9';
 has [ qw(corpus model cqp
 	cpos query
         struct_constraint_struct struct_constraint_query struct_within
-	align_query
+	align_query align_query_what align_query_not
         reduce maxhits
 	l_context r_context
 	hitsonly debug) ] ;
@@ -696,10 +696,18 @@ sub run {
   my $align_query;
   $align_query = $self->_mangle_search($self->align_query)
       if $self->align_query;
+  if ($query =~ m{%[cdl]+\s*$}) {
+    $query =~ s{(.*)(%[^%]+)}{$1 :$struct_constraint_struct="$struct_constraint_query" $2}
+      if $struct_constraint_struct;
+  } else {
+    $query .= " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
+      if $struct_constraint_struct;
+  }
+  warn("Constructed query $query.\n") if $self->debug;
+
   my $struct_within;
   $struct_within = $self->struct_within
     if $self->struct_within and grep { $_ eq $self->struct_within} @{$self->corpus->structures};
-
   if ($query =~ m{%[cdl]+\s*$}) { 
     $query =~ s{(.*)(%[^%]+)}{$1 :: $struct_constraint_struct="$struct_constraint_query" $2}
       if $struct_constraint_struct;

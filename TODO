@@ -35,6 +35,9 @@
 ** Fix all file work to use IO::File and File::Spec
 ** Native CQP and cwb-corpus-scan interfaces
 ** Possibly keep wordlists with paging and progressive building
+** Add corpus positions dump as an export option
+** Support generic info files: if not looking as our structured info or copy of registry,
+   use whole info file as english description
 ** Test coverage
 ** Concordance support
 ** Info files: translateable names/titles

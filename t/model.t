@@ -188,9 +188,13 @@ is ($q->_mangle_search('Pier?e*'), 'Pier.e.*',
 is ($q->struct_constraint_query('Pierre*')->struct_constraint_struct('text_naslov')->query('a*')->run->QUERY,
     '[word="a.*" %cd] :: match.text_naslov="Pierre.*"',
     'Query: query with structural constraint');
+my $sr = $sl->query(query=>'a*', struct_constraint_query=>'Pierre*', struct_constraint_struct=>'text_naslov');
+ok ( (not grep {not $_->{data}{'text_naslov'} =~ m{^Pierre.*} } @{$sr->hits}),
+     'Query: query with structural constraint result consistency')
+  or diag("CWB::Model::Result structure contained at least one hit with wrong structural attribute:\n" . Dumper($sr));
 
-# query with structural constraint
-TODO
+# query with alignement constraint
+# TODO
 
 # Result
 ok(($c_num ==
