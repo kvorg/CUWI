@@ -233,9 +233,18 @@ get "/:corpus/search" => sub {
   $params{query} = $self->param('query');
   $params{class} = $self->param('class');
   $params{search} = $self->param('search');
+  $params{within} = $self->param('within')
+    unless $self->param('within') eq '-';
   $params{ignorecase} = $self->param('ignorecase');
   $params{ignorediacritics} = $self->param('ignorediacritics');
   $params{ignoremeta} = $self->param('ignoremeta') || 0;
+  $params{struct_constraint_struct}  = $self->param('in-struct')
+    unless $self->param('in-struct') eq '-';
+  $params{struct_constraint_query} = $self->param('struct-query');
+  $params{align_query_corpus} = $self->param('in-align')
+    unless $self->param('in-align') eq '-';
+  $params{align_query_not} = $self->param('not-align');
+  $params{align_query} = $self->param('align-query');
   $params{show} = ref $self->param('show') eq 'ARRAY' ?
     $self->param('show') : [ $self->param('show') ] ;
   $params{align} = ref $self->param('align') eq 'ARRAY' ?
@@ -571,9 +580,37 @@ __DATA__
     </span>
 % }
     </div>
+
+% my %withins = map { $_ => 1 } 
+%    grep { not m{\w+[_]\w+} } @{$corpus->structures};
+% if ( keys %withins ) {
+% $self->param('within', 's') unless $self->param('within');
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Within</em>Constraint to keep the whole match inside a structural field, such a as a sentence or paragraph. "s" is the default since it is useful for linguistic queries.</span>Within</a>: <%= select_field 'within', ['-', keys %withins] %>
+<span class="form-h-strut"></span>
+% }
      Ignore:
       <span class="ctrl"><%= check_box_x ignorecase => 1       %> case</span>
       <span class="ctrl"><%= check_box_x ignorediacritics => 1 %> diacritics</span>
+
+%  my %structs = map { $_ => 1 }
+%    grep { m{\w+[_]\w+} } @{$corpus->structures};
+% if ( keys %structs ) {
+    <div class="structs">
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Structural constraint</em>Requires the match to be inside a structural region (xml tag) with the selected attribute matching the constraint. Can be used for selection of a specific text, author or part of speech, depending on corpus markup..</span>Only where</a> <%= select_field 'in-struct', ['-', keys %structs] %>
+   <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Structural constraint Query</em>Single term query to match structural attribute (XML attribute) value. Rules for treatment of a single CQP regexp (without []) apply.</span>
+    matches :</a>&nbsp;&nbsp;<%= text_field 'struct-query', size=>24 %>
+    </div>
+% }
+%  my %alignes = map { $_ => 1 } @{$corpus->alignements};
+% if ( keys %alignes ) {
+    <div class="structs">
+    <%= select_field 'not-align', [ [If => 0], [Unless => 1] ] %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Alignement constraint</em>Requires the aligned region to match (or, alternatively, not match) the constraint. Can be used for excluding unwanted matches based on alignement information. (Regardless if alignement is shown.) Option '*' will apply to any existing alignemed corpora.</span>aligned</a> <%= select_field 'in-align', ['-', keys %alignes, '*'] %>
+   <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Alignement constraint Query</em>Single term query to match algined region. Rules for treatment of a single CQP regexp (without []) apply.</span>
+    matches :</a>&nbsp;&nbsp;<%= text_field 'align-query', size=>16 %>
+    </div>
+% }
+
     <div class="show">
     <span class="label"><a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Show attributes</em>Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).</span>
     Show</a>:</span>
@@ -696,12 +733,12 @@ __DATA__
 % }
  distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % } elsif ($result->reduce) {
-   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % }
 % elsif ($result->hitno > ${$result->pages}{pagesize}) {
-   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % } else {
-   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= '+ ' . $result->query %><% end %></span>
 % }
  in <%= sprintf('%0.3f', $result->time) %> s.</p>
   </div>
@@ -935,6 +972,7 @@ div.search, div.show { margin-left: 3.5em; }
 div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
 div.search > span.label, div.show > span.label { width: 14em; }
 span.ctrl { white-space: nowrap; display: inline; }
+span.form-h-strut { margin-left: 2em; }
 div.show { margin-top: 1ex; }
 div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }

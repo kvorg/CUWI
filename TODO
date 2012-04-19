@@ -60,7 +60,7 @@
 
 * Web interface BUGS
 
-** Wordlist sorting????
+** Wordlist empty????
 ** classes: sanitize with the virtual corpus before sending
 ** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo
@@ -76,6 +76,7 @@
 
 * Web interface
 
+** change wordlist exporting to divide matches into multiple fields
 ** spook: worldlist query handling
 ** spook: Templates for query result exports
    for excel/oocalc, tab-delmited, csv, xml, latex, json, data::dump, yaml

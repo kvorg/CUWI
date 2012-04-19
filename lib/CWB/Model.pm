@@ -680,52 +680,56 @@ sub run {
 
   my $query_start_time = Time::HiRes::gettimeofday();
 
+  my $cqpquery = 0;
+  $cqpquery = 1 if $self->query =~ m{s*[+]};
   my $query = $self->_mangle_query($self->query);
 
-
   # handle additional constraints
-  # BUG: perhaps some kind of warning should be produced on illogical options,
-  # i.e. inexisting corpora and the like?
+  unless ($cqpquery) {
+    # BUG: perhaps some kind of warning should be produced on illogical options,
+    # i.e. inexisting corpora and the like?
 
-  # structural constraint
-  my $struct_constraint_struct;
-  my $struct_constraint_query;
-  my $structq = '';
-  if ($self->struct_constraint_struct
-      and (grep { $_ eq $self->struct_constraint_struct}
-	   @{$self->corpus->structures})
-      and $self->struct_constraint_query) {
-    $struct_constraint_struct = $self->struct_constraint_struct;
-    $struct_constraint_query = 
+    # structural constraint
+    my $struct_constraint_struct;
+    my $struct_constraint_query;
+    my $structq = '';
+    if ($self->struct_constraint_struct
+	and (grep { $_ eq $self->struct_constraint_struct}
+	     @{$self->corpus->structures})
+	and $self->struct_constraint_query) {
+      $struct_constraint_struct = $self->struct_constraint_struct;
+      $struct_constraint_query =
       $self->_mangle_search($self->struct_constraint_query);
-  }
-  $structq = " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
+    }
+    $structq = " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
       if $struct_constraint_struct;
 
-  # query on aligned corpus constraint
-  my $align_query;
-  my $align_query_corpus;
-  my $alignq = '';
-  if ($self->align_query_corpus
-      and (grep { $_ eq $self->align_query_corpus}
-	   @{$self->corpus->alignements})
-      and $self->align_query) {
-    $align_query = $self->_mangle_search($self->align_query);
-    $align_query_corpus = ${$self->model->corpora}{$self->align_query_corpus}->NAME;
-    $alignq = " :$align_query_corpus " .
-      ( $self->align_query_not ? '! ' : '') .
-	"\"$align_query\"";
+    # query on aligned corpus constraint
+    my $align_query;
+    my $align_query_corpus;
+    my $alignq = '';
+    if ($self->align_query_corpus
+	and (grep { $_ eq $self->align_query_corpus}
+	     @{$self->corpus->alignements})
+	and $self->align_query) {
+      $align_query = $self->_mangle_search($self->align_query);
+      $align_query_corpus = ${$self->model->corpora}{$self->align_query_corpus}->NAME;
+      $alignq = " :$align_query_corpus " .
+	( $self->align_query_not ? '! ' : '') .
+	  "\"$align_query\"";
+    }
+
+    # within structure constraint
+    my $within;
+    my $withinq = '';
+    $within = $self->within
+      if $self->within and (grep { $_ eq $self->within} @{$self->corpus->structures});
+    $withinq = " within $within" if $within;
+
+    # compose query
+    $query .= "$alignq$structq$withinq";
   }
 
-  # within structure constraint
-  my $within;
-  my $withinq = '';
-  $within = $self->within
-    if $self->within and (grep { $_ eq $self->within} @{$self->corpus->structures});
-  $withinq = " within $within" if $within;
-
-  # compose query
-  $query .= "$withinq$alignq$structq";
   warn("Constructed query $query.\n") if $self->debug;
 
 
