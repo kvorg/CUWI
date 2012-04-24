@@ -146,6 +146,25 @@ if ( exists $config->{corpora}{OPTIONS}{frequencies}
   app->log->info('No frequencies requested, none generated.' )
 }
 
+my $auth = sub {
+  my $self = shift;
+  my $authcorpus = $self->param('corpus');
+  $self->app->log->info("Authenticating for " . ($authcorpus || 'undef') . ".");
+
+  if ($authcorpus and exists $config->{corpora}{AUTH}{$authcorpus} and $config->{corpora}{AUTH}{$authcorpus}{domain} ) {
+    unless ($self->session('username')) {
+      $self->app->log->info("Auth triggered for $authcorpus.");
+      $self->flash(error => "Corpus $authcorpus requires authentication.") and
+	$self->session(redirection => $self->req->url) and
+	$self->redirect_to($config->{root} . '/login/' . $authcorpus);
+      return 0;
+    }
+  } else {
+    return 1;
+  }
+};
+
+
 $config->{root} =~ s{^(.*)/$}{$1};
 $config->{root} = 'cuwi' unless $config->{root};
 app->log->info("App web root: '$config->{root}'.");
@@ -153,9 +172,16 @@ app->log->info("App web root: '$config->{root}'.");
 app->log->info("Ready to serve requests.");
 
 # routes and controllers
-under ( $config->{root} );
+
+under ($config->{root});
 
 get "/" => sub { $sanitize->(shift); } =>'index';
+
+get "/logout" => sub {
+  my $self = shift;
+  $self->session(username=>0);
+  $self->redirect_to('/' . $config->{root} );
+};
 
 get "/style.css" => 'style';
 
@@ -163,6 +189,7 @@ get "/icons/Help.png" => sub { shift->render_static('icons/Help.png'); };
 
 get "/:corpus/frequencies/:att" => sub {
   my $self = shift;
+  return 0 unless $auth->($self);
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
   if ( exists ${$corpus->stats}{freqs}{$self->param('att')} ) {
     $self->res->headers->content_type('text/plain; charset=' . $corpus->encoding);
@@ -178,6 +205,8 @@ get "/:corpus/frequencies/:att" => sub {
 
 get "/:corpus" => sub {
   my $self = shift;
+  return 0 unless $auth->($self);
+
   $model->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
 					  app->log->error(@_); } );
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
@@ -193,6 +222,7 @@ get "/:corpus" => sub {
 
 get "/:corpus/search" => sub {
   my $self = shift;
+  return 0 unless $auth->($self);
 
   # BUG: should not allow cpos on virtual corpora
 
@@ -242,7 +272,7 @@ get "/:corpus/search" => sub {
     unless $self->param('in-struct') eq '-';
   $params{struct_constraint_query} = $self->param('struct-query');
   $params{align_query_corpus} = $self->param('in-align')
-    unless $self->param('in-align') eq '-';
+    unless $self->param('in-align') eq '-'; #BUG
   $params{align_query_not} = $self->param('not-align');
   $params{align_query} = $self->param('align-query');
   $params{show} = ref $self->param('show') eq 'ARRAY' ?
@@ -339,7 +369,6 @@ get "/:corpus/search" => sub {
 	    }
 	  } else {
 	    #wordlist
-	    warn ">>> exporting wordlist\n";
 	    foreach my $hit ( @{$result->hits} ) {
 	      $h->addrow(
 			 { content => join(" ", map { @{$_} } @{$hit->[0]} ), type=>'string' },
@@ -368,6 +397,46 @@ get "/:corpus/search" => sub {
 		 );
   }
 } ;
+
+
+any "/login/:corpus" => sub {
+  my $self = shift;
+  my $authcorpus = $self->param('corpus');
+  my $username = $self->param('username');
+  my $password = $self->param('password');
+  my $domain = $config->{corpora}{AUTH}{$authcorpus}{domain};
+  my $auth = $config->{DOMAINS}{$domain};
+  my $redirection = $self->session('redirection');
+  my $retry = $self->session('retry') || 0;
+  my $error = $self->flash('error');
+
+  if ($username and $password and $auth) { #authenticate and redirect back
+    $self->app->log->info("Authenticating $username for $domain");
+    if ($config->{DOMAINS}{$domain}{$username} eq $password) {
+      $self->app->log->info("Authenticated $username for $domain - success.");
+      $self->session('username', $username);
+      $self->session('retry', 0);
+      $self->session('redirection', undef);
+      $self->redirect_to(defined $redirection ? $redirection : $config->{root} . "/$authcorpus");
+    } else {
+      $self->app->log->info("Authentication for $username in $domain failed, retrying.");
+      $self->session('retry', ++$retry);
+      $self->redirect_to('/' . $config->{root}) and return if $retry > 5;
+      $self->render(
+		    template=>'login',
+		    error => "Authentication error. Try again."
+		   );
+    }
+  } else {
+    $self->render(
+		  template=>'login',
+		  error => $error,
+		 );
+  }
+
+};
+
+
 
 # use this to redirect
 $sanitize = sub {
@@ -455,6 +524,22 @@ __DATA__
 % }
  </ul>
 </div>
+
+@@ login.html.ep
+% layout 'main', title=>'Login';
+  <div class="form">
+    <%= form_for $self->req->url => ( method => "post") => begin %>
+       Username: <%= text_field 'username', size=>10 %>
+       Password: <%= password_field 'password', size=>20 %>
+      <%= submit_button 'Login' %>
+    <% end %>
+  </div>
+
+% if (stash('error')) {
+  <div class="exception">
+%=   stash('error')
+  </div>
+% }
 
 @@ corpus.html.ep
 % layout 'main', title=>'Form';
@@ -859,6 +944,11 @@ __DATA__
   <link href="<%= '/' . $config->{root} . '/' . 'style.css' %>" rel="stylesheet" type="text/css" />
  </head>
  <body>
+ % if ($self->session('username')) {
+ <div class="user">
+   Logged in as: <b><%= $self->session('username') %></b>. <%= link_to Logout => '/' . $config->{root} . '/logout' %>
+ </div>
+ %}
   <h2><%= link_to 'index' => begin %>
     CUWI Search
   <% end %>
@@ -968,6 +1058,7 @@ body { font-family: Palatino, Times, serif;
        background-color: #F0F0F0;
        padding-bottom: 8ex;
 }
+div.user { font-family: sans-serif; font-size: 50%;   text-align: right; }
 div.search, div.show { margin-left: 3.5em; }
 div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
 div.search > span.label, div.show > span.label { width: 14em; }
