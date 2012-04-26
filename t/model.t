@@ -194,14 +194,18 @@ ok ( (not grep {not $_->{data}{'text_naslov'} =~ m{^Pierre.*} } @{$sr->hits}),
   or diag("CWB::Model::Result structure contained at least one hit with wrong structural attribute:\n" . Dumper($sr));
 
 # query with alignement constraint
+$sr = $sl->query(query=>'tako', align=>['cuwi-fr'], align_query_corpus=>'*', align_query => 'alors');
+is ($sr->QUERY,
+    '[word="tako" %c] :CUWI-FR "alors"',
+    'Query: default alignement constraint');
 $sr = $sl->query(query=>'tako', align=>['cuwi-fr'], align_query_corpus=>'cuwi-fr', align_query => 'alors');
 is ($sr->QUERY,
     '[word="tako" %c] :CUWI-FR "alors"',
-    'Query: query with alignement constraint');
+    'Query: normal alignement constraint');
 is ((scalar @{$sr->hits}), 1,
-    'Query: query with alignement constraint result set');
+    'Query: alignement constraint result set');
 ok (not (grep { join(' ', map { $_[0] } @{$_->{aligns}{'cuwi-fr'}}) =~ m/alors/  } @{$sr->hits}),
-    'Query: query with alignement constraint result set consistency')
+    'Query: alignement constraint result set consistency')
     or diag("CWB::Model::Result structure contained at least one hit with wrong aligned corpus match:\n" . Dumper($sr));
 $sr = $sl->query(query=>'tako', align=>['cuwi-fr'], align_query_corpus=>'cuwi-fr', align_query_not => 1, align_query => 'alors');
 is ($sr->QUERY,

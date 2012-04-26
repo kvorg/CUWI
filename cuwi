@@ -272,7 +272,7 @@ get "/:corpus/search" => sub {
     unless $self->param('in-struct') eq '-';
   $params{struct_constraint_query} = $self->param('struct-query');
   $params{align_query_corpus} = $self->param('in-align')
-    unless $self->param('in-align') eq '-'; #BUG
+    unless $self->param('in-align') and $self->param('in-align') eq '-';
   $params{align_query_not} = $self->param('not-align');
   $params{align_query} = $self->param('align-query');
   $params{show} = ref $self->param('show') eq 'ARRAY' ?

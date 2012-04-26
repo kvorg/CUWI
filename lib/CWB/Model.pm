@@ -708,6 +708,11 @@ sub run {
     my $align_query;
     my $align_query_corpus;
     my $alignq = '';
+
+    # handle generic corpus align constraint
+    $self->align_query_corpus(${$self->corpus->alignements}[0]) if
+      $self->align_query_corpus eq '*' and scalar @{$self->corpus->alignements};
+
     if ($self->align_query_corpus
 	and (grep { $_ eq $self->align_query_corpus}
 	     @{$self->corpus->alignements})
