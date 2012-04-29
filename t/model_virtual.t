@@ -34,7 +34,7 @@ my ($cqp_version) = grep { m{^Version:\s+.*$} }`$cqp -v`;
 $cqp_version =~ s{^Version:\s+(.*)$}{$1};
 like($cqp_version, qr{^[2-9][.]}, 'cqp executable: version 2.0.0 or later');
 # Available testing corpora
-my $c_num = 3;
+my $c_num = 2;
 my $rg = 't/corpora/registry';
 
 # Model
@@ -192,12 +192,12 @@ is_deeply($r,
 	   # bigcontext => 'paragraphs',
 	   hits       => [@{$r->hits}],
 	   hitno      => 326,
-	   aligns     => [],
+#	   aligns     => [],
 	   attributes => [[]],
 	   table => '1',
 	   pages      => { single=>1, this=>1 },
            # a bit unclean
-	   distinct   => 0,
+	   distinct   => 156,
 	  }, "Virtual Query/Result: wordlist")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 

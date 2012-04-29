@@ -8,7 +8,8 @@ $ENV{MOJO_MODE} = 'testing';
 use FindBin;
 $ENV{MOJO_HOME} = "$FindBin::Bin/../";
 # config does not find the correct testing config file when run from script
-$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.testing.json";
+#$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.testing.json";
+$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.json";
 require "$ENV{MOJO_HOME}cuwi";
 
 my $t = Test::Mojo->new();

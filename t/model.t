@@ -34,7 +34,7 @@ my ($cqp_version) = grep { m{^Version:\s+.*$} }`$cqp -v`;
 $cqp_version =~ s{^Version:\s+(.*)$}{$1};
 like($cqp_version, qr{^[2-9][.]}, 'cqp executable: version 2.0.0 or later');
 # Available testing corpora
-my $c_num = 3;
+my $c_num = 2;
 my $rg = 't/corpora/registry';
 
 # Model
@@ -82,6 +82,7 @@ ok(scalar @{$sl->structures} == 8, 'Corpus: structures parsing');
 is_deeply([sort @{$sl->alignements}],
 	  [sort qw(cuwi-fr)],
 	  'Corpus: alignement names');
+#Missing 'word' attribute checks: disabled (fails in older CWB)
 #my $slnw = ${$m->corpora}{'cuwi-sl-noword'};
 #isa_ok($slnw, 'CWB::Model::Corpus::Filebased',
 #       'CWB::Model::Corpus instantiation');
@@ -133,11 +134,8 @@ my $q = CWB::Model::Query->new(corpus => $sl, model=> $sl->model, ignorecase=>0 
 isa_ok($q, 'CWB::Model::Query', 'Query: direct instantiation');
 
 # simple/cqp queries
-TODO: {
-  local $TODO = 'Fix failure to set options to Query in new';
-  is($q->query('on')->run->QUERY, '[word="on"]',
-     'Query: single token to CQP syntax');
-}
+is($q->query('on')->run->QUERY, '[word="on"]',
+   'Query: single token to CQP syntax');
 is($q->ignorecase(0)->query('on')->run->QUERY, '[word="on"]',
    'Query: single token to CQP syntax');
 is($q->query('on je')->run->QUERY, '[word="on"] [word="je"]',
@@ -194,6 +192,7 @@ ok ( (not grep {not $_->{data}{'text_naslov'} =~ m{^Pierre.*} } @{$sr->hits}),
   or diag("CWB::Model::Result structure contained at least one hit with wrong structural attribute:\n" . Dumper($sr));
 
 # query with alignement constraint
+my $c_diag;
 $sr = $sl->query(query=>'tako', align=>['cuwi-fr'], align_query_corpus=>'*', align_query => 'alors');
 is ($sr->QUERY,
     '[word="tako" %c] :CUWI-FR "alors"',
@@ -204,15 +203,18 @@ is ($sr->QUERY,
     'Query: normal alignement constraint');
 is ((scalar @{$sr->hits}), 1,
     'Query: alignement constraint result set');
-ok (not (grep { join(' ', map { $_[0] } @{$_->{aligns}{'cuwi-fr'}}) =~ m/alors/  } @{$sr->hits}),
+ok ( 1 == scalar (grep { my $a = join(' ', map { $_->[0] } @{$_->{aligns}{'cuwi-fr'}} ); $a =~ m/alors/ or $c_diag = $a } @{$sr->hits}),
     'Query: alignement constraint result set consistency')
-    or diag("CWB::Model::Result structure contained at least one hit with wrong aligned corpus match:\n" . Dumper($sr));
+    or diag("CWB::Model::Result structure contained at least one hit with wrong aligned corpus match\n(in $c_diag):\n" . Dumper($sr));
 $sr = $sl->query(query=>'tako', align=>['cuwi-fr'], align_query_corpus=>'cuwi-fr', align_query_not => 1, align_query => 'alors');
 is ($sr->QUERY,
     '[word="tako" %c] :CUWI-FR ! "alors"',
     'Query: query with negative alignement constraint');
 is ((scalar @{$sr->hits}), 10,
     'Query: query with negative alignement constraint result set');
+ok (not (grep { my $a = join(' ', map { $_->[0] } @{$_->{aligns}{'cuwi-fr'}} ); $a =~ m/alors/ and $c_diag = $a } @{$sr->hits}),
+    'Query: negative alignement constraint result set consistency')
+    or diag("CWB::Model::Result structure contained at least one hit with wrong aligned corpus match\n(in $c_diag):\n" . Dumper($sr));
 
 # query with within constraint
 $sr = $sl->query(query=>'njimi [] ta', within=>'p', ignorecase=>1);
@@ -233,8 +235,9 @@ $sr = $sl->query(query=>'njimi [] ta', within=>'p', ignorecase=>1,
 is($sr->QUERY,
    '[word="njimi" %c] [] [word="ta" %c] :CUWI-FR "eux" :: match.text_naslov="Mednarodno.*" within p',
    'Query: full CQP query with all constraints');
-ok(@{$sr->hits} == 1 and ${$sr->hits}[0]{data}{cpos} == 125,
-   'Query: full CQP query with all constraints: result');
+ok((@{$sr->hits} == 1 and ${$sr->hits}[0]{cpos} == 125),
+   'Query: full CQP query with all constraints: result')
+  or diag("CWB::Model::Result structure was:\n" . Dumper($sr));
 
 # TODO
 
@@ -278,7 +281,7 @@ is_deeply($r,
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 
 # result: search opts, ignore case/diacritics)
-my $r = $sl->query(query=>'a', hitsonly=>1);
+$r = $sl->query(query=>'a', hitsonly=>1);
 is_deeply($r,
 	  {
 	   corpusname => $sl->name,

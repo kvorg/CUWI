@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# cuwi        Fedora/RHEL compatible startup script
+#             for the cuwi Mojolicious-based web service
+#
+# This should be installed as /etc/init.d/cuwi
+#
+# Please use the hypnotoad.conf file in APPDIR 
+# to configure application parameters.
+# You can set MOJO env parameters in the script.
+
+APPDIR=/usr/local/cuwi/bin
+HYPNOTOAD=$APPDIR/hypnotoad
+PIDFILE=$APPDIR/hypnotoad.pid
+APPNAME=cuwi  #change this to run multiple
+PROG=cuwi 
+LOCKFILE=/var/lock/subsys/${PROG}
+
+### BEGIN INIT INFO
+# Provides: cuwi
+# Required-Start: httpd
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop cuwi serice under Apache proxy
+# Description: CUWI, the Corpus Users' Web Intervace, is and
+#  implemetation of a web interface for Corpus Workbench corpora
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Set Mojo parameters
+# See Mojolicious::Guides::Cheatsheet - here are some useful defaults:
+#export MOJO_CONFIG=$APPDIR/cuwi.json
+#export MOJO_LOG_LEVEL=error
+#export MOJO_MODE=production
+
+send_signal() {
+    thispid = pidofproc $PIDFILE $PROG
+    kill -s $1 $thispid
+}
+
+start() {
+        echo -n $"Starting $PROG: "
+        (cd $APPDIR; $HYPNOTOAD $PROG)
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && touch ${LOCKFILE}
+        return $RETVAL
+}
+
+# When stopping a delay of >5 second is required before SIGKILLing the
+# metaserver; this gives enough time to the server to SIGKILL any
+# errant children.
+stop() {
+    echo -n $"Stopping $PROG: "
+    killproc -p ${PIDFILE} -d 5 $PROG -QUIT
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f ${LOCKFILE} ${PIDFILE}
+}
+reload() {
+    echo -n $"Reloading $PROG: "
+#    send_signal('USR2')
+    status -p ${PIDFILE} $PROG || echo "Reload failed: not running or error in config or registry?"
+}
+
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+        status -p ${PIDFILE} $PROG
+	RETVAL=$?
+	;;
+  restart)
+	stop
+	start
+	;;
+  condrestart|try-restart)
+	if status -p ${PIDFILE} $PROG >&/dev/null; then
+		stop
+		start
+	fi
+	;;
+  force-reload|reload)
+        reload
+	;;
+  *)
+	echo $"Usage: $prog {start|stop|restart|condrestart|try-restart|force-reload|reload|status|}"
+	RETVAL=2
+esac
+
+exit $RETVAL
+

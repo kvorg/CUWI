@@ -411,8 +411,9 @@ sub query {
 
   my %opts = @_;
   $opts{startfrom} ||= 0;
-  if (scalar @{$opts{align}} == 1 
-      and ${$opts{align}}[0] = 1 
+  if ($opts{align}
+      and scalar @{$opts{align}} == 1
+      and ${$opts{align}}[0] == 1
       and $self->general_align) {
       $opts{align} = $self->alignements;
 #      warn ("Model: gone for align all, align opt was $opts{align}\n");
@@ -497,7 +498,6 @@ sub query {
     # that was naive: ratio not taken into account
     if ($self->interleaved) {
       # interleaved
-      # BUG - missing sentnce / paragraph displays
       foreach  (@subcorpora) {
 	my $subcorpus = ${$self->_subcorpora}{$_};
 	next unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
@@ -711,7 +711,7 @@ sub run {
 
     # handle generic corpus align constraint
     $self->align_query_corpus(${$self->corpus->alignements}[0]) if
-      $self->align_query_corpus eq '*' and scalar @{$self->corpus->alignements};
+      $self->align_query_corpus and $self->align_query_corpus eq '*' and scalar @{$self->corpus->alignements};
 
     if ($self->align_query_corpus
 	and (grep { $_ eq $self->align_query_corpus}
@@ -978,7 +978,6 @@ sub run {
 		 [<]/LINE[>]\s*$}x  # tail
 	or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
       my $match = decode($self->corpus->encoding, $1);
-      warn "MATCH: $match\n";
       my $matchkey = $match;
       $matchkey = lc($match) if $self->ignorecase;
       $counts{$matchkey}{count} = 0 unless exists $counts{$matchkey};

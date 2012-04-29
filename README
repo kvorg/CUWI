@@ -7,14 +7,15 @@ own back-end layer, CWB::Model. CWB::Modle is a CWB registry, corpus,
 info and query model layer which uses the CWB::CQP module and a
 background cqp query processor to query corpora.
 
-CUWI has no dependencies on CWB::CL and C-level bindings to CWB, and
-is therefore relatively version agnostic as regards to CWB - is should
-work with any cqp no later than version 2.0.0.
+CUWI has no dependencies on CWB::CL or other C-level bindings to CWB,
+and is therefore relatively version agnostic as regards to CWB - is
+should work with any cqp no later than version 2.0.0.
 
-CUWI uses its CWB::Model to parse your registry files and present you
-with a list of available corpora. For each corpus, a suitable search
-form is used, listing attributes, alignments and other options. It
-supports KWIC output, sentences, paragraphs, sequences and more.
+CUWI uses CWB::Model to parse available registry files and present the
+user with a list of available corpora. For each corpus, a suitable
+search form is used, listing attributes, alignments and other
+options. It supports KWIC output, sentences, paragraphs, frequencies
+and more.
 
 CWB::Model and related modules require Mojolicious (they are build on
 Mojo infrastructure), but can be used independently in your scripts and
@@ -31,25 +32,32 @@ Feature highlights:
 -------------------
 
 * Queries can be specified in a simplified globbing expression using
-  form options, full CQP query language or a combination.
+  form options, full CQP query language or a combination thereof.
 
 * Clean encoding support for different corpus encodings (fully
   functional regular expressions for UTF-8 require a recent CWB
   distribution).
 
-* Tool-tips and informational blocks extracted from special-format
-  information in corpus registry info files are used to help the user
-  throughout the interface.
+* Result navigation: contextual links allow the user to see a larger
+  context for each hit or to perform a search for a specific
+  combination in a frequency table.
+
+* Tool-tips and informational blocks are extracted from special-format
+  information in corpus registry info files when available and are
+  used to help the user throughout the interface.
+
+* Statistics and, optionally, attribute frequency lists are presented
+  for each corpus as extracted using CWB tools.
 
 * Query results are available in a number of formats, where new ones
-  can be easily added with user templates at your leisure.
+  can be easily added with user templates or additional plugins at
+  your leisure.
 
 * Welcome message, CSS and HTML layout can all be adapted to your site
   using config files and template overrides.
 
-* Result navigation: contextual links allow the user to see a larger
-  context for each hit or to perform a search for a specific
-  combination in a frequency table.
+* Config files can be used to group corpora and specify different
+  behaviour for individual copora.
 
 * Virtual corpora: you can configure CUWI to present a corpus differently,
   or query and present multiple corpora as a single large corpus in different
@@ -66,6 +74,8 @@ A number of additional features are in the pipeline:
  * graphical aids in frequency tables
 
  * many more ease-of use and advanced features
+
+ * better programming API and better documentation for CWB::Model 
 
 
 Additional info:

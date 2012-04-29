@@ -34,7 +34,8 @@ if (ref $e) {
   app->log->info("Module Spreadsheet::Write not available: $e. " .
 		 "Install Spreadsheet::Write if you need cvs and excel table result exports.")
 } else {
-  app->log->info("Module Spreadsheet::Write loader said: $e.");
+  app->log->info("Module Spreadsheet::Write loader said: $e.") if $e;
+  app->log->info("Module Spreadsheet::Write loaded ok.") unless $e;
   $table_export = 1;
 }
 
