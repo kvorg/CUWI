@@ -8,7 +8,7 @@ t/*~
 # development files
 Attic/
 Corpora/
-lib-extra
+lib-extra*
 lib.bkp/
 src/
 docs
