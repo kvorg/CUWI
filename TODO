@@ -10,36 +10,39 @@
    - skip non-existing peers (log error)
    - skip non-existing virtaul corpora members (log error)
 ** Bail-out gracefully with maxhits:
+    use result for warning passing
     announce in red
     make a reduce to maxhits
 ** In paging with Result objects, the end page calculation is wrong
-** Structure handling in Query: structure searches
 ** Default overrides new for ingorecase
 ** Bug in combined query syntax: a* [word="t.*"], add test!
 ** enable quoting of CQP escapes for "[rule]" and '[rule]'
    - change CQP heurisitcs
 ** Better tests/fails for failing/missing registry specifications
 ** Clean up newlines at the end of description
+** Handle non-compatible info files
+   (by parsing them as descriptions)
+** Cleanup CQP query link situation with advanced query form options
 
 * CWB::Model
 
+** Structure handling in Query:
+    structure searches
+    structure-based tree view (treebanks)
 ** Multicorpora
     - extract virtual query magic into CWB::Model::Query::Virtual
     spook:
     - fix paging calculation,  should be optional, wrapped up in a function
-** spook: sub-searches (based on existing search)
+** spook: sub-searches (based on existing search): subquery
    aka Support for chained query support -> store previous queries in link/params
 ** spook: any needed support for form-based alignement and structural queries
 ** Add sorting to wordlists (js?)
 ** Implement max_size and max_querytime properly
 ** Fix all file work to use IO::File and File::Spec
-** Native CQP and cwb-corpus-scan interfaces
 ** Possibly keep wordlists with paging and progressive building
 ** Add corpus positions dump as an export option
-** Support generic info files: if not looking as our structured info or copy of registry,
-   use whole info file as english description
-** Test coverage
-** Concordance support
+** Improve test coverage
+** Colocation support (usin cwb-corpus-scan ?)
 ** Info files: translateable names/titles
 ** Add a handle for literal matching (no regexps) with %l
 ** Test cwb beta release compatibiliy
@@ -52,22 +55,21 @@
 ** Support for list-oriented queries and macros, i.e. 
     /codist["whose", pos];
     /codist[lemma, "go", word];
-** Non-blocking high performant queries using
+** Native CQP and cwb-corpus-scan interfaces with non-blocking queries using
     Mojo::IOLoop->timer(0, sub { poll query or render-cb ; reset timer; }
     or suitable newer solutions
-    The query should have a flag when still running and refuse new request
+    The query should have a flag when still running and refuse new requests
     from the query cache API
 
 * Web interface BUGS
 
-** Wordlist -> ignoremeta in links disables ignorecase
+** wordlist -> ignoremeta in links disables ignorecase
+** wordlist: quote metacharacters in string links: check/test
 ** classes: sanitize with the virtual corpus before sending
-** wordlist: quote metacharacters in string links: check
 ** fix wierd behavior with last page on \. search on imp-goo
-** cuwi favicon, help icon
 ** move export modules in eval encapsualtion and handle exceptions
 ** disable context links for biggest display mode (sentence or paragraph)
-** sanitize can't/does not work (readonly??) - tests
+** sanitize can't/does not work (readonly??) - tests + better fix
 ** make label and checkbox unbreakable in attributes
    (css?)
 ** possibly closures for exception handling are buggy
@@ -77,31 +79,25 @@
 * Web interface
 
 ** change wordlist exporting to divide matches into multiple fields
-** spook: worldlist query handling
 ** spook: Templates for query result exports
-   for excel/oocalc, tab-delmited, csv, xml, latex, json, data::dump, yaml
-   (Spreadsheet::Write for csv and Excel)
-** spook: bilingual search support
-    Iskalnik mora omogočati iskanje po obeh jezikih hkrati, se pravi npr. Spook-an: president on aligned Spook-sl: predsednik. 
-    glej: http://nl2.ijs.si/index-bi.htlm
-** spook: structural attribute limited search (links + CQP, then add-on fields)
-   "sito za strukturne atribute: maska + link v rezultatih"
+   missing: oocalc, tab-delmited, corpus position dump, tei/xml,
+   latex, yaml
+** spook: structural attribute constraint search:
+   add interface for multiple constraints
 ** spook: password protected groups
-** spook: frequency lists
-   support encodings (custom server?)
-   make them optional: only by order
+   better implementation
 ** spook: sub-searches (based on existing search)
 ** short ID for structural attribute (auth year?) in [result]
    sane default + changeable from info file or conf
-** spook: web homes for corpus groups ??
 ** spook: home page info:
-    navodila za uporabo v slovenščini s čimveč primeri različnih tipov iskanj
+   navodila za uporabo v slovenščini s čimveč primeri različnih tipov
+   iskanj - use a link
 ** imp: Use click-to pop-up for help
    (via js binding + help at bottom always)
-** imp: sortable frequency lists (via js)
-** wordlists: klick on frequency number to get conjunction query
-** Additional grid query compositing interface
-   as per http://nl.ijs.si/jos/cqp/uni
+** imp: sortable frequency lists (via js?)
+** wordlists: click on frequency number to get conjunction query
+** additional grid query compositing interface
+   as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
 ** Log cleanup:
@@ -113,7 +109,7 @@
    - with 2 or three sort keys
 ** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
-** Cleanup of templates: separation with includes, I18n
+** Cleanup of templates: separation with includes
 ** I18n
 ** Concordance support
    - probaly by supporting cwb-scan-corpus and disk-related
@@ -121,13 +117,29 @@
 ** More sorting and grouping for wordlists:
    - by frequency, by object found (using column headings for sort)
    - 2 or 3 sort keys = grouping
-** Query compositing, see: http://nl2.ijs.si/fpj.html
-** Use compositing or subcorpus to limit to structural atts with links
 
 * Tests
 
 ** Finish CWB::Model tests
+*** virtual config errors
+*** t/01_registry.t-23-# test for non-existing registry
+*** 01 tests for multiple registry directories
+*** 01 broken registriy files, missing info files
+*** 01 exception handling
+*** 01 introduce exceptions in tests
+*** 02 infofile: peer corpora/alignement
+*** 05 result: display tests (show, all/sample)
+*** 05 query/result encoding roundtrip (in queries and all display modes
+*** 05 result: check number of hits against 2 or more pages for 0-based page offsets
+*** 06 result: alignement, alignement encoding
+
 ** CUWI Webapp tests
+*** config file parsing
+*** config file errors
+*** export module detection (use_ok vs. loader?)
+*** export options working
+*** all layouts (to enable template hacking)
+
 ** Online tests for HTML and CSS syntax checking
 
 * Links: 
@@ -147,7 +159,7 @@
 ** spook stuff, multicorpora
 ** tests
 ** colocations MI3 LL
-** tabular download formats
+** missing tabular download formats
 ** max_size, max_query_time
 ** I18n
 ** documentation
@@ -158,7 +170,6 @@
    - groups need special description files -> default corpus, links to members
    - grouped corpora have corpus selectors for corpora within group
    - alternatively, use SISTER_CORPORA in info files for the drop-down menu
-** structural constraints (with subcorpora)
 ** user registration, storable queries, diff between storable queries etc.
  From the list:
 Message:
