@@ -11,38 +11,12 @@ binmode $builder->todo_output,    ":utf8";
 use Data::Dumper;
 $Data::Dumper::Indent = 2;
 
-# Dependencies
-BEGIN { use_ok( 'CWB::Config'); }
-BEGIN { use_ok( 'CWB::CQP'); }
-BEGIN { use_ok( 'CWB::Model'); }
+use CWB::Model;
 
-# Binary dependencies
-my $cqp;
-if ($CWB::Config::BinDir and -x ($CWB::Config::BinDir . '/cqp')) {
-  $cqp = "$CWB::Config::BinDir/cqp";
-  ok($cqp, 'cqp executable: found and accessible by CWB::Config');
-} else {
-  use IO::Dir;
-  my @path = split ':', $ENV{PATH};
-  foreach my $pd (@path) {
-    ($cqp) = grep { m{cqp} and -x "$pd/$_" } IO::Dir->new($pd)->read;
-    $cqp = $pd . '/' . $cqp and last if $cqp;
-  }
-  ok($cqp, 'cqp executable: found and accessible in path');
-}
-my ($cqp_version) = grep { m{^Version:\s+.*$} }`$cqp -v`;
-$cqp_version =~ s{^Version:\s+(.*)$}{$1};
-like($cqp_version, qr{^[2-9][.]}, 'cqp executable: version 2.0.0 or later');
-# Available testing corpora
 my $c_num = 2;
 my $rg = 't/corpora/registry';
+my $m = CWB::Model->new(registry => $rg);
 
-# Model
-
-my $m = CWB::Model->new(registry => $rg)
-  or BAIL_OUT('Can\'t instantiate the model: check the registry or expect major problems.');
-
-# virtual corpora
 $m->virtual(cuwoos => [ 'cuwi-sl', 'cuwi-fr' ], interleaved => 1);
 my $virt = ${$m->corpora}{'cuwoos'};
 isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: Instantiation');
