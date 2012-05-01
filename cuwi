@@ -4,17 +4,19 @@ use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/u
 
 our $VERSION = '0.9';
 use Mojolicious::Lite;
+
+use CWB::Model;
+
+use Mojo::Loader;
 use IO::File;
 use IO::Dir;
 use File::Spec;
 use File::Temp;
-use CWB::Model;
 use Encode 'decode';
-use Mojo::Loader;
 
 plugin 'charset' => {charset => 'UTF-8'};
 plugin 'tag_helpers_extra';
-#plugin 'pod_renderer';
+#plugin 'pod_renderer'; #park it under root and use for help?
 
 app->secret('re9phoothieX4dah4chi');
 app->types->type(perl => 'application/perl');
@@ -22,10 +24,10 @@ app->types->type(csv => 'application/csv');
 app->types->type(xls => 'application/excel');
 my $maxsize = 50000;
 
-my $sanitize;  # param sanitization callback
-my $tabulator; # multi attribute tabulator callback
+my $sanitize;   # param sanitization callback
+my $tabulator;  # multi attribute tabulator callback
 my $columnator; # multi attribute tabulator callback for table columns export
-my $urlator;   # conditional anchor generator
+my $urlator;    # conditional anchor generator
 my $table_export;
 
 my $loader = Mojo::Loader->new;
@@ -554,7 +556,6 @@ __DATA__
 
   <div class="description">
     <%== $corpus->describe('en') %>
-
 % my @atts = grep { $corpus->tooltip(attribute => $_, 'en') }
 %    @{$corpus->attributes};
 % if (@atts) {
@@ -567,10 +568,10 @@ __DATA__
 %   }
   </ul>
 % }
-
 % my @satts = grep { $corpus->tooltip(structure => $_, 'en') }
 %    @{$corpus->structures};
 % if (@satts) {
+
   <h2>Structural Attribute Descriptions (Tags)</h2>
   <ul>
 %   foreach my $satt (@satts) {
@@ -583,6 +584,7 @@ __DATA__
 % my @peers = @{$corpus->peers};
 % my $corpora = $model->corpora;
 % if (@peers) {
+
   <h2>Peer Corpora</h2>
   <ul>
 %   foreach my $p (@peers) {
@@ -590,9 +592,8 @@ __DATA__
 %   }
   </ul>
 % }
-
-
 % if (keys %{$corpus->stats}) {
+
   <h2>Statistics</h2>
   <table class="stats">
 %  if (${$corpus->stats}{tokens}) {
@@ -633,8 +634,6 @@ __DATA__
 % }
  </ul>
 % }
-
-
   </div>
 
 
@@ -671,7 +670,8 @@ __DATA__
 %    grep { not m{\w+[_]\w+} } @{$corpus->structures};
 % if ( keys %withins ) {
 % $self->param('within', 's') unless $self->param('within');
-    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Within</em>Constraint to keep the whole match inside a structural field, such a as a sentence or paragraph. "s" is the default since it is useful for linguistic queries.</span>Within</a>: <%= select_field 'within', ['-', keys %withins] %>
+    <a class="tooltip" href="#"><span class="custom help"><img src="/<%= $config->{root} %>/icons/Help.png" alt="Help" height="48" width="48" /><em>Within</em>Constraint to keep the whole match inside a structural field, such a as a sentence or paragraph. "s" is the default since it is useful for linguistic queries.</span>
+    Within</a>: <%= select_field 'within', ['-', keys %withins] %>
 <span class="form-h-strut"></span>
 % }
      Ignore:
