@@ -1,5 +1,10 @@
 {
   "registry" : "t/corpora/registry",
   "root"     : "cuwi",
-  "blurb"     : "BLURB"
+  "blurb"     : "BLURB",
+  "corpora" : {
+    "GROUPS": {
+      "cuwi" : [ "cuwi-sl", "cuwi-fr" ]
+    }
+  }
 }

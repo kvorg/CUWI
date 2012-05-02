@@ -19,35 +19,14 @@ $t->app->log->level('error');
 $t->get_ok('/cuwi')
   ->status_is(200)
   ->content_type_is('text/html;charset=UTF-8')
-  ->content_like(qr/CUWI Search/i);
-$t->get_ok('/cuwi')
-     ->element_exists('h2', 'Cuwi main: header')
-     ->text_like('h2 > a' => qr/CUWI Search/, 'Cuwi main: header contents');
+  ->element_exists('html head title', 'Cuwi main: title')
+  ->element_exists('html body h2', 'Cuwi main: header')
+  ->text_like('h2 > a' => qr/CUWI Search/, 'Cuwi main: header contents')
+;
 
-# corpus title page
-
-# search option persistance
-
-# kwic layout
-
-# kwic show options
-
-# kwic alignement
-
-# kwic download templates
-
-# context layout
-
-# context show options
-
-# context alignement
-
-# contex download templates
-
-# frequency layout
-
-# frequency show options
-
-# frequency download templates
+# corpora
+my @corpora = $t->tx->res->dom->at('ul')->find('li b')->each;
+cmp_ok(scalar @corpora, '==', 2, 'Cuwi main: number of corpora');
+is($corpora[0]->text, 'CUWI-FR', 'Cuwi main: first corpus name');
 
 done_testing;
