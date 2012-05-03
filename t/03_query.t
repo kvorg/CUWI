@@ -21,7 +21,7 @@ my $sl = ${$m->corpora}{'cuwi-sl'};
 
 
 my $q = CWB::Model::Query->new(corpus => $sl, model=> $sl->model, ignorecase=>0 );
-isa_ok($q, 'CWB::Model::Query', 'Query: direct instantiation');
+isa_ok($q, 'CWB::Model::Query', 'Query: direct instantiation:');
 
 # simple/cqp queries
 is($q->query('on')->run->QUERY, '[word="on"]',
@@ -128,5 +128,38 @@ is($sr->QUERY,
 ok((@{$sr->hits} == 1 and ${$sr->hits}[0]{cpos} == 125),
    'Query: full CQP query with all constraints: result')
   or diag("CWB::Model::Result structure was:\n" . Dumper($sr));
+
+sub ignore {
+# query with faulty options -> defaults
+$q = CWB::Model::Query->new(corpus => $sl, model=> $sl->model,
+			    query=>'ar*', search => 'word',
+			    within => undef, ignorecase => 'bozo',
+			    show => [ qw (fnord bored) ], display => undef,
+			    align=>['not_there'],
+			    align_query_corpus=>'the_clown', align_query => undef,
+			    struct_constraint_struct=>'you_wish',
+			    struct_constraint_query=>undef);
+isa_ok($q, 'CWB::Model::Query', 'Query: instantiation with faulty options:');
+my $r= $q->run;
+isa_ok($r, 'CWB::Model::Result', 'Query: query with faulty options returns result');
+is_deeply($r,
+	  {
+	   corpusname => $sl->name,
+	   peers => [ [] ],
+	   query      => '[word="ar.*"]',
+	   QUERY      => '[word="ar.*"]',
+	   time       => $r->time,
+	   bigcontext => 'paragraphs',
+	   table => '1',
+	   hits       => $r->hits,
+	   distinct   => $r->distinct,
+	   hitno      => $r->hitno,
+	   aligns     => [],
+	   attributes => [[ qw(word) ]],
+	   pages      => { single=>1, this=>1 },
+	  },
+ "Query: query with faulty options defaults check")
+  or diag('Wordlist result data was: ' . Dumper($r) );
+}
 
 done_testing();

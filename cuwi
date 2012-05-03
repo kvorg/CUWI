@@ -267,12 +267,12 @@ get "/:corpus/search" => sub {
   $params{class} = $self->param('class');
   $params{search} = $self->param('search');
   $params{within} = $self->param('within')
-    unless $self->param('within') eq '-';
+    unless $self->param('within') and $self->param('within') eq '-';
   $params{ignorecase} = $self->param('ignorecase');
   $params{ignorediacritics} = $self->param('ignorediacritics');
   $params{ignoremeta} = $self->param('ignoremeta') || 0;
   $params{struct_constraint_struct}  = $self->param('in-struct')
-    unless $self->param('in-struct') eq '-';
+    unless $self->param('in-struct') and $self->param('in-struct') eq '-';
   $params{struct_constraint_query} = $self->param('struct-query');
   $params{align_query_corpus} = $self->param('in-align')
     unless $self->param('in-align') and $self->param('in-align') eq '-';
@@ -285,7 +285,8 @@ get "/:corpus/search" => sub {
   $params{context} = $self->param('contextsize') . ' words';
   $params{display} = $self->param('display');
   $params{startfrom} = $self->param('startfrom');
-  $params{reduce} = 1 if $self->param('listing') eq 'sample';
+  $params{reduce} = 1
+    if $self->param('listing') and $self->param('listing') eq 'sample';
   $params{pagesize} = $self->param('size');
   if ( $self->param('sort_a') and $self->param('sort_a') ne 'none') {
     $params{sort}{a}{target}    = $self->param('sort_a');
@@ -754,7 +755,6 @@ __DATA__
     <%= select_field 'sort_a_direction', [qw(natural reversed)] %>
     </div>
     <span class="submit"><%= submit_button 'Run Query' %></span>
-    </div>
   <% end %>
   </div>
 
@@ -821,7 +821,7 @@ __DATA__
 % } elsif ($result->reduce) {
    <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % }
-% elsif ($result->hitno > ${$result->pages}{pagesize}) {
+% elsif ($result->pages->{single} or $result->hitno > ${$result->pages}{pagesize}) {
    <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
 % } else {
    <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= '+ ' . $result->query %><% end %></span>

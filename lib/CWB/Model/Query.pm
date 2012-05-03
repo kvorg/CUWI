@@ -49,6 +49,8 @@ sub new {
   weaken($self->model);
   $self->structures(@{$structures}) if $structures;
 
+  $self->_check_options;
+
   # instantiate CQP - but should have more than one in the future
   #                   also pass corpus-specific collation to CQP env
   my $old_collate = $ENV{LC_COLLATE};
@@ -70,6 +72,7 @@ sub new {
   $cqp->exec("set Timing on");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t enable timing display. -', $cqp->error_message)
     unless $cqp->ok;
+  # BUG? is this necessary with sgml?
   # set easy-to-parse left and right match delimiters
   $cqp->exec("set ld '::--:: ';");
   return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set ld. -', $cqp->error_message)
@@ -80,6 +83,29 @@ sub new {
   $self->cqp($cqp);
 
   return $self;
+}
+
+sub _check_options {
+  my $self = shift;
+  # check all options here with corpus for sanity and reset faulty to defaults
+  $self->pagesize or $self->pagesize(25);
+  # $self->struct_constraint_struct and grep { $_ eq $self->struct_constraint_struct } @{$self->corpus->structures}
+  #   and $self->struct_constraint_struct =~ m/\w+_\w+/
+  #     or $self->struct_constraint_struct(undef);
+  # $self->align_query_corpus and $self->corpus->alignements and
+  #   grep { $_ eq $self->align_query_corpus } @{$self->corpus->alignements}
+  #     or $self->align_query_corpus(undef);
+  # $self->l_context and $self->l_context =~ m/[0-9]+/
+  #   or $self->l_context(0);
+  # $self->r_context and $self->r_context =~ m/[0-9]+/
+  #   or $self->r_context(0);
+  # $self->context and $self->context =~ m/[0-9]+/
+  #   or $self->context(0);
+  $self->search and grep { $_ eq  $self->search } @{$self->corpus->attributes}
+    or $self->search('word');
+  $self->display
+    and   $self->display =~ m/^kwic|sentences|paragraphs|wordlist$/
+      or $self->display('kwic');
 }
 
 sub _mangle_query {
@@ -138,6 +164,7 @@ sub run {
   $self->exception("No queriable corpus passed to CWB::Model::Query: aborting run. ")
     and return
       unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus::Filebased');
+  $self->_check_options;
 
   my $query_start_time = Time::HiRes::gettimeofday();
 
