@@ -33,7 +33,7 @@ sub bq {
 }
 
 my $corpus = 'cuwi-fr';
-$t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic'))
+$t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic', show=>'word', show=>'tag'))
   ->status_is(200)
   ->content_type_is('text/html;charset=UTF-8')
   ->element_exists('html body div[class="report"]',
@@ -47,7 +47,7 @@ $t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic'))
 #$t->tx->res->dom->at('html body div[class="exports"]');
 #$t->tx->res->dom->at('html body div[class="matches"]');
 
-$t->get_ok("/cuwi/$corpus/search" . bq(query => 'ar*', display=>'kwic'))
+$t->get_ok("/cuwi/$corpus/search" . bq(query => 'ar*', display=>'kwic', show=>'word'))
 		    ->status_is(200)
 		    ->content_type_is('text/html;charset=UTF-8')
 ;

@@ -66,6 +66,12 @@ is($q->ignorecase(0)->query('on biti')->run->QUERY,
    '[word="on" %d] [word="biti" %d]', 'Query: disabling options');
 isa_ok($q->ignorecase(1), 'CWB::Model::Query',
        'Query: setter returns query object');
+is($q->show(['word'])->query('on biti')->run->QUERY,
+   '[word="on" %cd] [word="biti" %cd]', 'Query: show options - single word');
+is($q->show(['tag'])->query('on biti')->run->QUERY,
+   '[word="on" %cd] [word="biti" %cd]', 'Query: show options - single other');
+is($q->show(['word', 'tag'])->query('on biti')->run->QUERY,
+   '[word="on" %cd] [word="biti" %cd]', 'Query: show options - multiple');
 
 # query with structural constraint
 is ($q->query('+ "a.*" :: match.text_naslov="Pierre.*"')->run->QUERY,

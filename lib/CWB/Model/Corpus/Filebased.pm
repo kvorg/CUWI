@@ -91,7 +91,9 @@ sub query {
   my $self = shift;
   $DB::single = 2;
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->query(query => <query>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
-  return CWB::Model::Query->new(corpus => $self, model => $self->model, @_)->run;
+  my $q = CWB::Model::Query->new(corpus => $self, model => $self->model, @_);
+  return $q unless $q->DOES('CWB::Model::Query'); #exception occured
+  return $q->run;
 }
 
 sub structures_ {

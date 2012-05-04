@@ -49,7 +49,8 @@ sub new {
   weaken($self->model);
   $self->structures(@{$structures}) if $structures;
 
-  $self->_check_options;
+  my $error = $self->_check_options;
+  return $error if ref $error;
 
   # instantiate CQP - but should have more than one in the future
   #                   also pass corpus-specific collation to CQP env
@@ -57,28 +58,28 @@ sub new {
   $ENV{LC_COLLATE} = ($self->corpus->language ? $self->corpus->language : 'en_US') . '.' . $self->corpus->Encoding;
   #warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n";
   my $cqp = CWB::CQP->new
-    or CWB::Model::exception_handler->('CWB::Model Exception: Could not instantiate CWB::CQP.');
+    or CWB::Model::exception_handler->('CWB::Model::Query Exception: Could not instantiate CWB::CQP.');
   $ENV{LC_COLLATE} = $old_collate;
   # set registry - needed since we can supercede the ENV and CWB::Config
   $cqp->exec("set registry '" . $self->model->registry . "';");
-  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t open registry. -', $cqp->error_message)
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: can\'t open registry. -', $cqp->error_message)
     unless $cqp->ok;
   # activate corpus
   $cqp->exec($self->corpus->NAME . ';');
   # enable corpus position and timing
   $cqp->exec("show +cpos");
-  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set +cpos. -', $cqp->error_message)
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: can\'t set +cpos. -', $cqp->error_message)
     unless $cqp->ok;
   $cqp->exec("set Timing on");
-  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t enable timing display. -', $cqp->error_message)
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: can\'t enable timing display. -', $cqp->error_message)
     unless $cqp->ok;
   # BUG? is this necessary with sgml?
   # set easy-to-parse left and right match delimiters
   $cqp->exec("set ld '::--:: ';");
-  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set ld. -', $cqp->error_message)
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: can\'t set ld. -', $cqp->error_message)
     unless $cqp->ok;
   $cqp->exec("set rd ' ::--::';");
-  return $CWB::Model::exception_handler->('CWB::Model Exception: can\'t set rd. -', $cqp->error_message)
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: can\'t set rd. -', $cqp->error_message)
     unless $cqp->ok;
   $self->cqp($cqp);
 
@@ -87,25 +88,41 @@ sub new {
 
 sub _check_options {
   my $self = shift;
+
   # check all options here with corpus for sanity and reset faulty to defaults
-  $self->pagesize or $self->pagesize(25);
-  # $self->struct_constraint_struct and grep { $_ eq $self->struct_constraint_struct } @{$self->corpus->structures}
-  #   and $self->struct_constraint_struct =~ m/\w+_\w+/
-  #     or $self->struct_constraint_struct(undef);
-  # $self->align_query_corpus and $self->corpus->alignements and
-  #   grep { $_ eq $self->align_query_corpus } @{$self->corpus->alignements}
-  #     or $self->align_query_corpus(undef);
+  my @errors = ();
+
+  push(@errors, 'pagesize') unless $self->pagesize and $self->pagesize =~ m/[0-9]{1,4}/;
+  push(@errors, 'struct_constraint_struct')
+    if $self->struct_constraint_struct
+      and not (grep { $_ eq $self->struct_constraint_struct } @{$self->corpus->structures}
+	       and $self->struct_constraint_struct =~ m/\w+_\w+/);
+  push(@errors, 'align_query_corpus')
+    if (($self->align_query_corpus and not $self->corpus->alignements) or
+	($self->align_query_corpus
+	 and not ($self->align_query_corpus eq '*' or grep { $_ eq $self->align_query_corpus } @{$self->corpus->alignements})));
+  # BUG MISSING:
   # $self->l_context and $self->l_context =~ m/[0-9]+/
   #   or $self->l_context(0);
   # $self->r_context and $self->r_context =~ m/[0-9]+/
   #   or $self->r_context(0);
   # $self->context and $self->context =~ m/[0-9]+/
   #   or $self->context(0);
-  $self->search and grep { $_ eq  $self->search } @{$self->corpus->attributes}
-    or $self->search('word');
-  $self->display
-    and   $self->display =~ m/^kwic|sentences|paragraphs|wordlist$/
-      or $self->display('kwic');
+  # within
+  push(@errors, 'search') unless $self->search and grep { $_ eq  $self->search } @{$self->corpus->attributes};
+  push(@errors, 'show: should be an array') unless ref($self->show) eq 'ARRAY';
+  if ($self->show eq 'ARRAY') {
+    my %attrs = map { $_ => 1 } @{$self->corpus->attributes};
+    foreach (@{$self->show}) {
+      push(@errors, "show: $_ is not an attribute")
+	unless $attrs{$_};
+    }
+  }
+  push(@errors, 'display') unless $self->display and $self->display =~ m/^kwic|sentences|paragraphs|wordlist$/;
+
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: Query received illegal options: ' . join (', ', @errors))
+    if @errors;
+  return 1;
 }
 
 sub _mangle_query {
@@ -164,7 +181,8 @@ sub run {
   $self->exception("No queriable corpus passed to CWB::Model::Query: aborting run. ")
     and return
       unless ref $self->corpus and $self->corpus->isa('CWB::Model::Corpus::Filebased');
-  $self->_check_options;
+  my $error = $self->_check_options;
+  return $error if ref $error;
 
   my $query_start_time = Time::HiRes::gettimeofday();
 
@@ -523,7 +541,7 @@ sub undump {
 
 sub exception {
   shift;
-  return $CWB::Model::exception_handler->('CWB::Model Exception: ' . shift, @_);
+  return $CWB::Model::exception_handler->('CWB::Model::Query Exception: ' . shift, @_);
 }
 
 1;
