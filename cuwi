@@ -258,6 +258,8 @@ get "/:corpus/search" => sub {
 	  and $corpus and $corpus->isa('CWB::Model::Corpus');
 
   # sanitize parameters, set defaults (perhaps redirect)
+  # NASTY - we now have controller params and these, and some parts
+  #         use ones or the others - cleanup
   my %params;
   my %c_attributes = map { $_ => 1 } @{$corpus->attributes};
   my %c_structures = map { $_ => 1 } @{$corpus->structures};
@@ -295,6 +297,9 @@ get "/:corpus/search" => sub {
   } else {
     $params{show} = ['word'];
   }
+  #NASTY - used in tabulator and match templates
+  # should be using result
+  $self->param(show => $params{show});
   if ($self->param('align')) {
     $params{align} = ref $self->param('align') eq 'ARRAY' ?
       $self->param('align') : [ $self->param('align') ] ;
@@ -302,7 +307,12 @@ get "/:corpus/search" => sub {
   }
   $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
   $params{display} = $self->param('display');
-  $params{display} = 'kwic' unless $params{display} =~ m/^kwic|paragraphs|sentences|wordlist$/;
+  #NASTY - used in tabulator and match templates
+  # should be using result
+  unless ($params{display} and $params{display} =~ m/^kwic|paragraphs|sentences|wordlist$/) {
+    $params{display} = 'kwic';
+    $self->param(display => 'kwic');
+  }
   $params{startfrom} = $self->param('startfrom') || 1;
   $params{startfrom} = 1 unless $params{startfrom} =~ m/[0-9]+/
 		     and $params{startfrom} >= 1
@@ -331,6 +341,7 @@ get "/:corpus/search" => sub {
   } else {
     $self->app->log->error("Query failed."); #handle fail
     $self->render( text=>'Query failed.' );
+    return;
   }
 
   if ($self->param('cpos') and $self->param('cpos') =~ m/^\d+$/) {

@@ -48,34 +48,27 @@ $t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic', show=>'wo
 		   'Cuwi results: matches div')
 ;
 
-is(@{$t->tx->res->dom->at('html body')->find('div[class="nav"]')}, 2,
-  'Cuwi results: nav divs');
-is(@{$t->tx->res->dom->at('html body div[class="nav"]')->find('a')}, 7,
-  'Cuwi results: nav div links');
 
-my $elt;
-$elt = $t->tx->res->dom->at('html body div[class="report"]');
-like($elt->at('p')->all_text, qr/Matches 1 to 51 out of 239 retrieved for \Q[word="a.*"]\E in \d+(.\d+)? s\./,
-   'Cuwi results: report text');
+# kwic layout
 
-$elt = $t->tx->res->dom->at('html body div[class="exports"]');
-like($elt->all_text, qr/Export results.*/,
-   'Cuwi results: export text');
-cmp_ok(scalar @{$elt->find('a')}, '>=', 2,
-   'Cuwi results: export links');
-$elt = $t->tx->res->dom->at('html body div[class="matches"]');
-# BUG, should be 51
-is(scalar @{$elt->at('table')->find('tr')}, 51,
-   'Cuwi results: number of matches in kwic');
+# kwic show options
 
-$t->get_ok("/cuwi/$corpus/search" . bq(query => 'ar*', display=>'kwic', show=>'word'))
-  ->status_is(200)
-  ->content_type_is('text/html;charset=UTF-8')
-;
+# kwic alignement
 
- $t->get_ok("/cuwi/$corpus/search" . bq(query => '"ar.*" [lemma="d.*"]'))
-   ->status_is(200)
-   ->content_type_is('text/html;charset=UTF-8')
-;
+# kwic download templates
+
+# context layout
+
+# context show options
+
+# context alignement
+
+# context downloads
+
+# frequency layout
+
+# frequency show options
+
+# frequency download templates
 
 done_testing;

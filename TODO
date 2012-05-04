@@ -1,8 +1,8 @@
  -*- outline -*-
 
-
 * CWB::Model BUGS:
 
+** Paging: displays 1 match more than pagesize
 ** Escapes for ?, handling for single "
 ** Check query mangling in detail
 ** Bail out gracefully on faulty corpora:
@@ -65,15 +65,21 @@
 
 ** wordlist -> ignoremeta in links disables ignorecase
 ** wordlist: quote metacharacters in string links: check/test
-** classes: sanitize with the virtual corpus before sending
+** classes: sanitize with the virtual corpus before sending (done?)
+** fix controller params / %params ambiguity in controller
+   (probably unify names, fix values with redirect and pass to model
+   through a filter - setting params is proven to work ok
+   use flash to pass a message about fixing params)
 ** fix wierd behavior with last page on \. search on imp-goo
-** move export modules in eval encapsualtion and handle exceptions
+** move export modules in and eval encapsualtion and handle exceptions
+** make export modules work asynchroniously
 ** disable context links for biggest display mode (sentence or paragraph)
-** sanitize can't/does not work (readonly??) - tests + better fix
 ** make label and checkbox unbreakable in attributes
-   (css?)
+   (css? span? drop &nbsp;)
 ** possibly closures for exception handling are buggy
    - should rethrow the exception and catch it in webapp?
+   - or just check for return value?
+   - make a nice exception page or part of page for fatals
    - find a way to test all of this
 
 * Web interface
@@ -124,18 +130,23 @@
 *** virtual config errors
 *** t/01_registry.t-23-# test for non-existing registry
 *** 01 tests for multiple registry directories
-*** 01 broken registriy files, missing info files
+*** 01 tests for ->registry accessor
+*** 01 registry update and reloading
+*** 01 broken registry files, missing info files
 *** 01 exception handling
 *** 01 introduce exceptions in tests
 *** 02 infofile: peer corpora/alignement
+*** 03 query: faulty options
 *** 05 result: display tests (show, all/sample)
-*** 05 query/result encoding roundtrip (in queries and all display modes
+*** 05 query/result encoding roundtrip (in queries and all display modes)
+*** 05 result: one too many hit in result pages
 *** 05 result: check number of hits against 2 or more pages for 0-based page offsets
 *** 06 result: alignement, alignement encoding
 
 ** CUWI Webapp tests
 *** config file parsing
-*** config file errors
+*** config file errors: consistency
+*** perl as config format
 *** export module detection (use_ok vs. loader?)
 *** export options working
 *** all layouts (to enable template hacking)
@@ -156,13 +167,22 @@
 
 * Release-critical
 
+** cuwi growing and cleanup
 ** spook stuff, multicorpora
-** tests
-** colocations MI3 LL
-** missing tabular download formats
-** max_size, max_query_time
+** default info file processing
+** decent test coverage
+** logo
+** max_size, max_query_time in config
 ** I18n
+** colocations MI3 LL
+   http://nlp.stanford.edu/fsnlp/promo/colloc.pdf
+   http://nlp.stanford.edu/fsnlp/
+** missing tabular download formats
 ** documentation
+   especially:
+*** config
+*** registries and info files
+*** CWB::Model API
 
 * Future:
 ** corpus groups
@@ -180,4 +200,9 @@ verb within 3 words) or by another CQP query.  This could easily be
 implemented using "set keyword" and subqueries in CQP, but the results
 would have to be stored as saved queries (because they can't easily be
 reproduced when they're dropped from the cache).
-
+** treebank view
+** admin section:
+*** corpus building
+*** ad-hoc corpora
+*** corpus building toolchain: ToTaLe plugin etc.
+*** wordnet API, slownet plugin
