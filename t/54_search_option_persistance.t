@@ -13,6 +13,13 @@ $ENV{MOJO_HOME} = "$FindBin::Bin/../";
 $ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.json";
 require "$ENV{MOJO_HOME}cuwi";
 
+# get info on testing corus
+use CWB::Model;
+my $rg = 't/corpora/registry';
+my $m = CWB::Model->new(registry => $rg);
+my $corpus = 'cuwi-fr';
+my $c = ${$m->corpora}{$corpus};
+
 my $t = Test::Mojo->new();
 $t->app->log->level('error');
 
@@ -32,21 +39,27 @@ sub bq {
   return $query;
 }
 
-my $corpus = 'cuwi-fr';
-$t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic', show=>'word', show=>'tag'))
+$t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*'))
   ->status_is(200)
   ->content_type_is('text/html;charset=UTF-8')
-  ->element_exists('html body h2',
-		   'Cuwi results: h2')
-  ->element_exists('html body div[class="form"]',
-		   'Cuwi results: form div')
-  ->element_exists('html body div[class="report"]',
-		   'Cuwi results: report div')
-  ->element_exists('html body div[class="exports"]',
-		   'Cuwi results: export div')
-  ->element_exists('html body div[class="matches"]',
-		   'Cuwi results: matches div')
+  ->element_exists('html body div[class="form"] form',
+		   'Cuwi form options: form')
 ;
+my $form = $t->tx->res->dom->at('html body div[class="form"] form');
+$DB::single = 2;
+my @search = @{$form->find('input[name="search"]')->each( sub { shift->{value}; } )};
+is(scalar @search, scalar @{$c->attributes},
+  'Cuwi form options: number or show radio buttons');
+is(($form->at('input[name="search"][checked]') and $form->at('input[name="search"][checked]')->{value}), 'word',
+  'Cuwi form options: default search radio button checked');
+my @show = @{$form->find('input[name="show"]')->each( sub { shift->{value}; } )};
+is(scalar @show, scalar @{$c->attributes},
+  'Cuwi form options: number or search check boxes');
+is(($form->at('input[name="show"][checked]') and $form->at('input[name="show"][checked]')->{value}), 'word',
+  'Cuwi form options: default show checkbox checked');
+
+
+done_testing;
 
 
 # kwic layout
@@ -71,4 +84,3 @@ $t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic', show=>'wo
 
 # frequency download templates
 
-done_testing;
