@@ -833,7 +833,7 @@ __DATA__
 %    }
 %   }
  <p>
-  <span class="attlabel"><%== $tc->([[$self->param('show')]]); %></span>
+  <span class="attlabel"><%== $tc->([$self->param('show')]); %></span>
   <%== $tc->($m->{left}); %>
   <span class="match"><%== $tc->($m->{match}); %></span>
   <%== $tc->($m->{right}); %>
