@@ -63,6 +63,10 @@
 
 * Web interface BUGS
 
+** broken view display in detailed view
+** missing "not" for structural constraint
+** _token split bug with 22/24
+   http://localhost:3000/cuwi/gfida/search?query=tajkun&search=lemma&within=s&in-struct=text_title&struct-query=Demokracija&contextsize=7&display=kwic&listing=all&size=50&startfrom=1&sort_a=none&sort_a_att=word&sort_a_order=ascending&sort_a_direction=natural
 ** wordlist -> ignoremeta in links disables ignorecase
 ** wordlist: quote metacharacters in string links: check/test
 ** classes: sanitize with the virtual corpus before sending (done?)
