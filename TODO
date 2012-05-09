@@ -204,6 +204,8 @@ verb within 3 words) or by another CQP query.  This could easily be
 implemented using "set keyword" and subqueries in CQP, but the results
 would have to be stored as saved queries (because they can't easily be
 reproduced when they're dropped from the cache).
+** CEQL parser
+** CQI interface
 ** treebank view
 ** admin section:
 *** corpus building

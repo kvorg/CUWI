@@ -1,13 +1,15 @@
-package CWB::Model:ParamValidator;
+package CWB::Model::ParamValidator;
 
 use strict;
 use warnings;
+use feature qw(switch say);
+
 use base 'Mojolicious::Plugin';
-
-our $VERSION = '0.0001';
-
 use Mojo::ByteStream;
 use Carp qw(croak cluck);
+use Scalar::Util  qw(looks_like_number blessed);
+
+our $VERSION = '0.01';
 
 sub register {
     my ($self, $app) = @_;
@@ -31,25 +33,197 @@ sub register {
 		   _process($c, => 'normalize', @_);
 		 }
 	);
-
-sub _process {
-    my ($c, $mode) = (shift, shift);
-    my $spec = pop;
-    croak 'ParamValidator called without a spec hash'
-      unless ref $spec eq 'HASH';
-    croak 'ParamValidator called without an even option list'
-      if scalar @_ % 2;
-    my $opts = { @_ };
-    my $errors = [];
-
-    # scope logic
-    # foreach (+param) {
-    # my $value = _validate ( default, spec );
-    # action logic (modify/assign/delete values, collect errors)
-    # result logic
 }
 
+sub _process {
+  my ($c, $mode) = (shift, shift);
+  my $spec = pop;
+  croak 'ParamValidator called without a spec hash'
+    unless ref $spec eq 'HASH';
+  croak 'ParamValidator called without an even option list'
+    if scalar @_ % 2;
+  my $opts = { @_ };
+  my $errors = [];
+  my $status = {};
+
+  # scope
+  my $scope;
+  my $stash = 'CWB::Model::ParamValidator::Stash';
+  given ($opts->{scope}) {
+    $scope = $c->params                  when 'param';
+    $scope = $c->req->params             when 'req';
+    $scope = $c->req->url->query->params when 'get';
+    $scope = $stash->new($c)             when 'stash';
+    $scope = $c->params                  ; #default
+  }
+
+
+  # validate
+  foreach my $p ($scope->param) {
+    # default
+    my $s = _merge_spec($p=>$opts->{defaults}, $spec)
+      if exists $opts->{defaults};
+    my $value = _validate ( $p => $scope->param($p), $s, $errors, $status);
+  # action logic (modify/assign/delete values, collect errors)
+  # check required
+  # result logic
+  }
+}
+
+
 sub _validate {
+  my ($self, $p, $v, $s, $e, $status) = @_;
+
+  $v = $s->{pre}->(@_) if exists $s->{pre} and ref $s->{pre} eq 'CODE';
+
+  #promote
+  if ($s->{promote} and not (ref $v and ref $v eq  $s->{promote}) ) {
+    if ( not ref $v) {
+      my $code;
+      given ($s->{promote}) {
+	$v = [ $v ]      when 'ARRAY';
+	$v = { $v => 1 } when /c?HASH/;
+	$code = "$v" and $v = sub { eval($code)  }
+	  when 'CODE';
+      }
+    } elsif (ref $v eq 'HASH' and $s->{promote} eq 'ARRAY')   {
+      $v= [ map { $_ => $v->{$_} } keys %$v ]
+    } elsif (ref $v eq 'ARRAY' and $s->{promote} eq 'HASH') {
+      if (not scalar @$v % 2) {
+	$v = [ map { $_ => $v->{$_} } keys %$v ]
+      }
+    } elsif (ref $v eq 'ARRAY' and $s->{promote} eq 'cHASH') {
+      my $hash = {};
+      no warnings;
+      $hash->{$_}++ foreach @$v;
+      $v = $hash;
+    } elsif (ref $v eq 'ARRAY' and $s->{promote} eq 'CODE') {
+      { my $code = join("\n" . @$v); $v = sub { eval($code) } }
+    }
+  }
+
+  #type
+  given ($s->{type}) {
+    # references
+    when ('ref') {
+      push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
+	unless ref $v
+    }
+    when (/ARRAY|HASH|CODE/) {
+      push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
+	unless ref $v and ref $v eq $_->{type}
+      }
+    when ('scalar') {
+      push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
+	if ref $v
+      }
+    default { 
+      push @$e, "$p: unknown type  $s->{type}" and $status->{$p} = 1
+    }
+  }
+
+  #value
+  my $vv;
+  $vv= [ @$v ] if (ref $v eq 'ARRAY');
+  $vv= [ values %$v ] if (ref $v eq 'HASH');
+  $vv= [ $v ] unless ref;
+  foreach my $v (@$vv) {
+    given ($s->{value}) {
+      # references
+      when ('ref') {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  unless ref $v
+	}
+      when (/ARRAY|HASH|CODE/) {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  unless ref $v and ref $v eq $_->{value}
+	}
+      when ('blessed') {
+	push @$e, "$p: not of type $s->{value}"  and $status->{$p} = 1
+	  unless blessed $v
+	}
+      # scalars
+      when ('scalar') {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  if ref $v
+	}
+      when ('boolean')
+      { 1 }
+      when ('true') {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  unless $v
+	}
+      when ('true') {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  unless $v =~ m/\w+/
+	}
+      #numbers
+      when ('number') {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  unless looks_like_number($v)
+	}
+        when (/^int/) {
+	  push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	    unless looks_like_number($v) and  sprint('%d', $v) == $v
+	  }
+      when ('positive') {
+	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
+	  unless looks_like_number($v) and $v == abs($v)
+	}
+      # default
+      default {
+	push @$e, "$p: unknown type  $s->{value}" and $status->{$p} = 1
+      }
+    }
+
+  #range
+
+  #set
+
+
+  }
+
+  $v = $s->{post}->(@_) if exists $s->{pre} and ref $s->{pre} eq 'CODE';
+
+  # fix actions when not promotin
+  return $v;
+}
+
+
+sub _merge_spec {
+  my ($param, $default, $spec) = @_;
+  return $default
+    unless exists $spec->{param} and ref $spec->{param} eq 'HASH';
+  my $s = {};
+  foreach (keys %{$spec->{param}}, keys %{$default}) {
+    $s->{$_} = undef;
+  }
+  foreach (keys %{$s}) {
+    $s->{$_} = exists $spec->{$_} ? $spec->{$_} : $default->{$_}
+  }
+  return $s;
+}
+
+# stash to param wrapper for scope
+{
+  package CWB::Model::ParamValidator::Stash;
+
+  sub new {
+    my ($this, $c) = @_;
+    return bless { c => $c }, ref $this || $this;
+  }
+
+  sub c { return shift->{c} ; }
+
+  sub param {
+    my $c = shift; #????->{$c};
+    return scalar @_ ? $c->stash(@_) : keys $c->stash   ;
+  }
+
+  sub params { return shift }; #not emulating parsed setter
+
+  sub remove { return delete shift->c->stash->{$_[0]}; }
+
 }
 
 1;
@@ -115,7 +289,7 @@ Note that redirection will not work on 'stash' scope.
 
 Default settings for all parameter specifications. Value is a hash
 reference. See L>/"VALIDATION SPECIFICATION"> for the meaning of
-values. 
+values.
 
 =back
 
@@ -145,6 +319,18 @@ Default type for the parameter value or values. Types are:
 
 =over
 
+=item * C<scalar>
+
+Any non-reference value.
+
+=item * C<ref>
+
+Any reference value.
+
+=item * C<blessed>
+
+Any blessed reference.
+
 =item * C<boolean>
 
 Any true or false value, including undef.
@@ -163,11 +349,7 @@ Positive or negative integer number)
 
 =item * C<positive>
 
-A pozitive integer
-
-=item * C<string>
-
-A any string.
+A positive integer
 
 =item * C<word>
 
@@ -207,7 +389,8 @@ type or promotion method is specified. Acceptable values are:
 
 =item * C<ARRAY>
 
-A single value is promoted to a single member array.
+A single value is promoted to a single member array. A hash is
+promoted to an array of keys and values.
 
 =item * C<HASH>
 
@@ -221,9 +404,25 @@ A single value is enclosed in C<sub { eval("...") }>. This is fragile
 and should only be used as internal convenience with previously vetted
 or internally generated values, obviously.
 
+An array is joined with "\n" to produce a code block.
+
 =item * C<sub {...}>
 
-An anonymous subroutine is specified as the promotor. Caveat emptor.
+An anonymous subroutine is specified as the promotor.  Caveat emptor.
+I
+t is called with the following signature:
+
+  $sub->($validator_class,
+         controller => $controller,
+         name => $parameter_name,
+         value => $parameter_value,
+         type => $any_type_specification_in_force,
+         error => $error_array_ref,
+         )
+
+The subroutine should return the new value. In the case of a problem,
+it should push an error status to the $error_array_ref and return
+undef.
 
 =back
 
@@ -252,7 +451,8 @@ all other tests.
 
 The value of this field is an anonymous subroutine. This subroutine is
 called after any other tests are performed. Its return value is taken
-as the value of the parameter unless the return value is the exception, which throws an exception or invalidates the parameter.
+as the value of the parameter unless the return value is the
+exception, which throws an exception or invalidates the parameter.
 
 =back
 
