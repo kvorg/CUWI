@@ -188,7 +188,7 @@ get "/logout" => sub {
   $self->redirect_to('/' . $config->{root} );
 };
 
-get "/style.css" => 'style';
+get "/style.css" => sub { shift->render_static('cuwi.css'); };
 
 get "/icons/Help.png" => sub { shift->render_static('icons/Help.png'); };
 
@@ -1111,7 +1111,7 @@ V1d1c7g4CkAsACktMVr/poa/VwCWfo5YAkguuV54mSVA9JJr+27+8f8BpF2YMNyl/AkAAAAASUVO
 RK5CYII=
  
 
-@@ style.css.ep
+@@ cuwi.css
 body { font-family: Palatino, Times, serif;
        font-size: 120%;
        background-color: #F0F0F0;
