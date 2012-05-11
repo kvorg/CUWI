@@ -63,6 +63,7 @@
 
 * Web interface BUGS
 
+** config file in places such as /etc/cuwi
 ** broken view display in detailed view
 ** missing "not" for structural constraint
 ** _token split bug with 22/24
