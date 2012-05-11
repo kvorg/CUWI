@@ -71,12 +71,11 @@ sub _process {
   # check required
   }
 
-  $DB::single = 2;
   # result logic
   given ($mode) {
     when ('validate') {
       return undef unless scalar @$errors;
-      warn 'ERRORS' and return $errors;
+      return $errors;
 
     }
   }
@@ -123,7 +122,7 @@ sub _validate {
 	unless ref $v
     }
     when (/ARRAY|HASH|CODE/) {
-      warn "Type triggered.";
+      #warn "Type triggered.";
       push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
 	unless ref $v and ref $v eq $_->{type};
       }

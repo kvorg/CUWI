@@ -25,6 +25,7 @@ app->types->type(xls => 'application/excel');
 my $maxsize = 50000;
 my $maxpagesize = 500;
 
+my $sanitize;   # param sanitization callback
 my $tabulator;  # multi attribute tabulator callback
 my $columnator; # multi attribute tabulator callback for table columns export
 my $urlator;    # conditional anchor generator
@@ -178,7 +179,7 @@ app->log->info("Ready to serve requests.");
 
 under ($config->{root});
 
-get "/" =>'index';
+get "/" => sub { $sanitize->(shift); } =>'index';
 
 get "/logout" => sub {
   my $self = shift;
@@ -258,6 +259,7 @@ get "/:corpus/search" => sub {
 	  and $corpus and $corpus->isa('CWB::Model::Corpus');
 
   # sanitize parameters, set defaults (perhaps redirect)
+  $sanitize->($self); # revert to old logic, ParamValidate in progress
   # NASTY - we now have controller params and these, and some parts
   #         use ones or the others - cleanup
   my %params;
@@ -478,8 +480,8 @@ any "/login/:corpus" => sub {
 
 
 
-# use this to redirect - obsoleted
-my $sanitize = sub {
+# use this to redirect - (migh be obsoleted by ParamValidate)
+$sanitize = sub {
   my $self = shift;
 
  #ALSO:
@@ -490,6 +492,10 @@ my $sanitize = sub {
   $self->param('contextsize', 7)
     unless $self->param('contextsize')
       and '' . $self->param('contextsize') =~ m{[0-9]+};
+  $self->param('show', 'word')
+    unless $self->param('show');
+  $self->param('search', 'word')
+    unless $self->param('search');
   $self->param('size', 50)
     unless $self->param('size')
       and '' . $self->param('size') =~ m{[0-9]+}

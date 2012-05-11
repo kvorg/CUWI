@@ -29,11 +29,13 @@ my $c = Fake::Controller->new(params=> $p);
 
 
 my $v;
+TODO: {
+  local $TODO = 'Rethink and finish ParamValidator';
 $v = CWB::Model::ParamValidator::_process
   ($c, validate => { foo => { type => 'ARRAY' }, num => { type => 'scalar'} } );
 is($v, undef) or diag (Dumper($v));
 $v = CWB::Model::ParamValidator::_process
   ($c, validate => { foo => { type => 'HASH' }, num => { type => 'HASH'} } );
 is($v, undef) or diag (Dumper($v));
-
+}
 done_testing();

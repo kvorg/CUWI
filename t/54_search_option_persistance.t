@@ -46,7 +46,6 @@ $t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*'))
 		   'Cuwi form options: form')
 ;
 my $form = $t->tx->res->dom->at('html body div[class="form"] form');
-$DB::single = 2;
 my @search = @{$form->find('input[name="search"]')->each( sub { shift->{value}; } )};
 is(scalar @search, scalar @{$c->attributes},
   'Cuwi form options: number or show radio buttons');
@@ -55,7 +54,7 @@ is(($form->at('input[name="search"][checked]') and $form->at('input[name="search
 my @show = @{$form->find('input[name="show"]')->each( sub { shift->{value}; } )};
 is(scalar @show, scalar @{$c->attributes},
   'Cuwi form options: number or search check boxes');
-is(($form->at('input[name="show"][checked]') and $form->at('input[name="show"][checked]')->{value}), 'word',
+is(($form->at('div[class="search"]')->find('input[checked]') and $form->at('div[class="search"]')->find('input[checked]')->first->{value}), 'word',
   'Cuwi form options: default show checkbox checked');
 
 
