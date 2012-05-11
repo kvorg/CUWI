@@ -18,7 +18,7 @@ sub register {
     $app->helper(param_invalid =>
 		 sub {
 		   my $c = shift;
-		   _process($c, => 'invalid', @_);
+		   _process($c, => 'validate', @_);
 		 }
 	);
     $app->helper(param_normalize =>
@@ -30,7 +30,7 @@ sub register {
     $app->helper(param_redirect =>
 		 sub {
 		   my $c = shift;
-		   _process($c, => 'normalize', @_);
+		   _process($c, => 'redirect', @_);
 		 }
 	);
 }
@@ -50,41 +50,53 @@ sub _process {
   my $scope;
   my $stash = 'CWB::Model::ParamValidator::Stash';
   given ($opts->{scope}) {
-    $scope = $c->params                  when 'param';
-    $scope = $c->req->params             when 'req';
-    $scope = $c->req->url->query->params when 'get';
-    $scope = $stash->new($c)             when 'stash';
-    $scope = $c->params                  ; #default
+    when (not defined) {$scope = $c->params}
+    when ('param') { $scope = $c->params }
+    when ('req')   { $scope = $c->req->params }
+    when ('get')   { $scope = $c->req->url->query->params }
+    when ('stash') { $scope = $stash->new($c) }
+    default {$scope = $c->params}
   }
-
 
   # validate
   foreach my $p ($scope->param) {
     # default
-    my $s = _merge_spec($p=>$opts->{defaults}, $spec)
+    my $s = $spec->{$p} || undef;
+    $s = _merge_spec($p, $spec, $opts->{defaults}, ) and warn "dafaults"
       if exists $opts->{defaults};
-    my $value = _validate ( $p => $scope->param($p), $s, $errors, $status);
+    my $v = $scope->param($p);
+    my $value;
+    ($value, $errors, $status)  = _validate ( $p => $v, $s, $errors, $status);
   # action logic (modify/assign/delete values, collect errors)
   # check required
+  }
+
+  $DB::single = 2;
   # result logic
+  given ($mode) {
+    when ('validate') {
+      return undef unless scalar @$errors;
+      warn 'ERRORS' and return $errors;
+
+    }
   }
 }
 
 
 sub _validate {
-  my ($self, $p, $v, $s, $e, $status) = @_;
+  my ($p, $v, $s, $e, $status) = @_;
 
-  $v = $s->{pre}->(@_) if exists $s->{pre} and ref $s->{pre} eq 'CODE';
+  $v = $s->{pre}->(@_) and warn "pre" if exists $s->{pre} and ref $s->{pre} eq 'CODE';
 
   #promote
   if ($s->{promote} and not (ref $v and ref $v eq  $s->{promote}) ) {
+    warn "promote";
     if ( not ref $v) {
       my $code;
       given ($s->{promote}) {
-	$v = [ $v ]      when 'ARRAY';
-	$v = { $v => 1 } when /c?HASH/;
-	$code = "$v" and $v = sub { eval($code)  }
-	  when 'CODE';
+	when ('ARRAY')  { $v = [ $v ] }
+	when (/c?HASH/) { $v = { $v => 1 } }
+	when ('CODE')   { $code = "$v" and $v = sub { eval($code)  } }
       }
     } elsif (ref $v eq 'HASH' and $s->{promote} eq 'ARRAY')   {
       $v= [ map { $_ => $v->{$_} } keys %$v ]
@@ -105,13 +117,15 @@ sub _validate {
   #type
   given ($s->{type}) {
     # references
+    when (not defined) { }
     when ('ref') {
       push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
 	unless ref $v
     }
     when (/ARRAY|HASH|CODE/) {
+      warn "Type triggered.";
       push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
-	unless ref $v and ref $v eq $_->{type}
+	unless ref $v and ref $v eq $_->{type};
       }
     when ('scalar') {
       push @$e, "$p: not of type $s->{type}" and $status->{$p} = 1
@@ -130,6 +144,7 @@ sub _validate {
   foreach my $v (@$vv) {
     given ($s->{value}) {
       # references
+      when (not defined) { }
       when ('ref') {
 	push @$e, "$p: not of type $s->{value}" and $status->{$p} = 1
 	  unless ref $v
@@ -185,17 +200,18 @@ sub _validate {
 
   $v = $s->{post}->(@_) if exists $s->{pre} and ref $s->{pre} eq 'CODE';
 
-  # fix actions when not promotin
-  return $v;
+  # fix actions when not promoting
+  return $v, $e, $status;
 }
 
 
 sub _merge_spec {
-  my ($param, $default, $spec) = @_;
+  my ($param, $spec, $default) = @_;
   return $default
-    unless exists $spec->{param} and ref $spec->{param} eq 'HASH';
+    unless exists $spec->{$param} and ref $spec->{$param} eq 'HASH';
   my $s = {};
-  foreach (keys %{$spec->{param}}, keys %{$default}) {
+  $DB::single = 2;
+  foreach (keys %{$spec->{$param}}, keys %{$default}) {
     $s->{$_} = undef;
   }
   foreach (keys %{$s}) {
@@ -217,7 +233,7 @@ sub _merge_spec {
 
   sub param {
     my $c = shift; #????->{$c};
-    return scalar @_ ? $c->stash(@_) : keys $c->stash   ;
+    return scalar @_ ? $c->stash(@_) : keys %{$c->stash}   ;
   }
 
   sub params { return shift }; #not emulating parsed setter
@@ -290,6 +306,11 @@ Note that redirection will not work on 'stash' scope.
 Default settings for all parameter specifications. Value is a hash
 reference. See L>/"VALIDATION SPECIFICATION"> for the meaning of
 values.
+
+=item * C<exclusive>
+
+A parameter not covered by the spec is an error it C<exsclusive> is
+true.
 
 =back
 
