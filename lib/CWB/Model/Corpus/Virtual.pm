@@ -8,8 +8,6 @@ use CWB::Model::Result;
 use Carp qw(croak cluck);
 use Time::HiRes;
 
-our $VERSION = '0.9';
-
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
 has classes => sub { return {}; };

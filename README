@@ -81,9 +81,10 @@ A number of additional features are in the pipeline:
 Additional info:
 ----------------
 
-Documentation can be found in cuwi and CWB::Model pods or man pages.
+Documentation can be found in cuwi and CWB::Model pods or man pages
+(in progress)..
 
-For deployment information, see Mojolicious::Guides::Cookbook.
+For deployment information, see Mojolicious::Guides::Cookbook and INSTALL.
 
 For customization, see Mojolicious::Guides::Rendering and cuwi help inflate.
 

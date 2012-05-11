@@ -60,8 +60,8 @@ See Module::Build for more info.
 
 If you wish to deploy cuwi without installation, you can:
 
- * copy the lib directory, cuwi script and config file to your deployment
-   location
+ * copy the lib/ directory, public/ directory, cuwi script, and config
+   file to your deployment location
  * copy Mojolicious lib directory in the same location
  * adjust PERL5LIB env variable to help cuwi script find its modules
  * copy Mojolicious' hypnotoad script for preforking server support,
@@ -108,18 +108,21 @@ Examples:
 
   (see cuwi help daemon for more options)
 
-* Production mode pre-forking server:
+* Production mode pre-forking server (aka Hypnotoad, see
+Mojolicious::Guides::Cookbook/Hypnotoad for info on configuration,
+and Mojo::Server::Hypnotoad for more info:
 
-    PERL5LIB=./lib cuwi generate hypnotoad # generates hypnotoad.conf
-    # edit hypnotoad.conf and cuwi.json to your leisure
+    # edit cuwi.json to your leisure to configure the serevr
     mkdir log                              # enables logging
     # start pre-forking server:
     PERL5LIB=./lib path-to-mojolicious-bin/hypnotoad cuwi
+    # repeat command to restart (hot-deploy) the server
     # kill preforking server
     kill `cat hypnotoad.pid`
-
-  (see Mojo::Server::Hypnotoad for more info)
 
 For production in other deployment modes such as plackup, plackup with
 modperl, cgi, fastcgi and preforking server behind a proxy (nginx,
 apache), see Mojolicious::Guides::Cookbook.
+
+See doc/examples/cuwi-init.d-fedora for an example of a Fedora
+GNU/Linux init.d script for CUWI running on Hypnotoad.

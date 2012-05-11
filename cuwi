@@ -2,7 +2,7 @@
 use lib qw(/home/jona/Projects-ijs/CQP/lib ./lib /home/jona/Projects-ijs/CQP/lib-extra ./lib-extra);
 use lib qw( /home/jona/usr/cwb/CQP/lib /home/jona/usr/cwb/CQP/mylib /home/jona/usr/cwb/share/perl5 /home/jona/usr/cwb/lib64/perl5 /home/jona/usr/cwb/lib64/perl5/auto );
 
-our $VERSION = '0.9';
+our $VERSION = '0.4';
 use Mojolicious::Lite;
 
 use CWB::Model;

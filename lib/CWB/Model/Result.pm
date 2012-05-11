@@ -2,8 +2,6 @@ package CWB::Model::Result;
 
 use Mojo::Base -base;
 
-our $VERSION = '0.9';
-
 has [qw(query QUERY time distinct cpos next prev reduce table bigcontext corpusname)] ;
 has hitno => 0;
 has pages => sub { return {} } ;

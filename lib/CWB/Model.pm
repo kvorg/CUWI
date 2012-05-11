@@ -13,8 +13,7 @@ use IO::File;
 use CWB::Config;
 use utf8;
 
-
-our $VERSION = '0.9';
+our $VERSION = '0.2';
 
 has registry => sub {
   return $ENV{CORPUS_REGISTRY} ? $ENV{CORPUS_REGISTRY} : $CWB::Config::Registry;
@@ -113,6 +112,7 @@ CWB::Model - CWB registry, corpus, info and query model layer
 
 =head1 SYNOPSIS
 
+*** warning, outdated/incomplete documentation ***
 
   $model = CWB::Model->new;       # instantiate a model
   $mine  = CWB::Model->new( "$ENV{HOME}/corpora/registry" );

@@ -11,8 +11,6 @@ use Encode qw(encode decode);
 use Scalar::Util qw(weaken);
 use Time::HiRes;
 
-our $VERSION = '0.9';
-
 has [ qw(corpus model cqp
 	cpos query
         struct_constraint_struct struct_constraint_query within

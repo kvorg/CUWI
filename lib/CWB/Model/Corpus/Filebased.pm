@@ -6,8 +6,6 @@ use CWB::Model::Query;
 
 use Carp;
 
-our $VERSION = '0.9';
-
 has [qw(file infofile datahome)];
 
 sub new {

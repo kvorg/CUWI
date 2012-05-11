@@ -5,8 +5,6 @@ use Mojo::Base -base;
 use Carp qw(croak cluck);
 use Scalar::Util qw(weaken);
 
-our $VERSION = '0.9';
-
 has [qw(name NAME title model)];
 has [qw(attributes structures alignements peers)] => sub { return [] };
 has [qw(description tooltips stats)]              => sub { return {} };
