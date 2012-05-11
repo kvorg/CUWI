@@ -12,8 +12,8 @@ my $build = Module::Build->new
 		     ],
    license        => 'perl',
    requires       => {
-		      'perl'        => '5.008007',
-		      'Mojolicious' => '1.0',
+		      'perl'        => '5.10.1',
+		      'Mojolicious' => '2.95',
 		      'CWB::CQP'    => 0,
 		     },
    build_requiers => {
