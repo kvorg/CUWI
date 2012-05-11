@@ -4,6 +4,11 @@ use lib qw(./lib ../lib ./lib-extra ../lib-extra);
 use Test::More;
 use Test::Mojo;
 
+BEGIN {
+  $ENV{MOJO_NO_BONJOUR} = $ENV{MOJO_NO_IPV6} = 1;
+  $ENV{MOJO_IOWATCHER}  = 'Mojo::IOWatcher';
+}
+
 $ENV{MOJO_MODE} = 'testing';
 use FindBin;
 $ENV{MOJO_HOME} = "$FindBin::Bin/../";
