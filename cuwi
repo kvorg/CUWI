@@ -8,6 +8,7 @@ use Mojolicious::Lite;
 use CWB::Model;
 
 use Mojo::Loader;
+use Mojo::ByteStream 'b';
 use IO::File;
 use IO::Dir;
 use File::Spec;
@@ -30,6 +31,7 @@ my $tabulator;  # multi attribute tabulator callback
 my $columnator; # multi attribute tabulator callback for table columns export
 my $urlator;    # conditional anchor generator
 my $table_export;
+my $tooltip;    # tooltip generator
 
 my $loader = Mojo::Loader->new;
 my $e = $loader->load('Spreadsheet::Write');
@@ -168,7 +170,6 @@ my $auth = sub {
   }
 };
 
-
 $config->{root} =~ s{^(.*)/$}{$1};
 $config->{root} = 'cuwi' unless $config->{root};
 app->log->info("App web root: '$config->{root}'.");
@@ -190,6 +191,9 @@ get "/logout" => sub {
 get "/style.css" => 'style';
 
 get "/icons/Help.png" => sub { shift->render_static('icons/Help.png'); };
+
+get "/lib/*libfile" => sub { my $c = shift; $c->render_static('lib/' . $c->param('libfile')); };
+
 
 get "/:corpus/frequencies/:att" => sub {
   my $self = shift;
@@ -541,6 +545,22 @@ $urlator = sub {
   return $c->link_to($str, $str);
 };
 
+# $toolitip->($controller, anchor_text=> 'title', 'text');
+# $toolitip->($controller, anchor_text=> 'text');
+$tooltip = sub {
+  my ($c, $anchor, $title, $text);
+  $text = pop;
+  ($c, $anchor, $title) = @_;
+  return $anchor unless $text;
+
+  $c->stash('tooltip_id', 0) unless $c->stash('tooltip_id');
+  $c->stash('tooltip_id', $c->stash('tooltip_id') +1 );
+  my $tid = 'ttip' . $c->stash('tooltip_id');
+  $c->stash('tooltip_data', '') unless $c->stash('tooltip_data');
+  my $ttext = "\n<div id='$tid'>\n <h2>" . ($title ? $title : $anchor) .  "</h2>\n <p>" . $text . "</p>\n</div>\n";
+  $c->stash('tooltip_data', $c->stash('tooltip_data') . $ttext);
+  return (b("<a class='ttip' href='#$tid' rel='#$tid'>$anchor</a>"));
+};
 
 app->start;
 
@@ -984,7 +1004,10 @@ __DATA__
  <head>
   <title>CUWI Search <%= $title ? " $title" : '' =%></title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <link href="<%= '/' . $config->{root} . '/' . 'style.css' %>" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="<%= '/' . $config->{root} . '/style.css' %>"  type="text/css" />
+  <link rel="stylesheet" href="<%= '/' . $config->{root} . '/lib/jquery.cluetip.css' %>" type="text/css" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="<%= '/' . $config->{root} . '/lib/jquery-1.7.1.min.js' %>"%3E%3C/script%3E'));</script>
  </head>
  <body>
  % if ($self->session('username')) {
@@ -1002,7 +1025,10 @@ __DATA__
    <% end %>
  %}
   </h2>
-<%== content %> </body>
+<%== content %>   <script src="<%= '/' . $config->{root} . '/lib/jquery.hoverIntent.js' %>"></script>
+  <script src="<%= '/' . $config->{root} . '/lib/jquery.bgiframe.min.js' %>"></script>
+  <script src="<%= '/' . $config->{root} . '/lib/jquery.cluetip.js' %>"></script>
+</body>
 </html>
 
 @@ icons/Help.png (base64)
