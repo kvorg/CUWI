@@ -5,15 +5,18 @@ use Test::More;
 use Test::Mojo;
 use Mojo::Util 'url_escape';
 
-$ENV{MOJO_MODE} = 'testing';
+BEGIN {
+  $ENV{MOJO_NO_BONJOUR} = $ENV{MOJO_NO_IPV6} = 1;
+  $ENV{MOJO_IOWATCHER}  = 'Mojo::IOWatcher';
+  $ENV{MOJO_MODE} = 'testing';
+}
+
 use FindBin;
 $ENV{MOJO_HOME} = "$FindBin::Bin/../";
 # config does not find the correct testing config file when run from script
 #$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.testing.json";
-$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.json";
-require "$ENV{MOJO_HOME}cuwi";
 
-my $t = Test::Mojo->new();
+my $t = Test::Mojo->new('CWB::CUWI');
 $t->app->log->level('error');
 
 sub bq {

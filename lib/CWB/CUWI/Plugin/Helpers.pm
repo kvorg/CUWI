@@ -18,7 +18,7 @@ sub {
 
   if ($authcorpus and exists $config->{corpora}{AUTH}{$authcorpus} and $config->{corpora}{AUTH}{$authcorpus}{domain} ) {
     unless ($self->session('username')) {
-      $self->$self->log->info("Auth triggered for $authcorpus.");
+      $app->log->info("Auth triggered for $authcorpus.");
       $self->flash(error => "Corpus $authcorpus requires authentication.") and
 	$self->session(redirection => $self->req->url) and
 	  $self->redirect_to($config->{root} . '/login/' . $authcorpus);

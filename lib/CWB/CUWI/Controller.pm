@@ -1,22 +1,11 @@
 package CWB::CUWI::Controller;
 use Mojo::Base 'Mojolicious::Controller';
 
-
-
-# to helpers
-my $tabulator;  # multi attribute tabulator callback
-my $columnator; # multi attribute tabulator callback for table columns export
-my $urlator;    # conditional anchor generator
-my $table_export;
-
-
 sub corpus {
   my $self = shift;
   $self->app->log->info("Got to controller.");
   return 0 unless $self->auth;
 
-  $self->stash->{model}->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
-					  $self->log->error(@_); } );
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 
   $self->app->log->info("Redirecting to registry, corpus init aborted.")
@@ -33,14 +22,12 @@ sub search {
   my $self = shift;
   my $config = $self->app->config;
   my $model = $self->stash('model');
-  my $urlator = sub { $self->app->urlator(@_) };
-  return 0 unless auth($self);
+  $model->install_exception_handler(sub { $self->app->log->error(@_); return @_;} );
+  return 0 unless $self->auth;
 
   # to application config
   my $maxsize = $self->stash('maxsize');
   my $maxpagesize = $self->stash('maxpagesize');
-
-  # BUG: should not allow cpos on virtual corpora
 
   # redirect to peer?
   if ( $self->param('peer')
@@ -51,10 +38,6 @@ sub search {
 
     $self->redirect_to($url . $query);
   }
-
-  # BUG: here?
-  $model->install_exception_handler(sub { $self->stash(cwbexception => [@_]);
-					  $self->log->error(@_); } );
 
   if ($self->param('cpos')) {
     $self->app->log->info('Received cpos query: ' . $self->param('cpos') . ' from ' . $self->tx->remote_address . '.');
@@ -85,7 +68,9 @@ sub search {
   $params{class} = $self->param('class')
     if not $corpus->can('file')
       and $corpus->classes->{class};
-  $params{search} = ( $self->param('search') && $c_attributes{$self->param('search')} ? $self->param('search') : 'word');
+  $params{search} = ( $self->param('search')
+		      && $c_attributes{$self->param('search')}
+		      ? $self->param('search') : 'word');
   $params{within} = $self->param('within')
     if ($self->param('within')
 	and not $self->param('within') eq '-'
@@ -154,7 +139,7 @@ sub search {
 			  'with ' . $result->hitno . ' hits.' );
   } else {
     $self->app->log->error("Query failed."); #handle fail
-    $self->render( text=>'Query failed.' );
+    $self->render( text=>"Query failed: $result" );
     return;
   }
 
@@ -162,7 +147,6 @@ sub search {
     $self->render( template=>'cpos',
 		   result=>$result,
 		   corpus=>$corpus,
-		   ur=>$urlator,
 		 ) ;
   } elsif ($self->param('format') 
 	   and grep { $_ eq $self->param('format') }
@@ -173,7 +157,7 @@ sub search {
       when ('json') { $self->render(json => { %{$result} } ); }
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
-	if ($table_export) {
+	if ($self->stash->{table_export}) {
 	  my $tmpdir = File::Temp->newdir(File::Spec->catdir($config->{tmp}, 'cuwi_tmp_XXXXX'), CLEANUP=>1, );
 	  my $tmpfile = File::Spec->catfile($tmpdir->dirname, 'cuwi_search_results.' . $self->param('format'));
 	  $self->stash(tmpdir => $tmpdir ); # stash it until tx end for cleanup
@@ -245,7 +229,6 @@ sub search {
     $self->render( template=>'search',
 		   result=>$result,
 		   corpus=>$corpus,
-		   table_export=>$table_export,
 		 );
   }
 }

@@ -1,9 +1,26 @@
 #!/usr/bin/env perl
-use lib qw(lib lib-extra);
+use lib qw(lib-extra lib);
+use strict;
+use warnings;
 
-use strict; use warnings;
-use Mojolicious::Commands;
+use File::Basename 'dirname';
+use File::Spec::Functions qw/catdir splitdir/;
 
-# Start commands for application
-Mojolicious::Commands->start_app('CWB::CUWI');
+# Source directory has precedence
+my @base = (splitdir(dirname(__FILE__)), '..');
+my $lib = join('/', @base, 'lib');
+-e catdir(@base, 't') ? unshift(@INC, $lib) : push(@INC, $lib);
+
+# Check if Mojolicious is installed
+die <<FNORD unless eval 'use Mojolicious::Commands; 1';
+It looks like you don't have the Mojolicious framework installed.
+Please visit http://mojolicio.us for detailed installation instructions.
+
+FNORD
+
+# Application
+$ENV{MOJO_APP} ||= 'CWB::CUWI';
+
+# Start commands
+Mojolicious::Commands->start;
 
