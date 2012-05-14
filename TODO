@@ -26,6 +26,8 @@
 
 * CWB::Model
 
+** Add ->next method to result for API, evolve result
+** document query and result
 ** Structure handling in Query:
     structure searches
     structure-based tree view (treebanks)
@@ -63,7 +65,6 @@
 
 * Web interface BUGS
 
-** config file in places such as /etc/cuwi
 ** broken view display in detailed view
 ** missing "not" for structural constraint
 ** _token split bug with 22/24
@@ -89,6 +90,11 @@
 
 * Web interface
 
+** implement maxhits, pagesize, maxpagesize via config
+** add encoding and language to corpus info, test encoding
+** runnig text context (with visible structural tags)
+** imp: sortable frequency lists
+** document config, switch config to general config
 ** change wordlist exporting to divide matches into multiple fields
 ** spook: Templates for query result exports
    missing: oocalc, tab-delmited, corpus position dump, tei/xml,
@@ -105,7 +111,6 @@
    iskanj - use a link
 ** imp: Use click-to pop-up for help
    (via js binding + help at bottom always)
-** imp: sortable frequency lists (via js?)
 ** wordlists: click on frequency number to get conjunction query
 ** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html

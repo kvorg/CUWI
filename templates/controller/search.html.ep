@@ -19,7 +19,7 @@
   </div>
 % if (stash('cwbexception')) {
 <div class="exception">
-%= join(' ', @{stash('cwbexception')});
+%== join('<br>', @{stash('cwbexception')});
 </div>
 % }
 

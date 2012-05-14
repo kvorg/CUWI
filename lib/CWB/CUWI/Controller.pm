@@ -22,7 +22,7 @@ sub search {
   my $self = shift;
   my $config = $self->app->config;
   my $model = $self->stash('model');
-  $model->install_exception_handler(sub { $self->app->log->error(@_); return @_;} );
+  $model->install_exception_handler(sub { $self->app->log->error(@_); $self->stash->{cwbexception} = [@_]; return @_;} );
   return 0 unless $self->auth;
 
   # to application config
@@ -138,7 +138,7 @@ sub search {
 			  sprintf('%0.3f', $result->time) . ' s ' .
 			  'with ' . $result->hitno . ' hits.' );
   } else {
-    $self->app->log->error("Query failed."); #handle fail
+    $self->app->log->error("Query failed: $result."); #handle fail
     $self->render( text=>"Query failed: $result" );
     return;
   }
