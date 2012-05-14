@@ -1,0 +1,15 @@
+% layout 'main', title=>'Login';
+  <div class="form">
+    <%= form_for $self->req->url => ( method => "post") => begin %>
+       Username: <%= text_field 'username', size=>10 %>
+       Password: <%= password_field 'password', size=>20 %>
+      <%= submit_button 'Login' %>
+    <% end %>
+  </div>
+
+% if (stash('error')) {
+  <div class="exception">
+%=   stash('error')
+  </div>
+% }
+

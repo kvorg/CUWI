@@ -1,0 +1,7 @@
+This file documents the revision history for CWB::CUWI package.
+
+0.41 2012-05-15
+  - Expanded CUWI from Mojolicous::Lite to Mojolicious application
+  - Moved support subroutines to helpers or template blocks
+  - Moved bundled files with controller to support installation
+  - Improved documentation for installation, CUWI::Model, config

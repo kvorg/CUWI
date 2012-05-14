@@ -1,0 +1,194 @@
+body { font-family: Palatino, Times, serif;
+       font-size: 120%;
+       background-color: #F0F0F0;
+       padding-bottom: 8ex;
+}
+div.user { font-family: sans-serif; font-size: 50%;   text-align: right; }
+div.search, div.show { margin-left: 3.5em; }
+div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
+div.search > span.label, div.show > span.label { width: 14em; }
+span.ctrl { white-space: nowrap; display: inline; }
+span.form-h-strut { margin-left: 2em; }
+div.show { margin-top: 1ex; }
+div.sort { display: inline-block; vertical-align: text-top; }
+div.case { float: right; padding-left: 1em; }
+span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
+div.exception { margin: 3em; color: Red; }
+
+div.exports {
+  font-size: 80%;
+  margin-bottom: 2ex;
+}
+div.exports > a {
+  font-size: 80%;
+  font-family: sans-serif;
+  text-decoration: none;
+  color: white;
+  background: orange;
+  padding: .35em;
+  margin: .4em;
+  border-radius: .4em;
+}
+
+div.nav   { font-weight: bold; font-size: 80%; }
+div.nav > a.prev   { float: left; }
+div.nav > a.next   { float: right; }
+div.nav > a { padding: .5em; padding-left: 1.5em; padding-right: 1.5em;
+              background-color: #3E3E3E; color: white;
+}
+span.pagelist {
+  padding: .5em;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #DEDEDE;
+  display: block;
+}
+span.pagelist > a {
+  margin-left:  .3em;
+  margin-right: .3em;
+}
+span.pagelist > a.here {
+ color: red;
+}
+div.report p  { text-align: center; }
+div.structure_report  {
+  background-color: white;
+  padding: 0px;
+  width: 80%;
+  margin-left: auto; margin-right: auto;
+  padding: .4em; padding-bottom: .6em; padding-left: .6em;
+  border-left: solid 3px black;
+  border-top: solid 3px black;
+  border-bottom: solid 3px gray;
+  border-right: solid 3px gray;
+  border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
+}
+div.structure_report table  { padding: .5em; background-color: white; width: 100%; margin-left: auto; margin-right: auto; }
+div.structure_report table th { text-align: left; padding-right: 1em; }
+span.attlabel { font-variant:small-caps; font-size: 80%; line-height: 170%; padding-right: 2em; }
+img.preview { display: block; float: left; padding-top: 0pt; padding: 2em; width: 50%; }
+div.matches   { clear: both; }
+div.matches { background-color: white;
+	      width: 98%;
+              padding: 0px;
+	      margin-left: auto; margin-right: auto;
+}
+div.matches p { margin: .25em; margin-left: .5em; margin-right: .5em; }
+div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; clear: right;}
+td.subcorpus { font-weight: bold; }
+span.hit  { color: red; font-weight: bold; }
+span.match  { color: red; font-weight: bold; }
+span.no, span.parno   { font-weight: bold; }
+span.parno   { font-weight: bold; vertical-align: top;}
+div.matches td  { white-space: nowrap;}
+div.matches td.head  { white-space: nowrap; text-align: right;
+           padding-left: .3em; padding-right: .3em; }
+div.matches td.head a * { text-align: left; white-space: normal; }
+div.matches td.left  { text-align: right; vertical-align: text-bottom;}
+div.matches td.right { text-align: left;  vertical-align: text-top;}
+div.matches td.match { text-align: center; padding-left: .5em; padding-right: .5em;
+           color: red; font-weight: bold; vertical-align: middle;}
+div.matches td.align { white-space: normal; }
+div.matches td.count  { text-align: right; padding-left: 1em;}
+div.matches tr.total  { font-weight: bold;}
+div.matches tr:nth-child(2n+1) { background-color: #F2F2F2; }
+span.token { display: inline-block }
+span.part { display: block; text-align: left; }
+span.token span.part:nth-child(4n+1) { color: black; }
+span.token span.part:nth-child(4n+2) { color: navy; }
+span.token span.part:nth-child(4n+3) { color: green; }
+span.token span.part:nth-child(4n+4) { color: purple; }
+span.token span.part:nth-child(4n+1) > a { color: black; }
+span.token span.part:nth-child(4n+2) > a { color: navy; }
+span.token span.part:nth-child(4n+3) > a { color: green; }
+span.token span.part:nth-child(4n+4) > a { color: purple; }
+span.match span.token span.part:first-child { color: red; }
+span.hlp span.hlptxt { display: none; }
+span.hlp:hover span.helptxt { display: block; }
+h2 { margin-left: 2em; margin-right: 2em; text-align: center ; }
+h2 + p, div.report, div.corpora { margin-left: 4em; margin-right: 4em; }
+div.form { margin-left: auto; margin-right: auto; width: 36em;
+	   background-color: white;
+	   padding: .4em; padding-bottom: .6em; padding-left: .6em;
+	   border-left: solid 3px black;
+	   border-top: solid 3px black;
+	   border-bottom: solid 3px gray;
+	   border-right: solid 3px gray;
+}
+span.submit { float: right; }
+div.corpora > li {
+  margin-bottom: .2ex;
+  margin-top: .2ex;
+}
+div.description {
+  margin: 3ex;
+  font-size: 0.8em;
+}
+div.description h2 {
+  text-align: left;
+  margin-left: 0px;
+}
+div.description > table.stats {
+  margin-left: 1.5em;
+}
+div.description > table.stats > tr > th {
+  padding-top: .7em;
+  padding-left: 0em;
+}
+div.description table.stats tr td.num {
+  text-align: right;
+}
+div.description table.stats tr td {
+  padding-right: 1em;
+}
+
+/* # tooltips from Alexander Dawson,
+   # http://sixrevisions.com/css/css-only-tooltips/ */
+a.tooltip, a.infobox {
+    border-bottom: 1px dotted #000000; color: #000000; outline: none;
+    cursor: help; text-decoration: none;
+    position: relative;
+    white-space: normal;
+}
+a.ttip, a.infobox {
+    border-bottom: 1px dotted #000000; color: #000000; outline: none;
+    cursor: help; text-decoration: none;
+    white-space: normal;
+}
+a.tooltip span, a.infobox span {
+    display: none;
+    position: absolute;
+}
+a.tooltip:hover span, a.infobox:hover span {
+    display: block;
+    font-weight: normal;
+    border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+    font-family: Calibri, Tahoma, Geneva, sans-serif; font-size: 0.7em;
+    position: absolute; left: 1em; top: 2em; z-index: 99;
+    margin-left: 0; width: 24em;
+}
+a.infobox:hover span {
+    width: 36em;
+}
+a.infobox:hover i.info {
+    display: inline-block;
+    margin-top: 1ex;
+    border: none;
+}
+a.tooltip:hover img, a.infobox:hover img {
+    border: 0; margin: -10px 0 0 -55px;
+    float: left; position: absolute;
+}
+a.tooltip:hover em, a.infobox:hover em {
+    font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
+    display: block; padding: 0.2em 0 0.6em 0;
+}
+.classic  { padding: 0.8em 1em; }
+.custom   { padding: 0.5em 0.8em 0.8em 2em; }
+* html a:hover { background: transparent; }
+.classic  {background: #FFFFAA; border: 1px solid #FFAD33;  }
+.critical { background: #FFCCAA; border: 1px solid #FF3334; }
+.help     { background: #9FDAEE; border: 1px solid #2BB0D7; }
+.info     { background: #9FDAEE; border: 1px solid #2BB0D7; }
+.warning  { background: #FFFFAA; border: 1px solid #FFAD33; }

@@ -1,0 +1,38 @@
+% layout 'main', title=>'in ' . $corpus->name . ' for position ' . $result->cpos ;
+% if (stash('cwbexception')) {
+<div class="exception">
+%= join(' ', @{stash('cwbexception')});
+</div>
+% }
+% if ($result->hits and defined $result->hits->[0]) {
+%  my $m = $result->hits->[0];
+<div class="structure_report">
+  <table>
+  <tr><th>cpos:</th><td><%= $result->cpos %></td></tr>
+%  foreach my $struct (keys %{$m->{data}}) {
+      <tr><th><%= $struct . ':' %></th><td><%= $ur->($m->{data}{$struct}, $self) %></td></tr>
+%   }
+ </table>
+</div>
+<div class="report">
+  <p>Detailed view for corpus position <b><%= $result->cpos %></b> from a query for <span class="querytext"><%= link_to_here {query => $result->query, cpos => undef, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>, retrieved in <%= sprintf('%0.3f', $result->time) %> s.
+  </p>
+</div>
+<div class="matches">
+%   if (exists $config->{corpora}{$corpus->name}{preview}) {
+%    if (exists $m->{data}{$config->{corpora}{$corpus->name}{preview}}) {
+   <a href="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>"><img class="preview" src="<%= $m->{data}{$config->{corpora}{$corpus->name}{preview}} %>" /></a>
+%    }
+%   }
+ <p>
+  <span class="attlabel"><%== $tc->([$self->param('show')]); %></span>
+  <%== $tc->($m->{left}); %>
+  <span class="match"><%== $tc->($m->{match}); %></span>
+  <%== $tc->($m->{right}); %>
+ </p>
+% foreach my $align (keys %{$m->{aligns}}) {
+  <p class="align"><span class="parno"><a href="#" class="tooltip">&nbsp;@&nbsp;<span class="custom help"><em>Alignemt to <%= $align %></em><%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %></span></a></span><span class="align"><%== $tc->($m->{aligns}{$align}); %></span></p>
+% }
+</div>
+%  }
+

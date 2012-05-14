@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+ <head>
+  <title>CUWI Search <%= $title ? " $title" : '' =%></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="<%= '/' . $config->{root} . '/style.css' %>"  type="text/css" />
+  <link rel="stylesheet" href="<%= '/' . $config->{root} . '/lib/jquery.cluetip.css' %>" type="text/css" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="<%= '/' . $config->{root} . '/lib/jquery-1.7.1.min.js' %>"%3E%3C/script%3E'));</script>
+ </head>
+ <body>
+ % if ($self->session('username')) {
+ <div class="user">
+   Logged in as: <b><%= $self->session('username') %></b>. <%= link_to Logout => '/' . $config->{root} . '/logout' %>
+ </div>
+ %}
+  <h2><%= link_to 'index' => begin %>
+    CUWI Search
+  <% end %>
+ % if (param('corpus')) {
+   on
+   <%= link_to '/' . $config->{root} . '/' . param('corpus') => begin %>
+     <%= ${$model->{corpora}}{param('corpus')}->title %>
+   <% end %>
+ %}
+  </h2>
+<%== content %>
+% if (stash('tooltipdata')) {
+  <%= Mojo::ByteStream->new(stash('tooltipdata')) =%>
+% }
+   <script src="<%= '/' . $config->{root} . '/lib/jquery.hoverIntent.js' %>"></script>
+  <script src="<%= '/' . $config->{root} . '/lib/jquery.bgiframe.min.js' %>"></script>
+  <script src="<%= '/' . $config->{root} . '/lib/jquery.cluetip.js' %>"></script>
+  <script src="<%= '/' . $config->{root} . '/lib/cuwi.js' %>"></script>
+</body>
+</html>
+
+

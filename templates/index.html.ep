@@ -1,0 +1,24 @@
+% layout 'main', title=>'Form';
+
+% if ($config->{blurb}) {
+  <p><%== $config->{blurb} %></p>
+% }
+
+% if (stash('cwbexception')) {
+<div class="exception">
+%= join(' ', @{stash('cwbexception')});
+</div>
+% }
+
+<div class="corpora">
+ <h3>Available corpora:</h3>
+ <ul>
+% my $corpora = $model->corpora;
+% foreach my $corpusname ( sort keys %{$corpora} ) {
+%   next if exists $config->{corpora}{OPTIONS}{no_browse}
+%	    and grep { $_ eq $corpusname } @{$config->{corpora}{OPTIONS}{no_browse}} ;
+   <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a> </li>
+% }
+ </ul>
+</div>
+

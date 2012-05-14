@@ -1,0 +1,101 @@
+  <div class="form">
+    <%= form_for "/$config->{root}/" . $corpus->name . "/search", ( method => "get") => begin %>
+    <%= tooltip( 'Query', "The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored for that term. If you want full CQP syntax for the whole query, preceede the query with character ~ followed with a space.") %>:</a>&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
+% if (@{$corpus->peers}) {
+<%= tooltip( 'Corpus', 'In a corpus group, you can send the search to a different corpus in the group by selecting the name of the ecorpus here.') %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %>
+% }
+% if ($corpus->can('classes') and 0 + keys %{$corpus->classes}) {
+    <%= tooltip( 'Subcorpora', 'In a virtual corpus, you can select a subclass of subcorpora here.') %>: <%= select_field 'class', [$self->param('class') ? $self->param('class') : ${$corpus->classnames}[0] , @{$corpus->classnames}] %>
+% }
+    <div class="search">
+    <span class="label"><%= tooltip( Search => 'Search attributes', 'Select the attribute the search is to be performed on. If you need different attributes in the same query, you need to use the CQP syntax. When using CQP syntax, the selected Search attribute is ignored. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).') %>:</a></span>
+% my $checked = 0;
+% foreach my $att (@{$corpus->attributes}) {
+  % my $ttip = $corpus->tooltip(attribute => $att, 'en');
+     <span class="ctrl"><%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
+  % if ($ttip) {
+    <%= tooltip( $att, $ttip) %><% } else {  %>&nbsp;<%= $att %>
+  % }
+    </span>
+% }
+    </div>
+
+% my %withins = map { $_ => 1 } 
+%    grep { not m{\w+[_]\w+} } @{$corpus->structures};
+% if ( keys %withins ) {
+% $self->param('within', 's') unless $self->param('within');
+    <%= tooltip( 'Within', 'Constraint to keep the whole match inside a structural field, such as a sentence or paragraph. \'s\' is the default since it is useful for linguistic queries.') %>: <%= select_field 'within', ['-', keys %withins] %>
+<span class="form-h-strut"></span>
+% }
+     Ignore:
+      <span class="ctrl"><%= check_box_x ignorecase => 1       %> case</span>
+      <span class="ctrl"><%= check_box_x ignorediacritics => 1 %> diacritics</span>
+
+%  my %structs = map { $_ => 1 }
+%    grep { m{\w+[_]\w+} } @{$corpus->structures};
+% if ( keys %structs ) {
+    <div class="structs">
+      <%= tooltip( 'Only where', 'Structural constraint', 'Requires the match to be inside a structural region (xml tag) with the selected attribute matching the constraint. Can be used for selection of a specific text, author or part of speech, depending on corpus markup.') %> <%= select_field 'in-struct', ['-', keys %structs] %>
+      <%= tooltip( 'matches', 'Structural constraint Query', 'Single term query to match structural attribute (XML attribute) value. Rules for treatment of a single CQP regexp (without []) apply.') %>:&nbsp;&nbsp;<%= text_field 'struct-query', size=>24 %>
+    </div>
+% }
+%  my %alignes = map { $_ => 1 } @{$corpus->alignements};
+% if ( keys %alignes ) {
+    <div class="structs">
+    <%= select_field 'not-align', [ [If => 0], [Unless => 1] ] %>
+    <%= tooltip( 'aligned', 'Alignement constraint', 'Requires the aligned region to match (or, alternatively, not match) the constraint. Can be used for excluding unwanted matches based on alignement information. (Regardless if alignement is shown.) Option \'*\' will apply to any existing alignemed corpora.') %> <%= select_field 'in-align', ['-', keys %alignes, '*'] %>
+   <%= tooltip( 'matches', 'Alignement constraint Query', 'Single term query to match algined region. Rules for treatment of a single CQP regexp (without []) apply.') %> :</a>&nbsp;&nbsp;<%= text_field 'align-query', size=>16 %>
+    </div>
+% }
+
+    <div class="show">
+    <span class="label"><%= tooltip( 'Show', 'Show attributes', 'Select which attributes are to be displayed with your search results. If multiple attributes are selected, they will be aligned horizontally and displayed in different colors. The attributes are extracted from the corpus description in the corpus registry (so possibly some are less useful then others).') %>:</span>
+% $checked = 0;
+% foreach my $att (@{$corpus->attributes}) {
+  % my $ttip = $corpus->tooltip(attribute => $att, 'en');
+     <span class="ctrl"><%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
+  % if ($ttip) {
+    <%= tooltip( $att, $ttip) %><% } else {  %>&nbsp;<%= $att %>
+  % }
+   </span>
+% }
+    </div>
+% if (scalar @{$corpus->alignements}) {
+% if ($corpus->can('general_align') and $corpus->general_align) {
+     <%= tooltip( 'Align', 'Display any available alignements.') %>:</a>
+     <span class="ctrl"><%= check_box_x 'align' => 1 %></span>
+% } else {
+     Align:
+% foreach my $align (@{$corpus->alignements}) {
+  % my $ttip; $ttip = ${$model->corpora}{$align}->title if exists ${$model->corpora}{$align};
+     <span class="ctrl"><%= check_box_x 'align' => $align %>
+  % if ($ttip) {
+    <%= tooltip( $align, $ttip) %><% } else {  %>&nbsp;<%= $align %>
+  % }
+  </span>
+%  }
+% }
+ <br />
+%} #alignements
+    <span class="ctrl"><%= tooltip( 'Context tokens', 'Set the number or left and right tokens to be displayed in KWIC (keyword in contex) display mode. Note that punctuation characters are also tokens.') %>: <%= text_field 'contextsize', size=>2, value=>7 %></span>
+    <span class="ctrl"><%= tooltip( 'Display mode', 'Selects the display mode used to display the results.<br /><b>KWIC</b> (keyword in context) displays the results as a table, with the hit in the middle and the selected number of tokens on both sides.<br /><b>Sentences</b> mode displays the whole sentence, as marked in the corpus, for each hit.<br /><b>Paragraphs</b> does the same for paragraphs. Both modes are only available if structural attributes to support them are present in the corpus.<br /><b>Wordlist</b> tabulates the hits and shows the number of occurencies for each hit - to be used with wildcards (\'?\' and \'*\') i.e. to find different word forms occurances.') %>:
+% my @extras = grep { $_ } map { my $s; $s = 'paragraphs' if $_ eq 'p'; $s = 'sentences' if $_ eq 's'; $s; }
+%  @{$corpus->structures};
+ <%= select_field 'display', ['kwic', @extras, 'wordlist'] %>
+ </span>
+    <br />
+    <span class="ctrl"><%= tooltip( 'Listing mode', '<b>Sample</b> displays a random sample of hits. Hit reload to see a different sample. <b>All</b> lists all the hits with result pages.</span>') %>: <%= select_field 'listing', [qw/all sample/] %></span>
+    <span class="ctrl"><%= tooltip( 'Results', 'Sets the number or results in the random sample or per page when all the results are being listed.') %>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span>
+    <br />
+    <%= hidden_field startfrom => 1 %>
+    <%= tooltip( 'Sort', 'Sorting', 'Select a sort criterium: you can select position (match, left - preceeding token and right - following token), content (word or any other positional attribute), order (ascending, descending) and direction (natural - from the start or reversed - from the end of the token).') %>:
+    <div class="sort">
+    <%= select_field 'sort_a',           [qw(none match left right)] %>
+    <%= select_field 'sort_a_att',       $corpus->attributes %>
+    <%= select_field 'sort_a_order',     [qw(ascending descending)] %>
+    <%= select_field 'sort_a_direction', [qw(natural reversed)] %>
+    </div>
+    <span class="submit"><%= submit_button 'Run Query' %></span>
+  <% end %>
+  </div>
+
