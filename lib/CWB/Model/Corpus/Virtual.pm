@@ -7,6 +7,7 @@ use CWB::Model::Result;
 
 use Carp qw(croak cluck);
 use Time::HiRes;
+use POSIX qw(locale_h);
 
 has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
@@ -170,7 +171,6 @@ sub _map_opts {
   foreach (keys %$opts) {
     $opts{$_} = (exists $buts{$_} ? $buts{$_} : $opts->{$_});
   }
-  $DB::single = 2;
   return(%opts);
 }
 
@@ -250,12 +250,47 @@ sub query {
 	$counts{$match}{value} =   $hit->[0];
       }
     }
-    # nasty: copied from query handling
-    @{$result->hits} = map { [$counts{$_}{value}, $counts{$_}{count}] }
-      reverse sort {
-	my $c = ($counts{$a}{count} <=> $counts{$b}{count});
-	$c ? $c : ($b cmp $a )
-	       }  keys %counts;
+    # TODO nasty: copied from query handling
+    {
+      use locale;
+      setlocale(LC_COLLATE, ($self->language ? $self->language : 'en_US') . '.' . $self->Encoding);
+      # wordlist sort
+      # target: match, order: descending/ascending, direction: reversed
+      use Data::Dumper;
+      warn Dumper(\%opts);
+      if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target} =~ m{match}) {
+	my $reverse;
+	$reverse = 1 if $opts{sort}{a}{direction} eq 'reversed';
+	if ($opts{sort}{a}{order} eq 'descending') {
+	  @{$result->hits} = map { [
+				    $counts{$_}{value},
+				    $counts{$_}{count}
+				   ] }
+	    sort {
+	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
+	    }  keys %counts;
+	} else {
+	  @{$result->hits} = map { [
+				    $counts{$_}{value},
+				    $counts{$_}{count}
+				   ] }
+	    reverse sort {
+	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
+	    }  keys %counts;
+	}
+      } else {
+	@{$result->hits} = map { [
+				$counts{$_}{value},
+				$counts{$_}{count}
+			       ] }
+	reverse sort {
+	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
+	  $c ? $c : ($b cmp $a )
+	}  keys %counts;
+      }
+    } # sort
 
     ${$result->pages}{single} = 1;
     ${$result->pages}{this} = 1;
