@@ -257,7 +257,7 @@ sub query {
       # wordlist sort
       # target: match, order: descending/ascending, direction: reversed
       use Data::Dumper;
-      warn Dumper(\%opts);
+      #warn Dumper(\%opts);
       if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target} =~ m{match}) {
 	my $reverse;
 	$reverse = 1 if $opts{sort}{a}{direction} eq 'reversed';

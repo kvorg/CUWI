@@ -34,6 +34,16 @@ has display     => 'kwic';
 has result      => sub { CWB::Model::Result->new };
 has subcorpus   => 0;
 
+# function borrowed from List::Moreutils
+sub _firstidx (&@) {
+    my $f = shift;
+    for my $i (0 .. $#_) {
+        local *_ = \$_[$i];
+        return $i if $f->();
+    }
+    return -1;
+}
+
 sub new {
   my $this = shift;
   my %args = @_;
@@ -345,7 +355,7 @@ sub run {
   }
 
   # sorting
-  if ($self->sort and exists ${$self->sort}{a} and not $self->cpos) {
+  if ($self->sort and exists ${$self->sort}{a} and not $self->cpos and not $self->display eq 'wordlist') {
     $self->exec("set ExternalSort on", 'Could not enable ExternalSort');
     my $sort_cmd = 'sort by ' . ${$self->sort}{a}{att};
     $sort_cmd .= ' %c';
@@ -498,14 +508,19 @@ sub run {
       # target: match, order: descending/ascending, direction: reversed
       if ($self->sort and exists ${$self->sort}{a} and ${$self->sort}{a}{target} =~ m{match}) {
 	my $reverse;
-	$reverse = 1 if ${$self->sort}{a}{direction} eq 'reversed';
+	$reverse = 1 if exists ${$self->sort}{a}{direction}
+	    and ${$self->sort}{a}{direction} eq 'reversed';
+	my $att = _firstidx { $_ eq ${$self->sort}{a}{att} }
+	  @{$self->show};
+	  #@{$result->attributes};
 	if (${$self->sort}{a}{order} eq 'descending') {
 	  @{$result->hits} = map { [
 				    $counts{$_}{value},
 				    $counts{$_}{count}
 				   ] }
 	    sort {
-	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      my $c = ($reverse ? reverse $counts{$b}{value}[0][$att] : $counts{$b}{value}[0][$att]) cmp ($reverse ? reverse $counts{$a}{value}[0][$att] : $counts{$a}{value}[0][$att]);
+#	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
 	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
 	    }  keys %counts;
 	} else {
@@ -514,7 +529,8 @@ sub run {
 				    $counts{$_}{count}
 				   ] }
 	    reverse sort {
-	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      my $c = ($reverse ? reverse $counts{$b}{value}[0][$att] : $counts{$b}{value}[0][$att]) cmp ($reverse ? reverse $counts{$a}{value}[0][$att] : $counts{$a}{value}[0][$att]);
+#	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
 	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
 	    }  keys %counts;
 	}
@@ -552,6 +568,7 @@ sub _tokens {
   return [ map { push @$_, "∅" while scalar @$_ < $_[1]; $_; } # fix missing attrs
 	   map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
 }
+
 
 sub exec {
   my ($self, $command, $error) = @_;
