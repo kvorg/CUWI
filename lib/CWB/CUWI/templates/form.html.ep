@@ -90,7 +90,7 @@
     <%= hidden_field startfrom => 1 %>
     <%= tooltip( 'Sort', 'Sorting', 'Select a sort criterium: you can select position (match, left - preceeding token and right - following token), content (word or any other positional attribute), order (ascending, descending) and direction (natural - from the start or reversed - from the end of the token).') %>:
     <div class="sort">
-    <%= select_field 'sort_a',           [qw(none match left right)] %>
+    <%= select_field 'sort_a',           [qw(order match left right)] %>
     <%= select_field 'sort_a_att',       $corpus->attributes %>
     <%= select_field 'sort_a_order',     [qw(ascending descending)] %>
     <%= select_field 'sort_a_direction', [qw(natural reversed)] %>

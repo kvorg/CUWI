@@ -4,7 +4,7 @@ use Module::Build;
 my $build = Module::Build->new
   (
    dist_name      => 'CWB::CUWI',
-   dist_version_from => 'CWB::CUWI',
+   dist_version_from => 'lib/CWB/CUWI.pm',
    dist_abstract  => 'Corpus Users\' Web Inteface with the CWB::Model backend',
    dist_author    => [
 		      'Jan Jona Javorsek <jan.javorsek@guest.arnes.si>',
@@ -19,7 +19,7 @@ my $build = Module::Build->new
    build_requiers => {
 		      'Software::Licence' => 0,
 		     },
-   script_files   => 'cuwi',
+   script_files   => 'script/cuwi',
    test_files     => 't/*.t',
    sign           => 1,
    dynamic_config => 0,

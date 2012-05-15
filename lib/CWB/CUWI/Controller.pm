@@ -34,7 +34,7 @@ sub search {
        and $self->param('peer') ne $self->param('corpus') ) {
     my $query = $self->req->url->query;
     my $url = '/' . $config->{root} . '/' . $self->param('peer') . '/search?';
-    $self->$self->log->info('Redirecting query to peer ' . $self->param('peer') . '.');
+    $self->app->log->info('Redirecting query to peer ' . $self->param('peer') . '.');
 
     $self->redirect_to($url . $query);
   }
@@ -122,7 +122,7 @@ sub search {
   $params{pagesize} = 50 unless $params{pagesize} =~ m/[0-9]+/
 		     and $params{pagesize} >= 1
 		     and $params{pagesize} <= $maxpagesize;
-  if ( $self->param('sort_a') and $self->param('sort_a') ne 'none') {
+  if ( $self->param('sort_a') and $self->param('sort_a') !~ m{none|order} ) {
     $params{sort}{a}{target}    = $self->param('sort_a');
     $params{sort}{a}{att}       = $self->param('sort_a_att');
     $params{sort}{a}{order}     = $self->param('sort_a_order');

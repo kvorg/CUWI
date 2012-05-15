@@ -12,11 +12,20 @@ use Mojo::Loader;
 use IO::File;
 use IO::Dir;
 use File::Spec;
+use File::Spec::Functions 'catdir';
 use File::Temp;
+use File::Basename 'dirname';
 use Encode 'decode';
 
 sub startup {
   my $self = shift;
+
+  # Switch to installable home directory
+  $self->home->parse(catdir(dirname(__FILE__), 'CUWI'));
+  # Switch to installable "public" directory
+  $self->static->paths->[0] = $self->home->rel_dir('public');
+  # Switch to installable "templates" directory
+  $self->renderer->paths->[0] = $self->home->rel_dir('templates');
 
   # plugins
   push @{$self->plugins->namespaces}, 'CWB::CUWI::Plugin';
@@ -185,7 +194,7 @@ sub startup {
 	    if ( exists ${$corpus->stats}{freqs}{$self->param('att')} ) {
 	      $self->res->headers->content_type('text/plain; charset=' . $corpus->encoding);
 	      my $ss = Mojolicious::Static->new(root=>$config->{var});
-	      $self->$self->log->info("Serving file " . $ss->root .
+	      $self->app->log->info("Serving file " . $ss->root .
 				      $corpus->name . '.' . $self->param('att') . '.freq');
 	      $ss->serve($self, $corpus->name . '.' . $self->param('att') . '.freq');
 	      $self->rendered;
@@ -212,9 +221,9 @@ sub startup {
 	    my $error = $self->flash('error');
 
 	    if ($username and $password and $auth) { #authenticate and redirect back
-	      $self->app->log->info("Authenticating $username for $domain");
+	      $self->app->log->debug("Authenticating $username for $domain");
 	      if ($config->{DOMAINS}{$domain}{$username} eq $password) {
-		$self->app->log->info("Authenticated $username for $domain - success.");
+		$self->app->log->info("Authentication: $username logged in for $domain.");
 		$self->session('username', $username);
 		$self->session('retry', 0);
 		$self->session('redirection', undef);
@@ -236,6 +245,8 @@ sub startup {
 	    }
 	  }
 	 );
+
+$self->log->info("Templates from : " . join(', ', @{$self->renderer->paths}) . '.');
 
 $self->log->info("Ready to serve requests.");
 

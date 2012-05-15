@@ -14,11 +14,11 @@ sub {
   my $self = shift;
   my $config = $self->app->config;
   my $authcorpus = $self->param('corpus');
-  $self->app->log->info("Authenticating for " . ($authcorpus || 'undef') . ".");
+  $self->app->log->debug("Checking for auth requirements for " . ($authcorpus || 'undef') . ".");
 
   if ($authcorpus and exists $config->{corpora}{AUTH}{$authcorpus} and $config->{corpora}{AUTH}{$authcorpus}{domain} ) {
     unless ($self->session('username')) {
-      $app->log->info("Auth triggered for $authcorpus.");
+      $app->log->debug("Auth triggered for $authcorpus.");
       $self->flash(error => "Corpus $authcorpus requires authentication.") and
 	$self->session(redirection => $self->req->url) and
 	  $self->redirect_to($config->{root} . '/login/' . $authcorpus);

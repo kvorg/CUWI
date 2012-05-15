@@ -10,6 +10,7 @@ use Carp;
 use Encode qw(encode decode);
 use Scalar::Util qw(weaken);
 use Time::HiRes;
+use POSIX qw(locale_h);
 
 has [ qw(corpus model cqp
 	cpos query
@@ -489,8 +490,36 @@ sub run {
       $counts{$matchkey}{value} = _tokens($match, $attrs);
       $counts{$matchkey}{data} = [$match, $attrs] if $self->subcorpus;
     }
+    # TODO: simplify/group if statements
     if ( not $self->subcorpus) {
-      @{$result->hits} = map { [
+      use locale;
+      setlocale(LC_COLLATE, ($self->corpus->language ? $self->corpus->language : 'en_US') . '.' . $self->corpus->Encoding);
+      # wordlist sort
+      # target: match, order: descending/ascending, direction: reversed
+      if ($self->sort and exists ${$self->sort}{a} and ${$self->sort}{a}{target} =~ m{match}) {
+	my $reverse;
+	$reverse = 1 if ${$self->sort}{a}{direction} eq 'reversed';
+	if (${$self->sort}{a}{order} eq 'descending') {
+	  @{$result->hits} = map { [
+				    $counts{$_}{value},
+				    $counts{$_}{count}
+				   ] }
+	    sort {
+	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
+	    }  keys %counts;
+	} else {
+	  @{$result->hits} = map { [
+				    $counts{$_}{value},
+				    $counts{$_}{count}
+				   ] }
+	    reverse sort {
+	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
+	    }  keys %counts;
+	}
+      } else {
+	@{$result->hits} = map { [
 				$counts{$_}{value},
 				$counts{$_}{count}
 			       ] }
@@ -498,6 +527,7 @@ sub run {
 	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
 	  $c ? $c : ($b cmp $a )
 	}  keys %counts;
+      }
     } else { #subcorpus query does not sort (saves time)
       @{$result->hits} = map { [
 				$counts{$_}{value},
