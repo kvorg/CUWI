@@ -78,14 +78,15 @@ div.matches table { padding: .5em; background-color: white; margin-left: auto; m
 td.subcorpus { font-weight: bold; }
 span.hit  { color: red; font-weight: bold; }
 span.match  { color: red; font-weight: bold; }
-span.no, span.parno   { font-weight: bold; }
-span.parno   { font-weight: bold; vertical-align: top;}
 div.matches td  { white-space: nowrap;}
-div.matches td.head  { white-space: nowrap; text-align: right;
+div.matches td.head  { white-space: nowrap; text-align: center;
            padding-left: .3em; padding-right: .3em; }
-div.matches td.head a * { text-align: left; white-space: normal; }
-div.matches td.left  { text-align: right; vertical-align: text-bottom;}
-div.matches td.right { text-align: left;  vertical-align: text-top;}
+div.matches td.head span.no, div.matches td.head span.parno   { font-weight: bold; text-align: center; font-size: 80%;}
+div.matches td.head span.parno   { font-weight: bold; vertical-align: top;}
+div.matches td.head > a.itip { display: block; font-size: 60%; text-align: left; white-space: nowrap; }
+div.matches td.head span.infotip { text-align: left; white-space: nowrap; }
+div.matches td.left  { text-align: right; vertical-align: middle;}
+div.matches td.right { text-align: left;  vertical-align: middle;}
 div.matches td.match { text-align: center; padding-left: .5em; padding-right: .5em;
            color: red; font-weight: bold; vertical-align: middle;}
 div.matches td.align { white-space: normal; }

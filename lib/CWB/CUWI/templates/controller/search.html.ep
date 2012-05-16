@@ -52,13 +52,14 @@
 %  }
     <tr>
      <td class="head"><span class="no">
-<%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<span class="custom help"><em>Structural Info</em>
+<%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
+     <%= infotip $m, 'Structural Info' => begin %>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
 %   }
-     <br /><i class="info">Click for detailed view.</i>
-     </span><% end %></span></td>
+     <br /><i>Click result number for detailed view.</i>
+      <% end %>
      <td class="left"><%== tabulator($m->{left}); %></td>
      <td class="match"><span class="match"><%== tabulator($m->{match}); %></span></td>
      <td class="right"><%== tabulator($m->{right}); %></td>
@@ -75,7 +76,13 @@
 %  foreach my $m (@{$result->hits}) {
     <p>
      <span class="parno"><%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
-     <%= infotip($m, 'Structural Info') =>
+     <%= infotip $m, 'Structural Info' => begin %>
+      <b>cpos:</b> <%= $m->{'cpos'} %>
+%   foreach my $struct (keys %{$m->{data}}) {
+      <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
+%   }
+     <br /><i>Click result number for detailed view.</i>
+      <% end %>
      <%== tabulator($m->{left}); %>
      <span class="match"><%== tabulator($m->{match}); %></span>
      <%== tabulator($m->{right}); %>
