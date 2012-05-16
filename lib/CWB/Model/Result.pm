@@ -8,6 +8,16 @@ has hitno => 0;
 has pages => sub { return {} } ;
 has [qw(hits attributes aligns peers)]  => sub { return [] } ;
 
+# function borrowed from List::Moreutils
+sub _firstidx (&@) {
+    my $f = shift;
+    for my $i (0 .. $#_) {
+        local *_ = \$_[$i];
+        return $i if $f->();
+    }
+    return -1;
+}
+
 sub pagelist {
   my $self = shift;
   return [ 1 ] if ${$self->pages}{single} ; #shortcut
@@ -85,56 +95,91 @@ sub page_setup {
   return ${$result->pages}{this};
 }
 
-1;
-__END__
 # $r->sort( target=>'match', order=>'ascending', direction=>'reversed')
 sub sort {
-    my $self = shift;
-    cluck('CWB::Model::Result::sort() called with no sort arguments, skipping') and return unless scalar @_;
-    cluck('CWB::Model::Result::sort() called with uneven arguments, skipping') and return
-	if scalar @_ % 2;
-    my %opts = @_;
-      if ($opts{target} =~ m{match}) {
-	my $reverse;
-	$reverse = 1 if $opts{direction} eq 'reversed';
-	if ($opts{order} eq 'descending') {
-	  @{$result->hits} = map { [
-				    $counts{$_}{value},
-				    $counts{$_}{count}
-				   ] }
-	    sort {
-	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
-	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
-	    }  keys %counts;
-	} else {
-	  @{$result->hits} = map { [
-				    $counts{$_}{value},
-				    $counts{$_}{count}
-				   ] }
-	    reverse sort {
-	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
-	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
-	    }  keys %counts;
-	}
-      } else {
-	@{$result->hits} = map { [
-				$counts{$_}{value},
-				$counts{$_}{count}
-			       ] }
-	reverse sort {
-	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
-	  $c ? $c : ($b cmp $a )
-	}  keys %counts;
-      }
-    } else { #subcorpus query does not sort (saves time)
-      @{$result->hits} = map { [
-				$counts{$_}{value},
-				$counts{$_}{count},
-			       	$counts{$_}{data},
-			       ] }
-	keys %counts;
-    }
+  my $self = shift;
 
+  # check options
+  cluck('CWB::Model::Result::sort() called with no sort arguments, skipping') and return unless scalar @_;
+  cluck('CWB::Model::Result::sort() called with uneven arguments, skipping') and return
+    if ( (scalar @_) % 2);
+
+  my %opts = @_;
+
+  croak('CWB::Model::Result::sort() called with att => ' . $opts{att} . ', which does not exist in the result set') 
+    unless join(' ', @{$self->attributes->[0]}) =~ m/$opts{att}/;
+  croak('CWB::Model::Result::sort() called with target => ' . $opts{target} . ', which is not a legal target (order, left, match, right)')
+    unless $opts{target} =~ m/order|left|match|right/;
+
+  # this could/chould be property
+  my $wordlist = 1;
+  $wordlist = 0 if ref $self->hits->[0] eq 'HASH';
+
+  croak('CWB::Model::Result::sort() called with att and target => order, which makes no sense')
+    if $opts{att} and  $opts{target} eq 'order';
+  croak('CWB::Model::Result::sort() called with target => ' . $opts{target} . ' on a wordlist')
+    if $opts{target} =~ m{left|right} and $wordlist;
+  cluck('CWB::Model::Result::sort() called unknown direction => ' . $opts{direction} . ', ignoring option')
+    unless $opts{direction} =~ m/reversed|atergo|normal/;
+  cluck('CWB::Model::Result::sort() called unknown order => ' . $opts{order} . ', using default: ascending')
+    and $opts{order} = 'ascending'
+      unless $opts{order} =~ m/descending|ascending/;
+  cluck('CWB::Model::Result::sort() called with target => order and reverse, reverse ignored')
+    if $opts{reverse} and $opts{target} eq 'order';
+
+  my $reverse;
+  $reverse = 1
+    if $opts{direction} eq 'reversed'
+      or $opts{direction} eq 'atergo';
+
+  my $att = 0; #defaults to the first att
+  if ($opts{att}) {
+   $att = _firstidx { $_ eq $opts{att} } @{$self->attributes->[0]};
+  }
+
+  my $t = $opts{target};
+  my $off = 0;
+  $off = -1 if $t eq 'left' and not $reverse;
+  $off = -1 if $t ne 'left' and $reverse;
+
+  # hack to only normalize if required; allows repeated sorts
+  my $x; $x = 7 unless exists $opts{normalize} and  $opts{normalize};
+
+  # do the sort
+
+  if ($opts{target} eq m{order} and $wordlist) {
+    @{$self->hits} =
+      sort {
+	my $c = ( $a->[1] <=> $b->[1]);
+	($c + $x ? $c : ($a->[0][0] cmp $b->[0][0]) );
+      } @{$self->hits};
+    @{$self->hits} = reverse @{$self->hits}
+      if ($opts{order} eq 'descending');
+  } elsif ($opts{target} eq m{order} and not $wordlist) {
+    @{$self->hits} =
+      sort {
+	my $c = ( $a->{cpos} <=> $b->{cpos} );
+	($c + $x ? $c : ( $a->[0][0] cmp $b->[0][0] ) );
+      } @{$self->hits};
+    @{$self->hits} = reverse @{$self->hits}
+      if ($opts{order} eq 'descending');
+  } elsif ($wordlist) {
+    @{$self->hits} =
+      sort {
+	my $c = ($reverse ? reverse $a->[0][$att] : $a->[0][$att]) cmp ($reverse ? reverse $b->[0][$att] : $b->[0][$att]);
+	($c + $x ? $c : ($a->[1] <=> $b->[1]) );
+      } @{$self->hits};
+    @{$self->hits} = reverse @{$self->hits}
+      if ($opts{order} eq 'descending');
+  } else { #not wordlist, not order
+    @{$self->hits} =
+      sort {
+	my $c = ($reverse ? reverse $a->{$t}[$off][$att] : $a->{$t}[$off][$att]) cmp ($reverse ? reverse $b->{$t}[$off][$att] : $b->{$t}[$off][$att]);
+	($c + $x ? $c : ( $a->{cpos} <=> $b->{cpos} ) );
+      } @{$self->hits};
+    @{$self->hits} = reverse @{$self->hits}
+      if ($opts{order} eq 'descending');
+  }
 }
 
 1;

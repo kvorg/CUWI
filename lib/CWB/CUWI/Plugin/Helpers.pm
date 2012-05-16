@@ -124,8 +124,8 @@ sub { #$c is controller, means generate contex links
 
 		  $anchor = $m->{data}{text_title}
 		    if exists $m->{data}{text_title};
-		  $anchor = substr($anchor, 0, 7) . '...'
-		      unless length $anchor < 10;
+		  $anchor = substr($anchor, 0, 11) . '...'
+		      unless length $anchor < 14;
 
 		  $c->stash('infotip_id', 0) unless $c->stash('infotip_id');
 		  $c->stash('infotip_id', $c->stash('infotip_id') +1 );
