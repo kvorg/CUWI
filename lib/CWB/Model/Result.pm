@@ -1,6 +1,7 @@
 package CWB::Model::Result;
 
 use Mojo::Base -base;
+use Carp qw(croak cluck);
 
 has [qw(query QUERY time distinct cpos next prev reduce table bigcontext corpusname)] ;
 has hitno => 0;
@@ -82,6 +83,58 @@ sub page_setup {
     ${$result->pages}{pagesize} = $data{pagesize};
   }
   return ${$result->pages}{this};
+}
+
+1;
+__END__
+# $r->sort( target=>'match', order=>'ascending', direction=>'reversed')
+sub sort {
+    my $self = shift;
+    cluck('CWB::Model::Result::sort() called with no sort arguments, skipping') and return unless scalar @_;
+    cluck('CWB::Model::Result::sort() called with uneven arguments, skipping') and return
+	if scalar @_ % 2;
+    my %opts = @_;
+      if ($opts{target} =~ m{match}) {
+	my $reverse;
+	$reverse = 1 if $opts{direction} eq 'reversed';
+	if ($opts{order} eq 'descending') {
+	  @{$result->hits} = map { [
+				    $counts{$_}{value},
+				    $counts{$_}{count}
+				   ] }
+	    sort {
+	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
+	    }  keys %counts;
+	} else {
+	  @{$result->hits} = map { [
+				    $counts{$_}{value},
+				    $counts{$_}{count}
+				   ] }
+	    reverse sort {
+	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
+	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
+	    }  keys %counts;
+	}
+      } else {
+	@{$result->hits} = map { [
+				$counts{$_}{value},
+				$counts{$_}{count}
+			       ] }
+	reverse sort {
+	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
+	  $c ? $c : ($b cmp $a )
+	}  keys %counts;
+      }
+    } else { #subcorpus query does not sort (saves time)
+      @{$result->hits} = map { [
+				$counts{$_}{value},
+				$counts{$_}{count},
+			       	$counts{$_}{data},
+			       ] }
+	keys %counts;
+    }
+
 }
 
 1;

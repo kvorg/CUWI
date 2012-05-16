@@ -117,6 +117,36 @@ sub { #$c is controller, means generate contex links
 		  return (b("<a class='ttip' href='#$tid' rel='#$tid' title='$title' >$anchor</a>"));
 		});
 
-} #registered
+  $app->helper(infotip =>
+		sub {
+		  my ($c, $m, $title) = @_;
+		  my $anchor = 'Info';
+
+		  $anchor = $m->{data}{text_title}
+		    if exists $m->{data}{text_title};
+		  $anchor = substr($anchor, 0, 7) . '...'
+		      unless length $anchor < 10;
+
+		  $c->stash('infotip_id', 0) unless $c->stash('infotip_id');
+		  $c->stash('infotip_id', $c->stash('infotip_id') +1 );
+		  my $tid = 'itip' . $c->stash('tooltip_id');
+
+		  my $text = Mojo::Template->new;
+		  $text->parse(<<'FNORD');
+% my($m, $tid, $title) = @_
+<span id='$tid' class='infotip'>
+ <em>Structural Info</em>
+ <b>cpos:</b> <%= $m->{'cpos'} %>
+%   foreach my $struct (keys %{$m->{data}}) {
+      <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
+%   }
+   <br /><i class="info">Click on result number for detailed view.</i>
+<span>
+FNORD
+		  warn 'rendered: ' . $text->render($m, $tid, $title);
+		  return (b("<a class='ttip' href='#$tid' rel='#$tid' title='$title' >$anchor</a>". $text->render($m, $tid, $title)));
+		});
+
+} #register
 
 1;
