@@ -501,62 +501,34 @@ sub run {
       $counts{$matchkey}{value} = _tokens($match, $attrs);
       $counts{$matchkey}{data} = [$match, $attrs] if $self->subcorpus;
     }
-    # TODO: simplify/group if statements
-    if ( not $self->subcorpus) {
-      use locale;
-      setlocale(LC_COLLATE, ($self->corpus->language ? $self->corpus->language : 'en_US') . '.' . $self->corpus->Encoding);
-      # wordlist sort
-      # target: match, order: descending/ascending, direction: reversed
-      if ($self->sort and exists ${$self->sort}{a} and ${$self->sort}{a}{target} =~ m{match}) {
-	my $reverse;
-	$reverse = 1 if exists ${$self->sort}{a}{direction}
-	    and ${$self->sort}{a}{direction} eq 'reversed';
-	my $att = _firstidx { $_ eq ${$self->sort}{a}{att} }
-	  @{$self->show};
-	  #@{$result->attributes};
-	if (${$self->sort}{a}{order} eq 'descending') {
-	  @{$result->hits} = map { [
-				    $counts{$_}{value},
-				    $counts{$_}{count}
-				   ] }
-	    sort {
-	      my $c = ($reverse ? reverse $counts{$b}{value}[0][$att] : $counts{$b}{value}[0][$att]) cmp ($reverse ? reverse $counts{$a}{value}[0][$att] : $counts{$a}{value}[0][$att]);
-#	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
-	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
-	    }  keys %counts;
-	} else {
-	  @{$result->hits} = map { [
-				    $counts{$_}{value},
-				    $counts{$_}{count}
-				   ] }
-	    reverse sort {
-	      my $c = ($reverse ? reverse $counts{$b}{value}[0][$att] : $counts{$b}{value}[0][$att]) cmp ($reverse ? reverse $counts{$a}{value}[0][$att] : $counts{$a}{value}[0][$att]);
-#	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
-	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
-	    }  keys %counts;
-	}
-      } else {
-	@{$result->hits} = map { [
-				$counts{$_}{value},
-				$counts{$_}{count}
-			       ] }
-	reverse sort {
-	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
-	  $c ? $c : ($b cmp $a )
-	}  keys %counts;
-      }
-    } else { #subcorpus query does not sort (saves time)
+    if ($self->subcorpus) {
       @{$result->hits} = map { [
 				$counts{$_}{value},
 				$counts{$_}{count},
-			       	$counts{$_}{data},
+				$counts{$_}{data},
+			       ] }
+	keys %counts;
+    } else {
+      @{$result->hits} = map { [
+				$counts{$_}{value},
+				$counts{$_}{count},
 			       ] }
 	keys %counts;
     }
+
     # reduce only shows the top frequencies for wordlists
     splice @{$result->hits}, $self->pagesize
       if $self->reduce and $self->pagesize > 0;
     $result->distinct(scalar keys %counts);
+
+    #sorting: subcorpus query does not sort (saves time)
+    if ( not $self->subcorpus ) {
+      if ($self->sort and exists ${$self->sort}{a} and ${$self->sort}{a}{target} =~ m{match|order} ) {
+	$result->sort(%{${$self->sort}{a}});
+      } else {
+	$result->sort(target=>'order', normalize=>1, order=>'descending');
+      }
+    }
   } else {
     $self->exception("No known display mode specified, aborting query.");
   }
@@ -591,3 +563,4 @@ sub exception {
 }
 
 1;
+__END__

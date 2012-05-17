@@ -91,7 +91,7 @@ is_deeply($virt->tooltips,
 is($virt->tooltip(attribute => 'nword', 'en'), 'Normalised form of the word', 'Virtual Corpus: tooltip call')
     or diag("CWB::Model::Virtual->tooltip(attribute => 'nword', 'en') was:\n" . Dumper($virt->tooltip(attribute => 'nword', 'en') ));
 
-my $r = $virt->query(query=>'a*', pagesize => 6, startfrom => 0);
+my $r = $virt->query(query=>'a*', pagesize => 6, startfrom => 0, context => '4 words');
 is_deeply($r,
 	  {
 	   corpusname => $virt->name,
@@ -111,15 +111,15 @@ is_deeply($r,
 				  text_title => "Le droit international sacrifi\é au combat contre le terrorisme. Violence et résistances à Guantánamo.",
 				 },
 			   aligns=>{},
-			   left=>[ ['rajočim'], ['oblastnikom'], [':'], ['od'] ],
+			   left=>[ ['zatirajočim'], ['oblastnikom'], [':'], ['od'] ],
 			   match=>[['angleških']],
-			   right=>[['sufražetk'], ['leta'], ['1909'], ['do'], [] ]
+			   right=>[['sufražetk'], ['leta'], ['1909'], ['do'] ]
 			  },
 			  @{$r->hits}[1..7],
 			 ],
 	   hitno      => 326,
 	   aligns     => [],
-	   attributes => [[]],
+	   attributes => [[ 'word' ]],
 	   pages      => {
 			  'next' => 7,
 			  'prev' => undef,
@@ -144,7 +144,7 @@ is_deeply($r,
 	   hits       => [@{$r->hits}],
 	   hitno      => 326,
 	   aligns     => [],
-	   attributes => [[]],
+	   attributes => [[ 'word' ]],
 	   pages      => {
 			  'next' => 13,
 			  'prev' => 1,
@@ -164,15 +164,18 @@ is_deeply($r,
 	   QUERY      => '[word="a.*" %c]',
 	   time       => $r->time,
 	   # bigcontext => 'paragraphs',
+	   language => [],
 	   hits       => [@{$r->hits}],
 	   hitno      => 326,
-#	   aligns     => [],
-	   attributes => [[]],
+	   aligns     => [],
+	   attributes => [[ 'word' ]],
 	   table => '1',
 	   pages      => { single=>1, this=>1 },
            # a bit unclean
 	   distinct   => 156,
 	  }, "Virtual Query/Result: wordlist")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+
+#TODO: missing advanced sorting on virtual corpora
 
 done_testing();

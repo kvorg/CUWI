@@ -164,7 +164,7 @@ is_deeply($r,
 	   bigcontext => 'paragraphs',
 	   table => '1',
 	   hits       => [
-			  [ [[ 'Ali', 'Cc' ]], 6],
+			  [ [[ 'avgusta', 'Ncmsg' ]], 6],
 			  @{$r->hits}[1..38],
 			 ],
 	   distinct   => 39,

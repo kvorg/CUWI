@@ -60,6 +60,8 @@ sub new {
   $self->encoding('utf8')  if $self->encoding eq 'UTF-8';
   $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
+  $self->language('en_US') unless $self->language;
+
   my $cwb_describe = 'cwb-describe-corpus -s -r '
     . $self->model->registry . ' '
     . $self->NAME ;

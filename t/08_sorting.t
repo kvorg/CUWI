@@ -42,19 +42,19 @@ is_deeply($r->hits->[0],  [ [[ 'Leta', 'Ncnsg' ]], 14],
  "Result->sort: wordlist with no sort first")
   or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
 # Dumper($r->hits) );
-is_deeply($r->hits->[-1], [ [[ 'zanj', 'Pp3msa--b' ]], 1],
+is_deeply($r->hits->[-1], [ [[ '1809', 'Mdc' ]], 1],
  "Result->sort: wordlist with no sort last")
   or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) ); 
 # Dumper($r->hits) );
 
 # $r->sort( target=>'match', order=>'ascending', direction=>'reversed', normalize=>1)
 $r->sort(target=>'order');
-is_deeply($r->hits->[0], [ [[ '1809', 'Mdc' ]], 1],
- "Result->sort: wordlist with default order sort last")
+is_deeply($r->hits->[0], [ [[ 'zanj', 'Pp3msa--b' ]], 1],
+ "Result->sort: wordlist with default order sort first")
   or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[0]) ); 
 # Dumper($r->hits) );
 is_deeply($r->hits->[-1],  [ [[ 'Leta', 'Ncnsg' ]], 14],
- "Result->sort: wordlist with default order sort first")
+ "Result->sort: wordlist with default order sort last")
   or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[-1]) );
 # Dumper($r->hits) );
 
@@ -198,6 +198,7 @@ is_deeply($r->hits->[-1], [ [[ 'nima', 'Vmpr3s-y' ]], 1],
  "Sorting: wordlist with selected attribute reversed (atergo) last")
   or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
 
+# MISSING: tests for virtual corpus result sorting
 # MISSING: tests stressing LC_COLLATE
 
 done_testing();

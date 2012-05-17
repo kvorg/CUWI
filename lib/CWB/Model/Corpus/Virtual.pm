@@ -13,7 +13,7 @@ has subcorpora  => sub { return []; };
 has _subcorpora => sub { return {}; };
 has classes => sub { return {}; };
 has classnames => sub { return []; };
-has [qw(model interleaved general_align)];
+has [qw(model interleaved general_align size)];
 has propagate => 'superset';
 
 # ->virtual(name=> [ qw(subcorpusname scn scn) ], interleaved=>1)
@@ -72,12 +72,15 @@ sub reload {
 			   );
 
   if ($self->propagate) {
+
     # property propagation
     my %attributes = ();  my @attributes;
     my %structures = ();  my @structures;
     my %alignements = (); my @alignements;
     foreach my $subname (@{$self->subcorpora}) {
       my $subcorpus = ${$self->_subcorpora}{$subname};
+      $self->language($subcorpus->language) unless $self->language;
+
       foreach (@{$subcorpus->attributes}) {
 	$attributes{$_}++;
 	push @attributes, $_ if $attributes{$_} == 1;
@@ -144,6 +147,7 @@ sub _make_result {
     @{$result->peers} = $self->peers;
     $result->hitno(0);
     $result->distinct(0);
+    $result->hits([]);
 
     # select context display type for hit context presentation - obsoleted?
     #$result->bigcontext($bigcontext);
@@ -192,6 +196,7 @@ sub query {
       delete $opts{align};
 #      warn ("Model: no align all.\n");
   }
+  $opts{show} = [ 'word' ] unless $opts{show};
 
   # single subcorpus: virtual corpus mapping
   if (scalar @{$self->subcorpora} == 1) {
@@ -228,6 +233,9 @@ sub query {
 #    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
   }
   my $result = $self->_make_result(%opts);
+  $result->attributes(exists $opts{show} ? (ref $opts{show} ? [$opts{show}] : [[$opts{show}]] ) : [[ 'word' ]]);
+  $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
+
   if ($opts{display} and $opts{display} eq 'wordlist') {
     # handle wordlist
     $opts{subcorpus} = 1; # disables sorting in subcorpus queries
@@ -242,60 +250,33 @@ sub query {
       $result->QUERY($r->QUERY) unless $result->QUERY;
       $result->hitno($result->hitno + $r->hitno);
 
-      # aggregate from result hits back into counts
+      # aggregate from result hits
       foreach my $hit ( @{$r->hits} ) {
 	my $match = $hit->[2][0];
 	$counts{$match}{count} =   0 unless exists $counts{$match};
 	$counts{$match}{count} +=  $hit->[1];
 	$counts{$match}{value} =   $hit->[0];
       }
+
     }
-    # TODO nasty: copied from query handling
-    {
-      use locale;
-      setlocale(LC_COLLATE, ($self->language ? $self->language : 'en_US') . '.' . $self->Encoding);
-      # wordlist sort
-      # target: match, order: descending/ascending, direction: reversed
-      use Data::Dumper;
-      #warn Dumper(\%opts);
-      if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target} =~ m{match}) {
-	my $reverse;
-	$reverse = 1 if $opts{sort}{a}{direction} eq 'reversed';
-	if ($opts{sort}{a}{order} eq 'descending') {
-	  @{$result->hits} = map { [
-				    $counts{$_}{value},
-				    $counts{$_}{count}
-				   ] }
-	    sort {
-	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
-	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
-	    }  keys %counts;
-	} else {
-	  @{$result->hits} = map { [
-				    $counts{$_}{value},
-				    $counts{$_}{count}
-				   ] }
-	    reverse sort {
-	      my $c = ($reverse ? reverse $b : $b) cmp ($reverse ? reverse $a : $a);
-	      ($c ? $c : ($counts{$b}{count} <=> $counts{$a}{count}) );
-	    }  keys %counts;
-	}
-      } else {
-	@{$result->hits} = map { [
-				$counts{$_}{value},
-				$counts{$_}{count}
-			       ] }
-	reverse sort {
-	  my $c = ($counts{$a}{count} <=> $counts{$b}{count});
-	  $c ? $c : ($b cmp $a )
-	}  keys %counts;
-      }
-    } # sort
+    # compile back hits
+    @{$result->hits} = map { [
+			      $counts{$_}{value},
+			      $counts{$_}{count}
+			     ] } keys %counts;
+
+    # sorting
+      $DB::single = 2;
+    if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target} =~ m{match|order}) {
+      $result->sort(%{$opts{sort}{a}});
+    } else {
+      $result->sort(target=>'order', normalize=>1, order=>'descending');
+    }
 
     ${$result->pages}{single} = 1;
     ${$result->pages}{this} = 1;
     $result->table(1);
-    $result->distinct(scalar keys %counts);
+    $result->distinct(scalar @{$result->hits});
 
   } else {
     # normal queries
@@ -335,8 +316,6 @@ sub query {
 	$offset += 0;
       }
     }
-    $result->attributes(exists $opts{show} ? $opts{show} : [[]]);
-    $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
 
     # finalize pages
     $result->page_setup(%opts);

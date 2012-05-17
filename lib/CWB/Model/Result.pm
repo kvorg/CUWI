@@ -206,6 +206,7 @@ sub sort {
     @{$self->hits} = reverse @{$self->hits}
       if ($opts{order} eq 'descending');
   }
+  return $self;
 }
 
 1;
