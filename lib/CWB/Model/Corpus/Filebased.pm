@@ -6,7 +6,7 @@ use CWB::Model::Query;
 
 use Carp;
 
-has [qw(file infofile datahome)];
+has [qw(file infofile datahome size)];
 
 sub new {
   my $self = shift->SUPER::new(file => shift, model => shift);
@@ -24,14 +24,16 @@ sub new {
     push @{$self->alignements}, $1 if m/ALIGNED\s+([^# \n]*)/ ;
     push @{$self->attributes}, $1  if m/ATTRIBUTE\s+([^# \n]*)/ ;
     push @{$self->structures}, $1  if m/STRUCTURE\s+([^# \n]*)/ ;
-    $self->encoding($1)            if m/^##::\s*charset\s+=\s+"?[^"#\n]+"?/ ;
-    $self->language($1)            if m/^##::\s*language\s+=\s+"?[^"#\n]+"?/ ;
+    $self->encoding($1)           if m/^##::\s*charset\s+=\s+"?([^"#\n]+)"?/ ;
+    $self->language($1)            if m/^##::\s*language\s+=\s+"?([^"#\n]+)"?/ ;
   }
   $fh->close;
   $self->title( ucfirst($self->name) ) unless $self->title;
   push @{$self->attributes}, 'word'
     unless grep { $_ eq 'word' } @{$self->attributes};
-
+  my $datahome = $self->datahome;
+  $self->size(`du $datahome`);
+  $self->size =~ m/^(\d+)/; $self->size($1 || $!);
 
   if ($self->infofile and
       $fh->open($self->infofile, '<:encoding(UTF-8)') ) {
@@ -43,8 +45,8 @@ sub new {
       ${$self->description}{$lang} .= $_
 	if ($lang);
       push @{$self->peers}, $1  if m/PEER\s+([^# \n]*)/ ;
-      $self->encoding($1)
-	if m/ENCODING\s+([^# \n]*)/ ; #this should go away
+      $self->encoding($1)  #this should go away
+	if m/ENCODING\s+([^# \n]*)/ and not $self->encoding;
       ${$self->tooltips}{lc($1)}{$2}{$3 ? $3 : 'en'} = $4
 	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }

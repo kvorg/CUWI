@@ -9,6 +9,12 @@
 
   <div class="description">
     <%== $corpus->describe('en') %>
+  <h2>Physical Properties</h2>
+    <ul>
+      <li>Language: <%= $corpus->language ? $corpus->language : 'undef' %> </li>
+      <li>Encoding: <%= $corpus->encoding ? $corpus->encoding : 'undef' %></li>
+      <li>File size: <%= $corpus->size ? $corpus->size . ' bytes': 'undef' %></li>
+    </ul>
 % my @atts = grep { $corpus->tooltip(attribute => $_, 'en') }
 %    @{$corpus->attributes};
 % if (@atts) {

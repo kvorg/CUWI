@@ -53,29 +53,32 @@ $t->get_ok("/cuwi/$corpus")
 
 my @lists = $t->tx->res->dom
   ->at('html body div[class="description"]')->find('h2 ~ ul')->each;
-cmp_ok(scalar @lists, '==', 3, 'Cuwi corpus: number of ul in description');
+cmp_ok(scalar @lists, '==', 4, 'Cuwi corpus: number of ul in description');
 
-is(scalar @{$lists[0]->children('li')}, 5,
+is(scalar @{$lists[0]->children('li')}, 3,
+   'Cuwi corpus: physical description');
+
+is(scalar @{$lists[1]->children('li')}, 5,
    'Cuwi corpus: attribute list members');
-is($lists[0]->at('li')->at('b')->text, 'nword',
+is($lists[1]->at('li')->at('b')->text, 'nword',
    'Cuwi corpus: attribute list member name');
-is($lists[0]->at('li')->text, ': Normalised form of the word',
+is($lists[1]->at('li')->text, ': Normalised form of the word',
    'Cuwi corpus: attribute list member description');
 
-is(scalar @{$lists[1]->children('li')}, 8,
+is(scalar @{$lists[2]->children('li')}, 8,
    'Cuwi corpus: structural attribute list members');
-is($lists[1]->at('li')->at('b')->text, 'text',
+is($lists[2]->at('li')->at('b')->text, 'text',
    'Cuwi corpus: structural attribute list member name');
-is($lists[1]->at('li')->text, ': One article from the corpus',
+is($lists[2]->at('li')->text, ': One article from the corpus',
    'Cuwi corpus: structural attribute list member description');
 
-is(scalar @{$lists[2]->children('li')}, 1,
+is(scalar @{$lists[3]->children('li')}, 1,
    'Cuwi corpus: peer corpora list members');
-is($lists[2]->at('li')->at('a')->{href}, '/cuwi/cuwi-sl',
+is($lists[3]->at('li')->at('a')->{href}, '/cuwi/cuwi-sl',
    'Cuwi corpus: peer corpora list member link');
-is($lists[2]->at('li')->at('a')->at('b')->text, 'CUWI-SL',
+is($lists[3]->at('li')->at('a')->at('b')->text, 'CUWI-SL',
    'Cuwi corpus: peer corpora list member name');
-is($lists[2]->at('li')->at('a')->text, ': CUWI test corpus: UTF-8, Slovene, aligned',
+is($lists[3]->at('li')->at('a')->text, ': CUWI test corpus: UTF-8, Slovene, aligned',
    'Cuwi corpus: peer corpora list member description');
 
 my $table = $t->tx->res->dom

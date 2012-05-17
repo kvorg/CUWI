@@ -334,7 +334,8 @@ sub run {
       unless $self->cqp->ok;
   }
   # process results into a result object
-  my $result = CWB::Model::Result->new(corpusname => $self->corpus->name)
+  my $result = CWB::Model::Result->new(corpusname => $self->corpus->name,
+				       language => $self->corpus->language || 'en_US')
     or $self->exception("Failed to create a result object.");
 
   $result->query($query);
