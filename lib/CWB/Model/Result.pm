@@ -2,11 +2,13 @@ package CWB::Model::Result;
 
 use Mojo::Base -base;
 use Carp qw(croak cluck);
+use POSIX qw(locale_h);
+use Data::Dumper;
 
 has [qw(query QUERY time distinct cpos next prev reduce table bigcontext corpusname)] ;
 has hitno => 0;
 has pages => sub { return {} } ;
-has [qw(hits attributes aligns peers)]  => sub { return [] } ;
+has [qw(hits attributes aligns peers language)]  => sub { return [] } ;
 
 # function borrowed from List::Moreutils
 sub _firstidx (&@) {
@@ -95,7 +97,7 @@ sub page_setup {
   return ${$result->pages}{this};
 }
 
-# $r->sort( target=>'match', order=>'ascending', direction=>'reversed')
+# $r->sort( target=>'match', order=>'ascending', direction=>'reversed', normalize=>1)
 sub sort {
   my $self = shift;
 
@@ -105,9 +107,13 @@ sub sort {
     if ( (scalar @_) % 2);
 
   my %opts = @_;
+  # defaults
+  $opts{target} = 'order' unless exists $opts{target};
+  $opts{order} = 'ascending' unless exists $opts{order};
 
   croak('CWB::Model::Result::sort() called with att => ' . $opts{att} . ', which does not exist in the result set') 
-    unless join(' ', @{$self->attributes->[0]}) =~ m/$opts{att}/;
+    if exists $opts{att}
+      and not (join(' ', @{$self->attributes->[0]}) =~ m/$opts{att}/);
   croak('CWB::Model::Result::sort() called with target => ' . $opts{target} . ', which is not a legal target (order, left, match, right)')
     unless $opts{target} =~ m/order|left|match|right/;
 
@@ -120,7 +126,8 @@ sub sort {
   croak('CWB::Model::Result::sort() called with target => ' . $opts{target} . ' on a wordlist')
     if $opts{target} =~ m{left|right} and $wordlist;
   cluck('CWB::Model::Result::sort() called unknown direction => ' . $opts{direction} . ', ignoring option')
-    unless $opts{direction} =~ m/reversed|atergo|normal/;
+    if exists $opts{direction}
+      and not $opts{direction} =~ m/reversed|atergo|normal/;
   cluck('CWB::Model::Result::sort() called unknown order => ' . $opts{order} . ', using default: ascending')
     and $opts{order} = 'ascending'
       unless $opts{order} =~ m/descending|ascending/;
@@ -129,53 +136,72 @@ sub sort {
 
   my $reverse;
   $reverse = 1
-    if $opts{direction} eq 'reversed'
-      or $opts{direction} eq 'atergo';
+    if exists $opts{direction}
+      and ($opts{direction} eq 'reversed' or $opts{direction} eq 'atergo');
 
   my $att = 0; #defaults to the first att
   if ($opts{att}) {
    $att = _firstidx { $_ eq $opts{att} } @{$self->attributes->[0]};
   }
 
+
   my $t = $opts{target};
-  my $off = 0;
-  $off = -1 if $t eq 'left' and not $reverse;
-  $off = -1 if $t ne 'left' and $reverse;
 
   # hack to only normalize if required; allows repeated sorts
-  my $x; $x = 7 unless exists $opts{normalize} and  $opts{normalize};
+  my $x = 0; $x = 7 unless exists $opts{normalize} and  $opts{normalize};
 
   # do the sort
+  use locale;
+  setlocale(LC_COLLATE, ($self->language ? $self->language : 'en_US'));
 
-  if ($opts{target} eq m{order} and $wordlist) {
+  if ($opts{target} eq 'order' and $wordlist) {
     @{$self->hits} =
       sort {
 	my $c = ( $a->[1] <=> $b->[1]);
-	($c + $x ? $c : ($a->[0][0] cmp $b->[0][0]) );
+	($c + $x ? $c : ($a->[0][0][0] cmp $b->[0][0][0]) );
       } @{$self->hits};
     @{$self->hits} = reverse @{$self->hits}
       if ($opts{order} eq 'descending');
-  } elsif ($opts{target} eq m{order} and not $wordlist) {
+  } elsif ($opts{target} eq 'order' and not $wordlist) {
     @{$self->hits} =
       sort {
 	my $c = ( $a->{cpos} <=> $b->{cpos} );
-	($c + $x ? $c : ( $a->[0][0] cmp $b->[0][0] ) );
+	($c + $x ? $c : ( $a->[0][0][0] cmp $b->[0][0][0] ) );
       } @{$self->hits};
     @{$self->hits} = reverse @{$self->hits}
       if ($opts{order} eq 'descending');
-  } elsif ($wordlist) {
+  } elsif ($wordlist) { #wordlist on att
+    my ($aa, $bb, $c);
     @{$self->hits} =
       sort {
-	my $c = ($reverse ? reverse $a->[0][$att] : $a->[0][$att]) cmp ($reverse ? reverse $b->[0][$att] : $b->[0][$att]);
-	($c + $x ? $c : ($a->[1] <=> $b->[1]) );
+	$aa = ($reverse
+	       ? scalar reverse join(' ', map{ $_->[$att] } @{$a->[0]})
+	       : join(' ', map{ $_->[$att] } @{$a->[0]})
+	      );
+	$bb = ($reverse
+	       ? scalar reverse join(' ', map{ $_->[$att] } @{$b->[0]})
+	       : join(' ', map{ $_->[$att] } @{$b->[0]})
+	      );
+	$c = $aa cmp $bb;
+	( $c + $x ? $c : ($a->[1] <=> $b->[1]) );
       } @{$self->hits};
     @{$self->hits} = reverse @{$self->hits}
       if ($opts{order} eq 'descending');
   } else { #not wordlist, not order
+    my ($aa, $bb, $c);
     @{$self->hits} =
       sort {
-	my $c = ($reverse ? reverse $a->{$t}[$off][$att] : $a->{$t}[$off][$att]) cmp ($reverse ? reverse $b->{$t}[$off][$att] : $b->{$t}[$off][$att]);
+	$aa = ($reverse
+	       ? scalar reverse join(' ', map{ $_->[$att] } @{$a->{$t}})
+	       : join(' ', map{ $_->[$att] } @{$a->{$t}})
+	      );
+	$bb = ($reverse
+	       ? scalar reverse join(' ', map{ $_->[$att] } @{$b->{$t}})
+	       : join(' ', map{ $_->[$att] } @{$b->{$t}})
+	      );
+	$c = $aa cmp $bb;
 	($c + $x ? $c : ( $a->{cpos} <=> $b->{cpos} ) );
+#	$DB::single = 2;
       } @{$self->hits};
     @{$self->hits} = reverse @{$self->hits}
       if ($opts{order} eq 'descending');
