@@ -1,5 +1,6 @@
 package CWB::CUWI::Controller;
 use Mojo::Base 'Mojolicious::Controller';
+use Data::Dumper;
 
 sub corpus {
   my $self = shift;
@@ -158,7 +159,7 @@ sub search {
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
 	if ($self->stash->{table_export}) {
-	  my $tmpdir = File::Temp->newdir(File::Spec->catdir($config->{tmp}, 'cuwi_tmp_XXXXX'), CLEANUP=>1, );
+	  my $tmpdir = File::Temp->newdir(File::Spec->catdir($self->app->config->{tmp}, 'cuwi_tmp_XXXXX'), CLEANUP=>1, );
 	  my $tmpfile = File::Spec->catfile($tmpdir->dirname, 'cuwi_search_results.' . $self->param('format'));
 	  $self->stash(tmpdir => $tmpdir ); # stash it until tx end for cleanup
 
@@ -167,30 +168,12 @@ sub search {
 				   format  => $self->param('format'),
 				   sheet   => 'Results',
 				  );
-	  my $tabspreader = sub  {
-	    my $attributes = shift;
-	    my ($left, $match, $right) = @_;
-
-	    $attributes = $attributes->[0] if ref $attributes->[0];
-
-	    my $i = 0;
-	    my @row = ();
-	    foreach my $att (@{$attributes}) {
-	      push @row, [ $att,
-			   (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$left}),
-			   (map { substr($_->[$i], 0, 1) eq '=' ? '<< _' . $_->[$i] . ' >>' : '<< ' . $_->[$i]. ' >>' } @{$match}),
-			   (map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i]  : $_->[$i] } @{$right}),
-			 ];
-	      $i++;
-	    }
-#	    $self->app->log->info('TAB: ' . $self->dumper(@$attributes), $self->dumper(@row));
-	    return @row;
-	  };
 
 	  if (not $result->table) {
 	    # not wordlist
 	    foreach my $hit (@{$result->hits}) {
-	      my @rows = $tabspreader->($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
+	      warn Dumper($result->attributes);
+	      my @rows = $self->tabspreader($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
 	      $h->addrow( map { {content => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
 									 (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
 									 (map {$_ . ': ' . $hit->{data}{$_} } keys %{$hit->{data}} )),

@@ -266,7 +266,6 @@ sub query {
 			     ] } keys %counts;
 
     # sorting
-      $DB::single = 2;
     if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target} =~ m{match|order}) {
       $result->sort(%{$opts{sort}{a}});
     } else {

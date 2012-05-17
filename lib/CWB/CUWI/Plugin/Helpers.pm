@@ -134,6 +134,28 @@ sub { #$c is controller, means generate contex links
 		  return (b("<a class='itip infobox' href='#$tid' rel='#$tid' title='$title' >$anchor</a>\n<span id='$tid' class='infotip'>"  . $cb->() . "</span>" ));
 		});
 
+  $app->helper(tabspreader =>
+	       sub  {
+		 my ($c, $attributes, $left, $match, $right) = @_;
+
+		 $attributes = $attributes->[0] if ref $attributes->[0];
+
+		 my $i = 0;
+		 my @row = ();
+		 foreach my $att (@{$attributes}) {
+		   my $_; #possibly fixing a possible bug in perl's given
+		   push @row, [ $att,
+				(map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i] : $_->[$i] } @{$left}),
+				(map { substr($_->[$i], 0, 1) eq '=' ? '<< _' . $_->[$i] . ' >>' : '<< ' . $_->[$i]. ' >>' } @{$match}),
+				(map { substr($_->[$i], 0, 1) eq '=' ? '_' . $_->[$i]  : $_->[$i] } @{$right}),
+			      ];
+		   $i++;
+		 }
+#		 $c->app->log->debug('TAB: ' . $c->dumper(@$attributes), $c->dumper(@row));
+		 return @row;
+	       });
+
+
 } #register
 
 1;

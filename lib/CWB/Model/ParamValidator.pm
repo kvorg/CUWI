@@ -209,7 +209,6 @@ sub _merge_spec {
   return $default
     unless exists $spec->{$param} and ref $spec->{$param} eq 'HASH';
   my $s = {};
-  $DB::single = 2;
   foreach (keys %{$spec->{$param}}, keys %{$default}) {
     $s->{$_} = undef;
   }

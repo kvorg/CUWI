@@ -128,7 +128,6 @@ sub register {
 		   # Rows
 		   my $rows = $extras;
 		   my $subrow;
-		   $DB::single=2;
 
 		   for (my $row_no=0;
 			($data ? ($row_no < @$data) : ($subrow = $sub->() ) ) ;
