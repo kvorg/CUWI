@@ -86,6 +86,17 @@ div.matches td.head span.parno   { font-weight: bold; vertical-align: top;}
 a.itip { font-size: 60%; text-align: left; white-space: nowrap; }
 div.matches td.head > a.itip { display: block; white-space: nowrap; }
 div.matches td.head span.infotip { text-align: left; white-space: nowrap; }
+a.tooltip, a.infobox {
+    border-bottom: 1px dotted #000000; color: #000000; outline: none;
+    cursor: help; text-decoration: none;
+    position: relative;
+    white-space: normal;
+}
+a.ttip, a.infobox {
+    border-bottom: 1px dotted #000000; color: #000000; outline: none;
+    cursor: help; text-decoration: none;
+    white-space: normal;
+}
 div.matches td.left  { text-align: right; vertical-align: middle;}
 div.matches td.right { text-align: left;  vertical-align: middle;}
 div.matches td.match { text-align: center; padding-left: .5em; padding-right: .5em;
