@@ -83,7 +83,8 @@ div.matches td.head  { white-space: nowrap; text-align: center;
            padding-left: .3em; padding-right: .3em; }
 div.matches td.head span.no, div.matches td.head span.parno   { font-weight: bold; text-align: center; font-size: 80%;}
 div.matches td.head span.parno   { font-weight: bold; vertical-align: top;}
-div.matches td.head > a.itip { display: block; font-size: 60%; text-align: left; white-space: nowrap; }
+a.itip { font-size: 60%; text-align: left; white-space: nowrap; }
+div.matches td.head > a.itip { display: block; white-space: nowrap; }
 div.matches td.head span.infotip { text-align: left; white-space: nowrap; }
 div.matches td.left  { text-align: right; vertical-align: middle;}
 div.matches td.right { text-align: left;  vertical-align: middle;}
@@ -122,7 +123,9 @@ div.corpora > li {
   margin-top: .2ex;
 }
 div.description {
-  margin: 3ex;
+  width: 46em;
+  margin-left: auto;
+  margin-right: auto;
   font-size: 0.8em;
 }
 div.description h2 {
@@ -143,53 +146,3 @@ div.description table.stats tr td {
   padding-right: 1em;
 }
 
-/* # tooltips from Alexander Dawson,
-   # http://sixrevisions.com/css/css-only-tooltips/ */
-a.tooltip, a.infobox {
-    border-bottom: 1px dotted #000000; color: #000000; outline: none;
-    cursor: help; text-decoration: none;
-    position: relative;
-    white-space: normal;
-}
-a.ttip, a.infobox {
-    border-bottom: 1px dotted #000000; color: #000000; outline: none;
-    cursor: help; text-decoration: none;
-    white-space: normal;
-}
-a.tooltip span, a.infobox span {
-    display: none;
-    position: absolute;
-}
-a.tooltip:hover span, a.infobox:hover span {
-    display: block;
-    font-weight: normal;
-    border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
-    font-family: Calibri, Tahoma, Geneva, sans-serif; font-size: 0.7em;
-    position: absolute; left: 1em; top: 2em; z-index: 99;
-    margin-left: 0; width: 24em;
-}
-a.infobox:hover span {
-    width: 36em;
-}
-a.infobox:hover i.info {
-    display: inline-block;
-    margin-top: 1ex;
-    border: none;
-}
-a.tooltip:hover img, a.infobox:hover img {
-    border: 0; margin: -10px 0 0 -55px;
-    float: left; position: absolute;
-}
-a.tooltip:hover em, a.infobox:hover em {
-    font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
-    display: block; padding: 0.2em 0 0.6em 0;
-}
-.classic  { padding: 0.8em 1em; }
-.custom   { padding: 0.5em 0.8em 0.8em 2em; }
-* html a:hover { background: transparent; }
-.classic  {background: #FFFFAA; border: 1px solid #FFAD33;  }
-.critical { background: #FFCCAA; border: 1px solid #FF3334; }
-.help     { background: #9FDAEE; border: 1px solid #2BB0D7; }
-.info     { background: #9FDAEE; border: 1px solid #2BB0D7; }
-.warning  { background: #FFFFAA; border: 1px solid #FFAD33; }

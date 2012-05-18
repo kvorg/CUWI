@@ -65,6 +65,8 @@
 
 * Web interface BUGS
 
+** form: nowrap where needed
+** bugs in drop down menues
 ** broken view display in detailed view
 ** missing "not" for structural constraint
 ** _token split bug with 22/24
@@ -90,27 +92,23 @@
 
 * Web interface
 
+** multiple sort and multiple structure constraint
 ** implement maxhits, pagesize, maxpagesize via config
 ** add encoding and language to corpus info, test encoding
 ** runnig text context (with visible structural tags)
-** imp: sortable frequency lists
 ** document config, switch config to general config
 ** change wordlist exporting to divide matches into multiple fields
-** spook: Templates for query result exports
-   missing: oocalc, tab-delmited, corpus position dump, tei/xml,
-   latex, yaml
+** spook: missing templates for query result exports
+   oocalc, tab-delmited, corpus position dump, tei/xml, latex, yaml
 ** spook: structural attribute constraint search:
    add interface for multiple constraints
 ** spook: password protected groups
    better implementation
 ** spook: sub-searches (based on existing search)
-** short ID for structural attribute (auth year?) in [result]
-   sane default + changeable from info file or conf
+** add config file support for ID for structural attribute in result
 ** spook: home page info:
    navodila za uporabo v slovenščini s čimveč primeri različnih tipov
    iskanj - use a link
-** imp: Use click-to pop-up for help
-   (via js binding + help at bottom always)
 ** wordlists: click on frequency number to get conjunction query
 ** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
@@ -121,8 +119,6 @@
    Development: info->debug
 ** Add sample implementation with redirect to a fixed sample seeed [till May 8]
    [check status and add tests]
-** Sorting, with options:
-   - with 2 or three sort keys
 ** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
 ** Cleanup of templates: separation with includes
@@ -165,6 +161,7 @@
 
 * Links: 
 
+** http://parasol.unibe.ch/UsagePARASOL.html
 ** http://corpus.leeds.ac.uk/paraquery.html
 ** http://www.comp.leeds.ac.uk/ssharoff/
 ** http://the.sketchengine.co.uk/

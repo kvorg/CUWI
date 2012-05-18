@@ -9,11 +9,12 @@
   <script>!window.jQuery && document.write(unescape('%3Cscript src="<%= '/' . $config->{root} . '/lib/jquery-1.7.1.min.js' %>"%3E%3C/script%3E'));</script>
  </head>
  <body>
- % if ($self->session('username')) {
  <div class="user">
+   <%= link_to '/' . $config->{root} . '/doc/CWB/CUWI/Manual' => begin %>Help<% end %>
+ % if ($self->session('username')) {
    Logged in as: <b><%= $self->session('username') %></b>. <%= link_to Logout => '/' . $config->{root} . '/logout' %>
- </div>
  %}
+ </div>
   <h2><%= link_to 'index' => begin %>
     CUWI Search
   <% end %>

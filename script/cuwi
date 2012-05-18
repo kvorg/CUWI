@@ -24,3 +24,159 @@ $ENV{MOJO_APP} ||= 'CWB::CUWI';
 # Start commands
 Mojolicious::Commands->start;
 
+
+=pod
+
+=head1 NAME
+
+cuwi - Corpus Users' Web Interface
+
+=head1 SYNOPSIS
+
+  cuwi help
+  hypnotoad cuwi
+
+=head1 OVERVIEW
+
+This document describes the CUWI Web application.
+
+Please see L<CUWI Web users's Manual|CWB::CUWI::Manual> for help and
+usage instructions.
+
+
+=head1 DESCRIPTION
+
+B<** documentation in progress, stand by **>
+
+C<cuwi> is the starting script for CUWI (Corpus Users' Web Interface),
+a web frontend for linguistic corpora encoded in (L<Corpus
+WorkBench|http://cwb.sourceforge.net>) format. The application itself
+is implemented in L<CWB::CUWI> and is written in Perl, using the
+Mojolicious web framework|http://mojolicio.us/>.
+
+CUWI uses a native pure Perl backend (L<CWB::Model>) and can access
+CWB corpora through the L<cqp> command with no binary Perl
+modules. L<CWB::Model> also permits scripting access to the
+corpora. (See tests in the distribution archive for examples.)
+
+=head1 INSTALATION
+
+Please see included INSTALATION readme file for installation
+details. CUWI depends only on the L<Mojolicioius|http://mojolicio.us/>
+framework and the basic C<CWB> package.
+
+Note that CUWI requires a reasonably modern Perl (v5.10.1 or later).
+
+CUWI comes with the CWB::CUWI package which includes CWB::Model and
+supporting packages for native Perl programming API to CQP query
+langauge and CWB-encoded corpora, and CWB::CUWI, the web application,
+which this script is a part of.
+
+=head1 CONFIGURATION
+
+=head2 Configuration File
+
+=head2 Registry Information
+
+CUWI parses all the registry files found in the registry path (a comma
+separated list of paths) using L<CWB::Model>. Additional information
+is acquired using C<cwb-statistics> (if available) and by parsing the
+corpus info files.
+
+=head2 Configuring Corpora
+
+It is very important for the system to be able to determine the
+language and
+
+=head2 Virtual Corpora
+
+=head2 Deployment Options
+
+The recommended way to deploy CUWI is to run it with the stand-alone
+production pre-forking web server Hypnotoad, possibly behind a proxy
+web server.
+
+However, many other options are available. For documentation and
+examples, see L<Mojolicious::Guides::Cookbook/DEPLOYMENT>.
+
+=head2 Configuring Hypnotoad
+
+Hypnotoad, the stand-alone Mojolicious web server for Cuwi ...
+
+  # start or hot-deploy and update
+  hypnotoad cuwi
+  
+  # stop
+  hypnotoad -s cuwi
+
+Fore more information, try C<hypnotoad -help> and
+L<Mojo::Server::Hypnotoad>, for details on configuration parameters
+see L<Mojo::Server::Hypnotoad/SETTINGS>.
+
+=head2 Log files
+
+=head2 Optional Dependencies
+
+CUWI will use L<Spreadsheet::Write> to enable exporting results in C<CSV> and
+Excel formats.
+
+L<Mojolicious> has a number of optional dependencies for additional
+functionality, such as L<EV>, L<IO::Socket::IP>, L<IO::Socket::SSL>,
+L<Net::Rendezvous::Publish> and L<Plack>.
+
+=head1 BUGS
+
+This is a developer version. There are many. See TODO.
+
+Note that sorting works properly by using C<locale> only if C<cqp> is
+capable of using external sort.
+
+Note that Unicode characters will not be treated properly with regular
+expressions unless you are using C<CWB> v3.2 or later.
+
+=head1 LICENCE
+
+(C) 2011, 2012 by Jan Jona Javorsek and  Tomaz Erjavec <tomaz.erjavec@ijs.si>.
+
+This perl package is distributed under the same conditions as perl
+itself (Dual Artistic / GPL licence.) See
+L<http://dev.perl.org/licenses/> for more info.
+
+Contributors: please note that by contributing to this package you
+implicitly agree and give permission to the package maintainer (Jan
+Jona Javorsek) to relicence your contributions with the whole package
+under a different OSI-Approved licence. See
+L<http://www.opensource.org/licenses/> for more info.
+
+This package is available under the same terms as Perl itself.
+
+=head1 AUTHORS
+
+Jan Jona Javorsek <jona.javorsek@ijs.si>,
+Tomaz Erjavec <tomaz.erjavec@ijs.si>
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+CUWI Web users's Manual: L<CWB::CUWI::Manual>
+
+=item *
+
+Corpus Work-Bench: L<http://cwb.sourceforge.net>, L<CWB::CQP>
+
+=item *
+
+CUWI programming API: L<CWB::Model>
+
+=item *
+
+Mojolicious-base application: L<CWB::CUWI>
+
+=item *
+
+Mojolicious web framework: L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojoliciou.us/>
+
+=back

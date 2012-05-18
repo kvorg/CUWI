@@ -119,11 +119,13 @@ sub { #$c is controller, means generate contex links
 
   $app->helper(infotip =>
 		sub {
-		  my ($c, $m, $title, $cb) = @_;
-		  my $anchor = 'Info';
-
-		  $anchor = $m->{data}{text_title}
+		  my $cb = pop;
+		  my ($c, $m, $title, $anchor) = @_;
+		 
+		  $anchor //= $m->{data}{text_title}
 		    if exists $m->{data}{text_title};
+		  $anchor //= 'Info';
+
 		  $anchor = substr($anchor, 0, 11) . '...'
 		      unless length $anchor < 14;
 

@@ -32,7 +32,7 @@ sub startup {
   $self->plugin('charset' => {charset => 'UTF-8'});
   $self->plugin('tag_helpers_extra');
   $self->plugin('helpers');
-  #$self->plugin('pod_renderer'); #park it under root and use for help?
+  $self->plugin('PODRenderer'); #park it under root and use for help?
 
   # html
   $self->secret('re9phoothieX4dah4chi');
@@ -64,6 +64,46 @@ sub startup {
 				     default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
 				    });
   $self->log->info("Config parsed.");
+  $config->{root} =~ s{/?^(.*)/$}{$1};
+  $config->{root} = 'cuwi' unless $config->{root};
+  $self->log->info("App web root: '$config->{root}'.");
+  my $cuwiroot = $config->{root};
+  $self->hook(before_dispatch => sub {
+             my $self = shift;
+	     if ($self->req->url->path->contains("$cuwiroot/doc/")) {
+	       shift @{$self->req->url->path->parts};
+	       $self->req->url->path->parts->[0] = 'perldoc';
+	     }
+           });
+
+
+  $config->{blurb} = <<"FNORD" unless $config->{blurb};
+<p>CUWI (Corpus Users\' Web interface) is a concordance browser and
+query engine with a <a href="http://cwb.sourceforge.net">Corpus
+WorkBench Toolkit</a> backend.</p>
+
+<p>This page lists all the currently available copora found in CWB
+registries as configured in the CUWI configuration file
+(<code>cuwi.json</code> or <code>cuwi.conf</code>). Select your
+corpus of choice and perform operations using the provided search
+form.</p>
+
+<p>Search functions are documented using tool-tips. In general, a
+search can be specified either by entering a <a
+href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP query
+language statements</a>, where the search-related options are ignored,
+but the display-related options are honoured, or, alternatively, you
+can limit yourself to simple tokens with optional <code>?</code> and
+<code>*</code> place-holders, where the search options can modify the
+meaning of the search query tokens.</p>
+
+<p>(Some of the
+information can be provided from the corpus info files and is only
+available for corpora with suitabily formatted info files. See <a
+href="$cuwiroot/doc/cuwi"</a>CUWI manual for more info.)</p>
+
+FNORD
+
   $config->{tmp} = (
 		    ( defined $config->{tmp}
 		      and -d $config->{tmp} and -w defined $config->{tmp} ) ?
@@ -165,13 +205,11 @@ sub startup {
     $self->log->info('No frequencies requested, none generated.' )
   }
 
-  $config->{root} =~ s{^(.*)/$}{$1};
-  $config->{root} = 'cuwi' unless $config->{root};
-  $self->log->info("App web root: '$config->{root}'.");
-
   # routes and controllers
 
   my $r = $self->routes->under($config->{root});
+
+  $r->get("/doc" => sub { shift->redirect_to('/' . $config->{root} . '/doc/CWB/CUWI/Manual' ); });
 
   $r->get("/" => sub { $self->sanitize; } =>'index');
 
@@ -253,3 +291,73 @@ $self->log->info("Ready to serve requests.");
 }
 
 1;
+=pod
+
+=head1 NAME
+
+CWB::CUWI - Corpus WorkBench / Corpus Users' Web Interface Application
+
+=head1 SYNOPSIS
+
+    # run mojolicious app from the command-line
+    hypnotoad scripts/cuwi
+    scripts/cuwi help
+
+    # mount the app in your own app using Mojolicious::Plugin::Mount
+    pluginq Mount {'path/to/cuwi' => 'scripts/cuwi'};
+
+=head1 DESCRIPTION
+
+C<CWB::CUWI> implements the CUWI application using the C<Mojolicious>
+web framework and L<CWB::Module> Perl CWB API. See L<cuwi> for
+configuration and usage.
+
+=head1 LICENCE
+
+(C) 2011, 2012 by Jan Jona Javorsek and  Tomaz Erjavec <tomaz.erjavec@ijs.si>.
+
+This perl package is distributed under the same conditions as perl
+itself (Dual Artistic / GPL licence.) See
+L<http://dev.perl.org/licenses/> for more info.
+
+Contributors: please note that by contributing to this package you
+implicitly agree and give permission to the package maintainer (Jan
+Jona Javorsek) to relicence your contributions with the whole package
+under a different OSI-Approved licence. See
+L<http://www.opensource.org/licenses/> for more info.
+
+This package is available under the same terms as Perl itself.
+
+=head1 AUTHORS
+
+Jan Jona Javorsek <jona.javorsek@ijs.si>,
+Tomaz Erjavec <tomaz.erjavec@ijs.si>
+
+=head1 SEE ALSO
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+Installation and configuration: L<cuwi>
+
+=item *
+
+CUWI Web users's Manual: L<CWB::CUWI::Manual>
+
+=item *
+
+Corpus Work-Bench L<http://cwb.sourceforge.net>, L<CWB::CQP>
+
+=item *
+
+CUWI programming API:: L<CWB::Model>
+
+
+=item *
+
+Mojolicious web framework: L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojoliciou.us/>
+
+=back
