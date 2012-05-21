@@ -65,6 +65,8 @@
 
 * Web interface BUGS
 
+** export fails
+** constraints: do not clobber [] statements
 ** form: nowrap where needed
 ** bugs in drop down menues
 ** broken view display in detailed view
@@ -161,6 +163,7 @@
 
 * Links: 
 
+** http://corpus.byu.edu/coca/
 ** http://parasol.unibe.ch/UsagePARASOL.html
 ** http://corpus.leeds.ac.uk/paraquery.html
 ** http://www.comp.leeds.ac.uk/ssharoff/
