@@ -104,9 +104,17 @@ sub search {
   # should be using result
   $self->param(show => $params{show});
   if ($self->param('align')) {
-    $params{align} = ref $self->param('align') eq 'ARRAY' ?
-      $self->param('align') : [ $self->param('align') ] ;
-    $params{align} = [ grep { $c_aligns{$_} } @{$params{align}} ];
+    $self->app->log->debug('Got align option.');
+    #warn ($self->dumper($self->param('align')));
+    if ( not ref $self->param('align') and $self->param('align') == 1 ) {
+      #general align for virutal corpora
+      $params{align} = 1;
+      $self->app->log->debug('General align option set.');
+    } else {
+      $params{align} = ref $self->param('align') eq 'ARRAY' ?
+	$self->param('align') : [ $self->param('align') ] ;
+      $params{align} = [ grep { $c_aligns{$_} } @{$params{align}} ];
+    }
   }
   $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
   $params{display} = $self->param('display');

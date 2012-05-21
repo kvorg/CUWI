@@ -186,15 +186,23 @@ sub query {
 
   my %opts = @_;
   $opts{startfrom} ||= 0;
-  if ($opts{align}
+  if (($opts{align}
+      and ref $opts{align}
       and scalar @{$opts{align}} == 1
-      and ${$opts{align}}[0] == 1
-      and $self->general_align) {
+      and "${$opts{align}}[0]" eq '1'
+      and $self->general_align) or
+      ($opts{align} and "$opts{align}" eq 1)) {
       $opts{align} = $self->alignements;
-#      warn ("Model: gone for align all, align opt was $opts{align}\n");
   } else {
-      delete $opts{align};
-#      warn ("Model: no align all.\n");
+    $opts{align} = [
+		    grep { my $align = $_ ;
+			   if ($_) {
+			     scalar grep { $_ eq $align }
+			       @{$self->alignements}
+			     }
+			 }
+		    (ref $opts{align} ? @{$opts{align}} : $opts{align} )
+		   ];
   }
   $opts{show} = [ 'word' ] unless $opts{show};
 
@@ -281,6 +289,7 @@ sub query {
     # normal queries
     my $offset   = sprintf('%d', ($opts{startfrom} / @subcorpora)) + 0;
     my $pagesize = sprintf('%d', ($opts{pagesize}  / @subcorpora)) + 0;
+    my %r_align;
     # that was naive: ratio not taken into account
     if ($self->interleaved) {
       # interleaved
@@ -297,8 +306,13 @@ sub query {
 	$result->QUERY($r->QUERY) unless $result->QUERY;
 	$result->hitno($result->hitno + $r->hitno);
 	$result->distinct($result->distinct + $r->distinct) if $r->distinct;
+	foreach (@{$r->aligns}) {
+	  $r_align{$_} = 1;
+	}
 	push @{$result->hits}, @{$r->hits};
       }
+      $result->aligns([ keys %r_align ]);
+      #warn "We have " . scalar @{$result->aligns} . " aligns\n";
     } else {
       # sequential NOT FINISHED --- BUG
       # sequential subcorpora: check into which subcorpus we fall

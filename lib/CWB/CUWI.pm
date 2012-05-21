@@ -13,7 +13,6 @@ use IO::File;
 use IO::Dir;
 use File::Spec;
 use File::Spec::Functions 'catdir';
-use File::Temp;
 use File::Basename 'dirname';
 use Encode 'decode';
 
@@ -100,7 +99,7 @@ meaning of the search query tokens.</p>
 <p>(Some of the
 information can be provided from the corpus info files and is only
 available for corpora with suitabily formatted info files. See <a
-href="$cuwiroot/doc/cuwi"</a>CUWI manual for more info.)</p>
+href="$cuwiroot/doc/cuwi"</a>CUWI manual for more info.)</a></p>
 
 FNORD
 
@@ -209,7 +208,7 @@ FNORD
 
   my $r = $self->routes->under($config->{root});
 
-  $r->get("/doc" => sub { shift->redirect_to('/' . $config->{root} . '/doc/CWB/CUWI/Manual' ); });
+  $r->get("/doc/" => sub { shift->redirect_to('/' . $config->{root} . '/doc/CWB/CUWI/Manual' ); } => 'perldoc');
 
   $r->get("/" => sub { $self->sanitize; } =>'index');
 
@@ -322,7 +321,7 @@ L<http://dev.perl.org/licenses/> for more info.
 
 Contributors: please note that by contributing to this package you
 implicitly agree and give permission to the package maintainer (Jan
-Jona Javorsek) to relicence your contributions with the whole package
+Jona Javorsek) to relicense your contributions with the whole package
 under a different OSI-Approved licence. See
 L<http://www.opensource.org/licenses/> for more info.
 
@@ -332,8 +331,6 @@ This package is available under the same terms as Perl itself.
 
 Jan Jona Javorsek <jona.javorsek@ijs.si>,
 Tomaz Erjavec <tomaz.erjavec@ijs.si>
-
-=head1 SEE ALSO
 
 =head1 SEE ALSO
 

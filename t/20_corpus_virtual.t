@@ -176,6 +176,54 @@ is_deeply($r,
 	  }, "Virtual Query/Result: wordlist")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
 
+#alginement
+$r = $virt->query(query=>'a*', display=>'kwic', align=>'cuwi-fr', pagesize=>10);
+is_deeply($r,
+	  {
+	   corpusname => $virt->name,
+	   peers => [ [] ],
+	   query      => '[word="a.*" %c]',
+	   QUERY      => '[word="a.*" %c]',
+	   time       => $r->time,
+	   # bigcontext => 'paragraphs',
+           #language => [],
+	   hits       => [@{$r->hits}],
+	   hitno      => 326,
+	   aligns     => [ 'cuwi-fr' ],
+	   attributes => [[ 'word' ]],
+	   pages      => { next=>11, prev=>undef, pagesize=> 10, this=>1 },
+           # a bit unclean
+	   distinct   => 0,
+	  }, "Virtual Query/Result: kwic with align")
+  or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+is_deeply(${$r->hits}[0]{aligns}{'cuwi-fr'}[0][0], 'Des',
+	  "Virtual Query/Result: kwic align line start")
+  or diag("CWB::Model::Result structure was:\n" . Dumper(${$r->hits}[0]{aligns}{'cuwi-fr'}));
+
+$virt->general_align(1);
+$r = $virt->query(query=>'a*', display=>'kwic', align=>1, pagesize=>10);
+is_deeply($r,
+	  {
+	   corpusname => $virt->name,
+	   peers => [ [] ],
+	   query      => '[word="a.*" %c]',
+	   QUERY      => '[word="a.*" %c]',
+	   time       => $r->time,
+	   # bigcontext => 'paragraphs',
+           #language => [],
+	   hits       => [@{$r->hits}],
+	   hitno      => 326,
+	   aligns     => [ 'cuwi-sl', 'cuwi-fr' ],
+	   attributes => [[ 'word' ]],
+	   pages      => { next=>11, prev=>undef, pagesize=> 10, this=>1 },
+           # a bit unclean
+	   distinct   => 0,
+	  }, "Virtual Query/Result: kwic with general_align")
+  or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+is_deeply(${$r->hits}[0]{aligns}{'cuwi-fr'}[0][0], 'Des',
+	  "Virtual Query/Result: kwic general_align line start")
+  or diag("CWB::Model::Result structure was:\n" . Dumper(${$r->hits}[0]{aligns}{'cuwi-fr'}));
+
 #TODO: missing advanced sorting on virtual corpora
 
 done_testing();

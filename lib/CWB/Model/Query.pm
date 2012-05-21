@@ -65,7 +65,7 @@ sub new {
   #                   also pass corpus-specific collation to CQP env
   my $old_collate = $ENV{LC_COLLATE};
   $ENV{LC_COLLATE} = ($self->corpus->language ? $self->corpus->language : 'en_US') . '.' . $self->corpus->Encoding;
-  #warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n";
+  warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n" if $self->debug;
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model::Query Exception: Could not instantiate CWB::CQP.');
   $ENV{LC_COLLATE} = $old_collate;
@@ -275,6 +275,7 @@ sub run {
 		      scalar grep { $_ eq $align }
 			@{$self->corpus->alignements}
 		      } @{$self->align} ;
+  warn "Aligned in query to " . $self->corpus->name . ": " . join(', ', @aligns) . "\n" if $self->debug;
 
   unless ($self->display eq 'wordlist') { # no alignment for wordlists
     foreach my $align (@aligns) {
@@ -365,7 +366,8 @@ sub run {
     $sort_cmd .= ' on match[-1]' if ${$self->sort}{a}{target} eq 'left';
     $sort_cmd .= ' descending' if ${$self->sort}{a}{order} eq 'descending';
     $sort_cmd .= ' reverse' if ${$self->sort}{a}{direction} eq 'reversed';
-    #warn "Sorting! <<$sort_cmd>>\n";
+    warn "CQP sort engaged\n" if $self->debug;
+
     $self->exec($sort_cmd, 'Could not perform sort with ' . $sort_cmd);
   } else {
     # set natural sort order
@@ -469,7 +471,7 @@ sub run {
     }
     $result->table(1);
     my @kwic = $self->cqp->exec("cat Last 0 10000"); # limit max, 0-based
-    #warn "Got " . scalar @kwic . " lines.\n";
+    warn "Got " . scalar @kwic . " lines.\n" if $self->debug;
     my %counts;
     my $attrs=0;
     foreach my $kwic (@kwic) {
