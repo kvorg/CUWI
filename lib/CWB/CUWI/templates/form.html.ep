@@ -36,7 +36,7 @@
 % if ( keys %structs ) {
     <div class="structs">
       <%= tooltip( 'Only where', 'Structural constraint', 'Requires the match to be inside a structural region (xml tag) with the selected attribute matching the constraint. Can be used for selection of a specific text, author or part of speech, depending on corpus markup.') %> <%= select_field 'in-struct', ['-', keys %structs] %>
-      <%= tooltip( 'matches', 'Structural constraint Query', 'Single term query to match structural attribute (XML attribute) value. Rules for treatment of a single CQP regexp (without []) apply.') %>:&nbsp;&nbsp;<%= text_field 'struct-query', size=>24 %>
+      <%= tooltip( 'matches', 'Structural constraint Query', 'Single term query to match structural attribute (XML attribute) value. Rules for treatment of a single CQP regexp (without []) apply, since structural attributes are not corpus tokens and do not have positional attributes.') %>:&nbsp;&nbsp;<%= text_field 'struct-query', size=>24 %>
     </div>
 % }
 %  my %alignes = map { $_ => 1 } @{$corpus->alignements};
@@ -44,7 +44,7 @@
     <div class="structs">
     <%= select_field 'not-align', [ [If => 0], [Unless => 1] ] %>
     <%= tooltip( 'aligned', 'Alignement constraint', 'Requires the aligned region to match (or, alternatively, not match) the constraint. Can be used for excluding unwanted matches based on alignement information. (Regardless if alignement is shown.) Option \'*\' will apply to any existing alignemed corpora.') %> <%= select_field 'in-align', ['-', keys %alignes, '*'] %>
-   <%= tooltip( 'matches', 'Alignement constraint Query', 'Single term query to match algined region. Rules for treatment of a single CQP regexp (without []) apply.') %> :</a>&nbsp;&nbsp;<%= text_field 'align-query', size=>16 %>
+   <%= tooltip( 'matches', 'Alignement constraint Query', 'Full query to the matche algined region in the selected aligned corpus. Rules for treatment are the same as for the main query, including the selected search attribute. Note that this might fail if you select a search attribute for the main corpus when the aligned corpus does not have an attribute with the same name (CWB exception). Use the [attribute="regexp"] construct in this field or a full CQP query in the main query in such cases.') %> :</a>&nbsp;&nbsp;<%= text_field 'align-query', size=>37 %>
     </div>
 % }
 
