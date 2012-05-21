@@ -1,5 +1,9 @@
 This file documents the revision history for CWB::CUWI package.
 
+0.42 2012-05-21
+  - Fixed table exporting bug, again
+  - Fixed contraint parsing to allow CQP constructs
+
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application
   - Moved support subroutines to helpers or template blocks

@@ -232,11 +232,11 @@ sub run {
 	and (grep { $_ eq $self->align_query_corpus}
 	     @{$self->corpus->alignements})
 	and $self->align_query) {
-      $align_query = $self->_mangle_search($self->align_query);
+      $align_query = $self->_mangle_query($self->align_query);
       $align_query_corpus = ${$self->model->corpora}{$self->align_query_corpus}->NAME;
       $alignq = " :$align_query_corpus " .
 	( $self->align_query_not ? '! ' : '') .
-	  "\"$align_query\"";
+	  "$align_query";
     }
 
     # within structure constraint

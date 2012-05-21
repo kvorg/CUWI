@@ -65,7 +65,6 @@
 
 * Web interface BUGS
 
-** export fails
 ** constraints: do not clobber [] statements
 ** form: nowrap where needed
 ** bugs in drop down menues

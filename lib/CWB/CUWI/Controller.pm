@@ -1,5 +1,8 @@
 package CWB::CUWI::Controller;
 use Mojo::Base 'Mojolicious::Controller';
+use File::Temp qw( :mktemp);
+use File::Spec::Functions 'catdir';
+use Mojo::Asset::File;
 use Data::Dumper;
 
 sub corpus {
@@ -149,7 +152,7 @@ sub search {
 		   result=>$result,
 		   corpus=>$corpus,
 		 ) ;
-  } elsif ($self->param('format') 
+  } elsif ($self->param('format')
 	   and grep { $_ eq $self->param('format') }
 	   qw(xls xls csv json perl)  ) {
     $self->app->log->info('Exporting as ' . $self->param('format')
@@ -159,9 +162,8 @@ sub search {
       when ('perl') { $self->render(text => $self->dumper($result), format=>'perl' ); }
       when (/csv|xls/)  {
 	if ($self->stash->{table_export}) {
-	  my $tmpdir = File::Temp->newdir(File::Spec->catdir($self->app->config->{tmp}, 'cuwi_tmp_XXXXX'), CLEANUP=>1, );
-	  my $tmpfile = File::Spec->catfile($tmpdir->dirname, 'cuwi_search_results.' . $self->param('format'));
-	  $self->stash(tmpdir => $tmpdir ); # stash it until tx end for cleanup
+	  my $tmpfile = mktemp(File::Spec->catdir($self->app->config->{tmp}, 'cuwi_tmp_XXXXX'));
+	  $self->app->log->debug("Tmpfile for asset: $tmpfile");
 
 	  my $h="Spreadsheet::Write"->new(
 				   file    => $tmpfile,
@@ -172,7 +174,7 @@ sub search {
 	  if (not $result->table) {
 	    # not wordlist
 	    foreach my $hit (@{$result->hits}) {
-	      warn Dumper($result->attributes);
+	      #warn Dumper($result->attributes);
 	      my @rows = $self->tabspreader($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
 	      $h->addrow( map { {content => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
 									 (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
@@ -197,12 +199,11 @@ sub search {
 	    }
 	  }
 	  $h = undef;
-
+	  my $asset = Mojo::Asset::File->new(path => $tmpfile);
+	  $asset->cleanup(1);
 	  $self->res->headers->header('Content-Disposition' => 'attachment; filename="cuwi_search_results.' . $self->param('format'));
 	  $self->res->headers->content_type('application/' . $self->param('format'));
-	  my $ss = Mojolicious::Static->new(root=>'/');
-	  $ss->serve($self, $tmpfile)
-	    or $self->app->log->info('Export failed, file not found.');
+	  $self->res->content->asset($asset);
 	  $self->rendered;
 	  } else { $self->render(text => 'Perl package Spreadsheet::Write not installed. Sorry.') };
       }
