@@ -38,11 +38,7 @@ sub startup {
   $self->types->type(csv => 'application/csv');
   $self->types->type(xls => 'application/excel');
 
-  # defaults
-  $self->defaults->{maxsize} = 50000;
-  $self->defaults->{maxpagesize} = 500;
   $self->defaults->{table_export} = 0;
-
   my $loader = Mojo::Loader->new;
   my $e = $loader->load('Spreadsheet::Write');
   if (ref $e) {
@@ -101,6 +97,10 @@ available for corpora with suitabily formatted info files. See <a
 href="$cuwiroot/doc/cuwi"</a>CUWI manual for more info.)</a></p>
 
 FNORD
+
+  # defaults
+  $config->{maxsize} ||= 50000;
+  $config->{maxpagesize} ||=  500;
 
   $config->{tmp} = (
 		    ( defined $config->{tmp}

@@ -176,6 +176,30 @@ is_deeply($r,
  "Query/Result: display model wordlist - default structure test with ignorecase")
   or diag('Wordlist result data was: ' . Dumper($r) );
 
+$r = $sl->query(query=>"a*", search => 'word', show => [ qw (word tag) ], display=>'wordlist', ignorecase=>1, maxhits=>5,);
+is_deeply($r,
+	  {
+	   corpusname => $sl->name,
+	   peers => [ [] ],
+	   query      => '[word="a.*" %c]',
+	   QUERY      => '[word="a.*" %c]',
+	   language   => 'sl_SI',
+	   time       => $r->time,
+	   bigcontext => 'paragraphs',
+	   table => '1',
+	   hits       => [
+			  [ [[ 'avgusta', 'Ncmsg' ]], 6],
+			  @{$r->hits}[1..38],
+			 ],
+	   distinct   => 39,
+	   hitno      => 59,
+	   aligns     => [],
+	   attributes => [[ qw(word tag) ]],
+	   pages      => { single=>1, this=>1 },
+	  },
+ "Query/Result: display model wordlist using small maxhits and multiple loops ")
+  or diag('Wordlist result data was: ' . Dumper($r) );
+
 # query/result encoding roundtrip (in queries and all display modes)
 # MISSING
 

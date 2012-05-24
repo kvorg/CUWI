@@ -86,3 +86,6 @@ done_testing;
 
 # frequency download templates
 
+# config and defaults
+
+# module detection

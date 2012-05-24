@@ -2,6 +2,8 @@
 
 * CWB::Model BUGS:
 
+** Handle non-compatible info files
+   (by parsing them as descriptions)
 ** Paging: displays 1 match more than pagesize
 ** Escapes for ?, handling for single "
 ** Check query mangling in detail
@@ -14,46 +16,45 @@
     announce in red
     make a reduce to maxhits
 ** In paging with Result objects, the end page calculation is wrong
-** Default overrides new for ingorecase
-** Bug in combined query syntax: a* [word="t.*"], add test!
-** enable quoting of CQP escapes for "[rule]" and '[rule]'
-   - change CQP heurisitcs
+** Default overrides new for ingorecase (fixed)
+** CQP heurisitcs:
+   - Bug in combined query syntax: a* [word="t.*"], add test!
+   - enable quoting of CQP escapes for "[rule]" and '[rule]'
 ** Better tests/fails for failing/missing registry specifications
 ** Clean up newlines at the end of description
-** Handle non-compatible info files
-   (by parsing them as descriptions)
 ** Cleanup CQP query link situation with advanced query form options
+** _token split bug with / in token
 
 * CWB::Model
 
+** Multiple sorting and structural / alignement queries 
+** Possibly keep wordlists with progressive building
 ** Add ->next method to result for API, evolve result
 ** document query and result
 ** Structure handling in Query:
-    structure searches
     structure-based tree view (treebanks)
 ** Multicorpora
-    - extract virtual query magic into CWB::Model::Query::Virtual
     spook:
     - fix paging calculation,  should be optional, wrapped up in a function
 ** spook: sub-searches (based on existing search): subquery
    aka Support for chained query support -> store previous queries in link/params
 ** spook: any needed support for form-based alignement and structural queries
-** Add sorting to wordlists (js?)
-** Implement max_size and max_querytime properly
+** Implement maxquerytime properly
 ** Fix all file work to use IO::File and File::Spec
-** Possibly keep wordlists with paging and progressive building
-** Add corpus positions dump as an export option
 ** Improve test coverage
 ** Colocation support (usin cwb-corpus-scan ?)
 ** Info files: translateable names/titles
 ** Add a handle for literal matching (no regexps) with %l
 ** Test cwb beta release compatibiliy
-** Sorting with multiple sort keys
 ** Wordlist and sorting/prunning using CQP features better
 ** Implement cached queries:
    - CWB::Model::Corpus keeps a pool of ageing Query objects, matched on query
    - queries are reused with different show options, paging etc.
    - possibly used to support chained queries
+   - also:
+*** cache cqp connections in queries (only hit if query in instance)
+*** cache small but complex results and subquery parents in cpos files
+** Add corpus positions dump as an export option
 ** Support for list-oriented queries and macros, i.e. 
     /codist["whose", pos];
     /codist[lemma, "go", word];
@@ -65,26 +66,23 @@
 
 * Web interface BUGS
 
-** constraints: do not clobber [] statements
 ** form: nowrap where needed
 ** bugs in drop down menues
-** broken view display in detailed view
 ** missing "not" for structural constraint
-** _token split bug with 22/24
-   http://localhost:3000/cuwi/gfida/search?query=tajkun&search=lemma&within=s&in-struct=text_title&struct-query=Demokracija&contextsize=7&display=kwic&listing=all&size=50&startfrom=1&sort_a=none&sort_a_att=word&sort_a_order=ascending&sort_a_direction=natural
 ** wordlist -> ignoremeta in links disables ignorecase
 ** wordlist: quote metacharacters in string links: check/test
 ** classes: sanitize with the virtual corpus before sending (done?)
 ** fix controller params / %params ambiguity in controller
    (probably unify names, fix values with redirect and pass to model
    through a filter - setting params is proven to work ok
-   use flash to pass a message about fixing params)
+   use flash to pass messages about fixing params)
 ** fix wierd behavior with last page on \. search on imp-goo
 ** move export modules in and eval encapsualtion and handle exceptions
 ** make export modules work asynchroniously
+** consider moving export modules to Model, caveat previous
 ** disable context links for biggest display mode (sentence or paragraph)
 ** make label and checkbox unbreakable in attributes
-   (css? span? drop &nbsp;)
+   (css? span? space: nowrap? drop &nbsp;)
 ** possibly closures for exception handling are buggy
    - should rethrow the exception and catch it in webapp?
    - or just check for return value?
@@ -93,24 +91,27 @@
 
 * Web interface
 
-** multiple sort and multiple structure constraint
 ** implement maxhits, pagesize, maxpagesize via config
-** add encoding and language to corpus info, test encoding
-** runnig text context (with visible structural tags)
+** add total stats to root page
+** konrad, imp, spook: multiple sort and multiple structure constraint
+** wordlists: click on frequency number to get conjunction query
+** cleanup of templates: separation with includes:
+   search: form + mode
+   mode includes nav
+   some helpers -> named templates?
+** l18n
+** running text context: (with visible structural tags)
 ** document config, switch config to general config
 ** change wordlist exporting to divide matches into multiple fields
 ** spook: missing templates for query result exports
    oocalc, tab-delmited, corpus position dump, tei/xml, latex, yaml
-** spook: structural attribute constraint search:
-   add interface for multiple constraints
 ** spook: password protected groups
    better implementation
-** spook: sub-searches (based on existing search)
+** spook: sub-searches (based on existing search), possibly with caching
 ** add config file support for ID for structural attribute in result
 ** spook: home page info:
    navodila za uporabo v slovenščini s čimveč primeri različnih tipov
    iskanj - use a link
-** wordlists: click on frequency number to get conjunction query
 ** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
 ** When more than 7 attributes are present, switch display to 4 drop-down lists 
@@ -122,8 +123,7 @@
    [check status and add tests]
 ** Split display modes into search, detail, frequencies, collocations
 ** Add generate config helper to cuwi command line, and help
-** Cleanup of templates: separation with includes
-** I18n
+** Add on-line form-based config with auth
 ** Concordance support
    - probaly by supporting cwb-scan-corpus and disk-related
      long-polled results, see CWB::Model TODO
@@ -167,7 +167,7 @@
 ** http://corpus.leeds.ac.uk/paraquery.html
 ** http://www.comp.leeds.ac.uk/ssharoff/
 ** http://the.sketchengine.co.uk/
-** corpus.leeds.ac.uk./natasha mana serge cqp search
+** http://corpus.leeds.ac.uk./natasha mana serge cqp search
 ** SPOOK concord: http://nl.ijs.si/et/project/SPOOK/konkor/ 
 ** Para corpora:
    - http://nl2.ijs.si/index-bi.html
@@ -177,12 +177,11 @@
 * Release-critical
 
 ** cuwi growing and cleanup
-** spook stuff, multicorpora
+** spook stuff
 ** default info file processing
 ** decent test coverage
 ** logo
-** max_size, max_query_time in config
-** I18n
+** l18n
 ** colocations MI3 LL
    http://nlp.stanford.edu/fsnlp/promo/colloc.pdf
    http://nlp.stanford.edu/fsnlp/
