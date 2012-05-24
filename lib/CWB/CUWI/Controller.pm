@@ -30,8 +30,9 @@ sub search {
   return 0 unless $self->auth;
 
   # to application config
-  my $maxsize = $self->stash('maxsize');
-  my $maxpagesize = $self->stash('maxpagesize');
+  my $maxhits =     $config->{maxhits};
+  my $maxuserhits = $config->{maxuserhits};
+  my $maxpagesize = $config->{maxpagesize};
 
   # redirect to peer?
   if ( $self->param('peer')
@@ -51,6 +52,10 @@ sub search {
   $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
 
+  # corpus settings overrule global settings for wordlist hit limits
+  $maxhits = $corpus->maxhits || $maxhits;
+  $maxuserhits = $corpus->maxuserhits || $maxuserhits;
+
   $self->app->log->info("Redirecting to registry, corpus init aborted.")
     and $self->redirect_to('index')
       and return
@@ -66,8 +71,10 @@ sub search {
   my %c_structures = map { $_ => 1 } @{$corpus->structures};
   my %c_aligns     = map { $_ => 1 } @{$corpus->alignements};
 
-  $params{cpos} = $self->param('cpos') 
+  $params{cpos} = $self->param('cpos')
     if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
+  $params{maxhits} = $self->session('username') ?
+    $maxuserhits : $maxhits ;
   $params{query} = $self->param('query');
   $params{class} = $self->param('class')
     if not $corpus->can('file')
@@ -126,8 +133,7 @@ sub search {
   }
   $params{startfrom} = $self->param('startfrom') || 1;
   $params{startfrom} = 1 unless $params{startfrom} =~ m/[0-9]+/
-		     and $params{startfrom} >= 1
-		     and $params{startfrom} <= $maxsize;
+		     and $params{startfrom} >= 1;
   $params{reduce} = 1
     if $self->param('listing') and $self->param('listing') eq 'sample';
   $params{pagesize} = $self->param('size') || 50;

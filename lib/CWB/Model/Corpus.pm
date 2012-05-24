@@ -8,6 +8,7 @@ use Scalar::Util qw(weaken);
 has [qw(name NAME title model)];
 has [qw(attributes structures alignements peers)] => sub { return [] };
 has [qw(description tooltips stats)]              => sub { return {} };
+has [qw(maxhits maxuserhits)] => 10000;
 has encoding => 'utf8';
 has Encoding => 'UTF-8';
 has language => undef;

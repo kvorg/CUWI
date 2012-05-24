@@ -16,8 +16,7 @@ has [ qw(corpus model cqp
 	cpos query
         struct_constraint_struct struct_constraint_query within
 	align_query align_query_corpus align_query_not
-        reduce maxhits
-	l_context r_context
+        reduce 	l_context r_context
 	hitsonly debug) ] ;
 has search      => 'word';
 has show        =>  sub { return [] };
@@ -29,6 +28,7 @@ has ignorediacritics => 0;
 has ignoremeta  => 0;
 has startfrom   => 1;
 has pagesize    => 25;
+has maxhits     => 10000;
 has context     => 25;
 has display     => 'kwic';
 has result      => sub { CWB::Model::Result->new };
@@ -470,39 +470,44 @@ sub run {
       $result->reduce(1);
     }
     $result->table(1);
-    my @kwic = $self->cqp->exec("cat Last 0 10000"); # limit max, 0-based
-    warn "Got " . scalar @kwic . " lines.\n" if $self->debug;
     my %counts;
-    my $attrs=0;
-    foreach my $kwic (@kwic) {
-      if ($kwic =~ m{^[<]attribute type=positional}) { # SGML attr info
-	$attrs++;
-	next;
-      }
-      next if $kwic =~ m{^[<]/?CONCORDANCE}; # SGML preamble
-      $self->exception("Not expecting alignemnents in frequency wordlists, line:", $kwic)
-      if $kwic =~ m{^[<]align name="(.*?)">&lt;CONTENT&gt; (.*)&lt;/CONTENT&gt;$};
+    my $step;
+    for (my $pos = 0  ; $pos < $result->hitno; $pos += $self->maxhits ) {
+      $step++;
+      my @kwic = $self->cqp->exec("cat Last $pos " . ($pos + $self->maxhits -1));
+      warn "Got " . scalar @kwic . " lines in step $step.\n" if $self->debug;
+      my $attrs=0;
+      foreach my $kwic (@kwic) {
+	if ($kwic =~ m{^[<]attribute type=positional}) { # SGML attr info
+	  $attrs++;
+	  next;
+	}
+	next if $kwic =~ m{^[<]/?CONCORDANCE}; # SGML preamble
+	$self->exception("Not expecting alignemnents in frequency wordlists, line:", $kwic)
+	  if $kwic =~ m{^[<]align name="(.*?)">&lt;CONTENT&gt; (.*)&lt;/CONTENT&gt;$};
 
-      $kwic =~ m{^[<]LINE[>]        # head
-		 [<]MATCHNUM[>][\d]+[<]/MATCHNUM[>] # cpos
-		 (?:[<]STRUCS[>].*?[<]/STRUCS[>])?  # structs
-		 [<]CONTENT[>]\s*
-		 .*?\s*           # left
-		 [<]MATCH[>]        # separator
-		 (.*?)              # match
-		 [<]/MATCH[>]\s*    # separator
-		 .*?              # right
-		 \s*[<]/CONTENT[>]
-		 [<]/LINE[>]\s*$}x  # tail
-	or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
-      my $match = decode($self->corpus->encoding, $1);
-      my $matchkey = $match;
-      $matchkey = lc($match) if $self->ignorecase;
-      $counts{$matchkey}{count} = 0 unless exists $counts{$matchkey};
-      $counts{$matchkey}{count}++ ;
-      $counts{$matchkey}{value} = _tokens($match, $attrs);
-      $counts{$matchkey}{data} = [$match, $attrs] if $self->subcorpus;
-    }
+	$kwic =~ m{^[<]LINE[>]        # head
+		   [<]MATCHNUM[>][\d]+[<]/MATCHNUM[>] # cpos
+		   (?:[<]STRUCS[>].*?[<]/STRUCS[>])?  # structs
+		   [<]CONTENT[>]\s*
+		   .*?\s*           # left
+		   [<]MATCH[>]        # separator
+		   (.*?)              # match
+		   [<]/MATCH[>]\s*    # separator
+		   .*?              # right
+		   \s*[<]/CONTENT[>]
+		   [<]/LINE[>]\s*$}x  # tail
+		     or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
+	my $match = decode($self->corpus->encoding, $1);
+	my $matchkey = $match;
+	$matchkey = lc($match) if $self->ignorecase;
+	$counts{$matchkey}{count} = 0 unless exists $counts{$matchkey};
+	$counts{$matchkey}{count}++ ;
+	$counts{$matchkey}{value} = _tokens($match, $attrs);
+	$counts{$matchkey}{data} = [$match, $attrs] if $self->subcorpus;
+      }
+    } # cqp pos loop
+
     if ($self->subcorpus) {
       @{$result->hits} = map { [
 				$counts{$_}{value},
