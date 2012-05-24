@@ -186,7 +186,7 @@ sub search {
 				  );
 
 	  if (not $result->table) {
-	    # not wordlist
+	    # not wordlist, BUG: fragile with large results
 	    foreach my $hit (@{$result->hits}) {
 	      #warn Dumper($result->attributes);
 	      my @rows = $self->tabspreader($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});

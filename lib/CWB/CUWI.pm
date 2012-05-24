@@ -109,6 +109,7 @@ FNORD
 		    ( $ENV{MOJO_TMPDIR} || File::Spec->tmpdir )
 		   );
   $self->log->info("Temporary directory: $config->{tmp}");
+  $config->{login_expiration} //= 172800; #two days
   my $model = CWB::Model->new(
 			      ( $config->{registry} ? 
 				(registry => $config->{registry}) : () )
@@ -255,6 +256,8 @@ FNORD
 	    my $redirection = $self->session('redirection');
 	    my $retry = $self->session('retry') || 0;
 	    my $error = $self->flash('error');
+
+	    $self->session->default_expiration($self->app->config->{login_expiration});
 
 	    if ($username and $password and $auth) { #authenticate and redirect back
 	      $self->app->log->debug("Authenticating $username for $domain");

@@ -121,7 +121,7 @@ sub { #$c is controller, means generate contex links
 		sub {
 		  my $cb = pop;
 		  my ($c, $m, $title, $anchor) = @_;
-		 
+
 		  $anchor //= $m->{data}{text_title}
 		    if exists $m->{data}{text_title};
 		  $anchor //= 'Info';

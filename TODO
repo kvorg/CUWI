@@ -66,6 +66,7 @@
 
 * Web interface BUGS
 
+** use chunked transfer encoding for results?
 ** form: nowrap where needed
 ** bugs in drop down menues
 ** missing "not" for structural constraint
