@@ -257,15 +257,14 @@ FNORD
 	    my $retry = $self->session('retry') || 0;
 	    my $error = $self->flash('error');
 
-	    $self->session->default_expiration($self->app->config->{login_expiration});
-
 	    if ($username and $password and $auth) { #authenticate and redirect back
 	      $self->app->log->debug("Authenticating $username for $domain");
 	      if ($config->{DOMAINS}{$domain}{$username} eq $password) {
 		$self->app->log->info("Authentication: $username logged in for $domain.");
-		$self->session('username', $username);
-		$self->session('retry', 0);
-		$self->session('redirection', undef);
+		$self->session(username => $username);
+		$self->session(retry => 0);
+		$self->session(redirection => undef);
+		$self->session(expires => time + $self->app->config->{login_expiration});
 		$self->redirect_to(defined $redirection ? $redirection : $config->{root} . "/$authcorpus");
 	      } else {
 		$self->app->log->info("Authentication for $username in $domain failed, retrying.");
