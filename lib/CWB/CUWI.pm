@@ -19,11 +19,9 @@ use Encode 'decode';
 sub startup {
   my $self = shift;
 
-  # Switch to installable home directory
+  # switch to installable directies for home, public, templates
   $self->home->parse(catdir(dirname(__FILE__), 'CUWI'));
-  # Switch to installable "public" directory
   $self->static->paths->[0] = $self->home->rel_dir('public');
-  # Switch to installable "templates" directory
   $self->renderer->paths->[0] = $self->home->rel_dir('templates');
 
   # plugins
@@ -32,6 +30,7 @@ sub startup {
   $self->plugin('tag_helpers_extra');
   $self->plugin('helpers');
   $self->plugin('PODRenderer'); #park it under root and use for help?
+  $self->plugin(I18N => {default => 'en', namespace => 'CWB::CUWI::I18N'});
 
   # html
   $self->secret('re9phoothieX4dah4chi');

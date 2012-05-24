@@ -157,3 +157,5 @@ div.description table.stats tr td {
   padding-right: 1em;
 }
 
+/* Hide infotips to avoid flashing */
+span.infotip { display: none; }

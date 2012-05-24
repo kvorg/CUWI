@@ -1,12 +1,21 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-05-21
+0.42 2012-05-22
   - Fixed table exporting bug, again
-  - Fixed contraint parsing to allow CQP constructs
-  - Fixed buggy virtual corpus alignement issues
+  - Fixed constraint parsing to allow CQP constructs
+  - Fixed buggy virtual corpus alignment issues
+  - Fixed css flashing for infotips
+  - Split up search template
+  - Rudimentary localization
+  - More configuration options
 
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application
   - Moved support subroutines to helpers or template blocks
   - Moved bundled files with controller to support installation
   - Improved documentation for installation, CUWI::Model, config
+
+/* Local Variables: */
+/* mode:outline     */
+/* outline-regexp:"[ 0-9]+[-.]" */
+/* End:             */

@@ -1,6 +1,6 @@
   <div class="form">
     <%= form_for "/$config->{root}/" . $corpus->name . "/search", ( method => "get") => begin %>
-    <%= tooltip( 'Query', "The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored for that term. If you want full CQP syntax for the whole query, preceede the query with character ~ followed with a space.") %>:</a>&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
+    <%= tooltip( l('Query'), "The search query can contain simple words with optional ? and * place-holders. Your query will be converted into a CQP langauge query, using the 'Search' attributes bellow. The search result page will display how the simple search is transformed into a CQP query. If CQP syntax (triggered by any use of quoting in the search query) is detected, no conversion is applied and the 'Search' attributes are ignored for that term. If you want full CQP syntax for the whole query, preceede the query with character ~ followed with a space.") %>:</a>&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
 % if (@{$corpus->peers}) {
 <%= tooltip( 'Corpus', 'In a corpus group, you can send the search to a different corpus in the group by selecting the name of the ecorpus here.') %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %>
 % }
@@ -44,7 +44,7 @@
     <div class="structs">
     <%= select_field 'not-align', [ [If => 0], [Unless => 1] ] %>
     <%= tooltip( 'aligned', 'Alignement constraint', 'Requires the aligned region to match (or, alternatively, not match) the constraint. Can be used for excluding unwanted matches based on alignement information. (Regardless if alignement is shown.) Option \'*\' will apply to any existing alignemed corpora.') %> <%= select_field 'in-align', ['-', keys %alignes, '*'] %>
-   <%= tooltip( 'matches', 'Alignement constraint Query', 'Full query to the matche algined region in the selected aligned corpus. Rules for treatment are the same as for the main query, including the selected search attribute. Note that this might fail if you select a search attribute for the main corpus when the aligned corpus does not have an attribute with the same name (CWB exception). Use the [attribute="regexp"] construct in this field or a full CQP query in the main query in such cases.') %> :</a>&nbsp;&nbsp;<%= text_field 'align-query', size=>37 %>
+   <%= tooltip( 'matches', 'Alignement constraint Query', 'Full query to the matche algined region in the selected aligned corpus. Rules for treatment are the same as for the main query, including the selected search attribute. Note that this might fail if you select a search attribute for the main corpus when the aligned corpus does not have an attribute with the same name (CWB exception). Use the [attribute="regexp"] construct in this field or a full CQP query in the main query in such cases.') %> :</a>&nbsp;&nbsp;<%= text_field 'align-query', size=>30 %>
     </div>
 % }
 
