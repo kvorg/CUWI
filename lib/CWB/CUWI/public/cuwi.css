@@ -74,6 +74,12 @@ div.matches { background-color: white;
 	      margin-left: auto; margin-right: auto;
 }
 div.matches p { margin: .25em; margin-left: .5em; margin-right: .5em; }
+p.subcorpus { 
+    background-color: #F2F2F2; font-weight: bold;
+    padding: 2px;
+    margin-top: 4ex; margin-bottom: 3px;
+    border-radius: 6px;
+ }
 div.matches table { padding: .5em; background-color: white; margin-left: auto; margin-right: auto; clear: right;}
 td.subcorpus { font-weight: bold; }
 span.hit  { color: red; font-weight: bold; }

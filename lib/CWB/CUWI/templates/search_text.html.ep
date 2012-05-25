@@ -23,9 +23,14 @@
 
   <div class="matches">
 %  my $nr = ${$result->{pages}}{this};
+%  my $subcorpus =''; 
 %  my @single = ( contextsize=>25 );
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
+%  if ($m->{subcorpus_name} and $m->{subcorpus_name} ne $subcorpus) {
+%    $subcorpus = $m->{subcorpus_name};
+    <p class="subcorpus"><%= $subcorpus %></p>
+%  }
     <p>
      <span class="parno"><%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
      <%= infotip $m, 'Structural Info' => begin %>
