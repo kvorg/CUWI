@@ -1,0 +1,9 @@
+<div class="exports">
+ Export results:
+ <%= link_to_here { format=>'json', start_from=>1, size=>50000 } => begin %><span> JSON </span><% end %>
+ <%= link_to_here { format=>'perl', start_from=>1, size=>50000 } => begin %><span> Perl </span><% end %>
+% if ($table_export) {
+ <%= link_to_here { format=>'csv', start_from=>1, size=>50000 } => begin %><span> CSV </span><% end %>
+ <%= link_to_here { format=>'xls', start_from=>1, size=>50000 } => begin %><span> Excel </span><% end %>
+% }
+</div>

@@ -1,111 +1,15 @@
 % layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
 <%= include 'form' %>
-  <div class="report">
-% if ($self->param('display') eq 'wordlist') {
-   <p>Retrieved <b><%=  scalar @{$result->hits} %></b> 
-% if ($result->reduce) {
-  out of <b><%= $result->distinct %></b>
-% }
- distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
-% } elsif ($result->reduce) {
-   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
-% }
-% elsif ($result->pages->{single} or $result->hitno > ${$result->pages}{pagesize}) {
-   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
-% } else {
-   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= '+ ' . $result->query %><% end %></span>
-% }
- in <%= sprintf('%0.3f', $result->time) %> s.</p>
-  </div>
-% if (stash('cwbexception')) {
-<div class="exception">
-%== join('<br>', @{stash('cwbexception')});
-</div>
-% }
 
 % if ($result->hitno) {
-<div class="exports">
- Export results:
- <%= link_to_here { format=>'json', start_from=>1, size=>50000 } => begin %><span> JSON </span><% end %>
- <%= link_to_here { format=>'perl', start_from=>1, size=>50000 } => begin %><span> Perl </span><% end %>
-% if ($table_export) {
- <%= link_to_here { format=>'csv', start_from=>1, size=>50000 } => begin %><span> CSV </span><% end %>
- <%= link_to_here { format=>'xls', start_from=>1, size=>50000 } => begin %><span> Excel </span><% end %>
+%   if ($self->param('display') eq 'kwic') {
+%=    include 'search_kwic'
+%   } elsif ($self->param('display') eq 'sentences' or $self->param('display') eq 'paragraphs') {
+%=    include 'search_text'
+%   } elsif ($self->param('display') eq 'wordlist') {
+%=    include 'search_wordlist'
+%   } else {
+   Unknown display mode: query aborted. (Stop playing with my query parameters or I will not be RESTful much longer!)
+%   }
 % }
-</div>
-% }
-
-<%= include 'nav' %>
-
-% if ($result->hitno) {
-  <div class="matches">
-% if ($self->param('display') eq 'kwic') {
-  <table>
-%  my $nr = ${$result->{pages}}{this};
-%  my $subcorpus =''; 
-%  my @single = ( contextsize=>50 );
-%  @single = ( display => $result->bigcontext ) if $result->bigcontext;
-%  foreach my $m (@{$result->hits}) {
-%  if ($m->{subcorpus_name} and $m->{subcorpus_name} ne $subcorpus) {
-%    $subcorpus = $m->{subcorpus_name};
-    <tr><td colspan="4" class="subcorpus"><%= $subcorpus %></td></tr>
-%  }
-    <tr>
-     <td class="head"><span class="no">
-<%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
-     <%= infotip $m, 'Structural Info' => begin %>
-      <b>cpos:</b> <%= $m->{'cpos'} %>
-%   foreach my $struct (keys %{$m->{data}}) {
-      <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
-%   }
-     <br /><i>Click result number for detailed view.</i>
-      <% end %>
-     <td class="left"><%== tabulator($m->{left}); %></td>
-     <td class="match"><span class="match"><%== tabulator($m->{match}); %></span></td>
-     <td class="right"><%== tabulator($m->{right}); %></td>
-    </tr>
-%   foreach my $align (keys %{$m->{aligns}}) {
-    <tr><td class="head"><span class="no"><%= infotip $m, "Alignement to $align", '@' => begin %>
-<%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %><% end %></span></td><td colspan="3" class="align"><%== tabulator($m->{aligns}{$align}); %></td></tr>
-%   }
-%  }
-  </table>
-% } elsif ($self->param('display') eq 'sentences' or $self->param('display') eq 'paragraphs') {
-%  my $nr = ${$result->{pages}}{this};
-%  my @single = ( contextsize=>25 );
-%  @single = ( display => $result->bigcontext ) if $result->bigcontext;
-%  foreach my $m (@{$result->hits}) {
-    <p>
-     <span class="parno"><%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
-     <%= infotip $m, 'Structural Info' => begin %>
-      <b>cpos:</b> <%= $m->{'cpos'} %>
-%   foreach my $struct (keys %{$m->{data}}) {
-      <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
-%   }
-     <br /><i>Click result number for detailed view.</i>
-      <% end %>
-     <%== tabulator($m->{left}); %>
-     <span class="match"><%== tabulator($m->{match}); %></span>
-     <%== tabulator($m->{right}); %>
-    </p>
-%   foreach my $align (keys %{$m->{aligns}}) {
-    <p class="align"><span class="parno"><%= infotip $m, "Alignement to $align", '@' => begin %>
-<%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %><% end %></span><span class="align"><%== tabulator($m->{aligns}{$align}); %></span></p>
-%   }
-%  }
-% } elsif ($self->param('display') eq 'wordlist') {
-  <table>
-    <tr class="total"><td> </td><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
-%  my $nr = 1;
-  %  foreach my $m (@{$result->hits}) {
-    <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%== tabulator($m->[0], $self) %></td><td class="count"><%= $m->[1] %></td></tr>
-  %  }
-  </table>
-% } else {
-  Unknown display mode: query aborted. (Stop playing with my query parameters or I won't be RESTful much longer!)
-% }
- </div>
-<%= include 'nav' %>
-
-%}
 

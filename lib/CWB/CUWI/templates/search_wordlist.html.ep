@@ -1,0 +1,33 @@
+  <div class="report">
+   <p>Retrieved <b><%=  scalar @{$result->hits} %></b> 
+% if ($result->reduce) {
+      out of <b><%= $result->distinct %></b>
+% }
+      distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+      in <%= sprintf('%0.3f', $result->time) %> s.
+    </p>
+  </div>
+
+% if (stash('cwbexception')) {
+  <div class="exception">
+%== join('<br>', @{stash('cwbexception')});
+  </div>
+% }
+
+% if ($result->hitno) {
+<%= include 'search_exports' %>
+% }
+
+<%= include 'nav' %>
+
+  <div class="matches">
+   <table>
+     <tr class="total"><td> </td><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
+% my $nr = 1;
+% foreach my $m (@{$result->hits}) {
+     <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%== tabulator($m->[0], $self) %></td><td class="count"><%= $m->[1] %></td></tr>
+% }
+   </table>
+  </div>
+
+<%= include 'nav' %>
