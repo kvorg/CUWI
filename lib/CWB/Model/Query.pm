@@ -198,6 +198,7 @@ sub run {
   my $cqpquery = 0;
   $cqpquery = 1 if $self->query =~ m{s*[+]};
   my $query = $self->_mangle_query($self->query);
+  my $querymods = '';
 
   # handle additional constraints
   unless ($cqpquery) {
@@ -247,7 +248,8 @@ sub run {
     $withinq = " within $within" if $within;
 
     # compose query
-    $query .= "$alignq$structq$withinq";
+    $querymods = "$alignq$structq$withinq";
+    $query .= $querymods;
   }
 
   warn("Constructed query $query.\n") if $self->debug;
@@ -341,6 +343,7 @@ sub run {
 
   $result->query($query);
   $result->QUERY($_query);
+  $result->QUERYMODS($querymods);
   @{$result->attributes} = $self->show;
   @{$result->aligns} = @aligns;
   @{$result->peers} = $self->corpus->peers;

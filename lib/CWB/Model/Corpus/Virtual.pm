@@ -228,10 +228,16 @@ sub query {
   my @subcorpora = @{$self->subcorpora};
   # BUG: something wierd here:
   # Use of uninitialized value $opts{"class"} in exists at lib/CWB/Model.pm line 438.
+  #warn "Checking subclass $opts{class} with subclasses: " . join(', ', keys %{$self->classes}) . "\n";
   if (exists $opts{class}) {
     @subcorpora = @{${$self->classes}{$opts{class}}}
       if ( exists ${$self->classes}{$opts{class}} );
     delete $opts{class};
+    # warn "Subclass processing for $opts{class}:\n"
+    # 	. join(', ', @{$self->subcorpora})
+    # 	. ' -> ' 
+    # 	. join(', ', @subcorpora)
+    # 	. "\n";
   }
   foreach my $subname (@subcorpora) {
     my $subcorpus = ${$self->_subcorpora}{$subname};
@@ -256,6 +262,8 @@ sub query {
 
       $result->query($r->query) unless $result->query;
       $result->QUERY($r->QUERY) unless $result->QUERY;
+      $result->QUERYMODS($r->QUERYMODS) unless $result->QUERYMODS;
+      $result->bigcontext($r->bigcontext) unless $result->bigcontext;
       $result->hitno($result->hitno + $r->hitno);
 
       # aggregate from result hits

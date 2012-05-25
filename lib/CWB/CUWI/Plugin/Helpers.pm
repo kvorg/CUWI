@@ -51,7 +51,7 @@ sub {
   $self->param('size', 50)
     unless $self->param('size')
       and '' . $self->param('size') =~ m{[0-9]+}
-      and $self->param('size') <= $maxsize;
+      and $self->param('size') <= $self->app->config->{maxsize};
   $self->param('startfrom', 1)
     unless $self->param('startfrom')
       and '' . $self->param('startfrom') =~ m{[0-9]+};
@@ -157,6 +157,35 @@ sub { #$c is controller, means generate contex links
 		 return @row;
 	       });
 
+  $app->helper(matchquery =>
+	       sub  {
+		 my ($c, $match) = @_;
+		 my $attributes =  $c->stash('result')->attributes->[0];
+		 my $qmods = $c->stash('result')->QUERYMODS || '';
+		 my $query = '+'; 
+		 my $mods = '';
+		 $mods = ' %'
+		   if $c->param('ignorecase')
+		     or $c->param('ignorediacritics')
+		       or $c->param('ignoremeta');
+		 $mods .= 'c' if $c->param('ignorecase');
+		 $mods .= 'd' if $c->param('ignorediacritics');
+		 $mods .= 'l' if $c->param('ignoremeta');
+
+
+		 foreach my $m (@{$match->[0]}) {
+		   my $i = 0; my @q;
+		   foreach my $att (@{$attributes}) {
+		     my $q;
+		     $q = "$att=\"" . $m->[$i] . '"';
+		     push @q, $q;
+		     $i++;
+		   }
+		   #$DB::single = 2;
+		   $query .= ' [ ' . join (' & ', @q) . $mods . ' ]';
+		 }
+		 return $query . $qmods;
+	       });
 
 } #register
 

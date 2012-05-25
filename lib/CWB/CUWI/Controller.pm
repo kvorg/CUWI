@@ -77,8 +77,9 @@ sub search {
     $maxuserhits : $maxhits ;
   $params{query} = $self->param('query');
   $params{class} = $self->param('class')
-    if not $corpus->can('file')
-      and $corpus->classes->{class};
+    if $corpus->isa('CWB::Model::Corpus::Virtual')
+    and ${$corpus->classes}{$self->param('class')};
+  #warn "Class param set to $params{class}\n";
   $params{search} = ( $self->param('search')
 		      && $c_attributes{$self->param('search')}
 		      ? $self->param('search') : 'word');

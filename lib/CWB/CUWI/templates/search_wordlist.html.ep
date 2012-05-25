@@ -3,7 +3,7 @@
 % if ($result->reduce) {
       out of <b><%= $result->distinct %></b>
 % }
-      distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+      distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
       in <%= sprintf('%0.3f', $result->time) %> s.
     </p>
   </div>
@@ -23,9 +23,13 @@
   <div class="matches">
    <table>
      <tr class="total"><td> </td><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
+% my $bigcontext = $result->bigcontext;
 % my $nr = 1;
 % foreach my $m (@{$result->hits}) {
-     <tr><td class="head"><span class="no">[<%= $nr++ %>]</td><td><%== tabulator($m->[0], $self) %></td><td class="count"><%= $m->[1] %></td></tr>
+%  my $q = matchquery($m);
+     <tr>
+      <td class="head"><%= link_to_here {query=>$q, display => $bigcontext}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span></td>
+      <td><%== tabulator($m->[0], $self) %></td><td class="count"><%= link_to_here {query=>$q, display => 'kwic'}, (class=>"infobox") => begin %><%= $m->[1] %><% end %></td></tr>
 % }
    </table>
   </div>

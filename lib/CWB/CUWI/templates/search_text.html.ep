@@ -27,7 +27,7 @@
 %  @single = ( display => $result->bigcontext ) if $result->bigcontext;
 %  foreach my $m (@{$result->hits}) {
     <p>
-     <span class="parno"><%= link_to_here {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
+     <span class="parno"><%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
      <%= infotip $m, 'Structural Info' => begin %>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {

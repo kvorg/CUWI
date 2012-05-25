@@ -5,7 +5,7 @@ use Carp qw(croak cluck);
 use POSIX qw(locale_h);
 use Data::Dumper;
 
-has [qw(query QUERY time distinct cpos next prev reduce table bigcontext corpusname)] ;
+has [qw(query QUERY QUERYMODS time distinct cpos next prev reduce table bigcontext corpusname)] ;
 has hitno => 0;
 has pages => sub { return {} } ;
 has [qw(hits attributes aligns peers language)]  => sub { return [] } ;
