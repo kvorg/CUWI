@@ -212,11 +212,6 @@ FNORD
 
   my $r = $self->routes->under($config->{root});
 
-#  my $r = $lr->bridge( sub {
-#			$self->language($self->session('language'))
-#			  if $self->session('language');
-#		      });
-
   $r->get("/doc/" => sub { shift->redirect_to('/' . $config->{root} . '/doc/CWB/CUWI/Manual' ); } => 'perldoc');
 
   $r->get("/" => sub { $self->sanitize; } =>'index');
@@ -231,7 +226,8 @@ FNORD
 	    my $self = shift;
 	    $self->session(expires => time + $self->app->config->{login_expiration});
 	    $self->session(language => $self->param('lang'));
-	    $self->redirect_to($self->req->headers->header('Referer'));
+	    $DB::single = 2;
+	    $self->redirect_to(scalar $self->req->headers->header('Referer'));
 	  });
 
   $r->get("/style.css" => sub { shift->render_static('cuwi.css'); });

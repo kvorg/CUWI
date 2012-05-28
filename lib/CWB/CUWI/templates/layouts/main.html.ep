@@ -11,12 +11,15 @@
  <body>
  <div class="optionbar">
   <div class="langselect">
-   <span class="langselect"><a class="langselect" href="#"><%= image ('/' . $config->{root} . '/lib/images/cog.png', alt => 'Select langauges', class => 'options', width => 12, height => 12) %> <%= l('Languages') %></a>
-   <ul>
+   <ul class="langselect" id="navbar">
+     <li><%= image ('/' . $config->{root} . '/lib/images/cog.png', alt => 'Select languages', class => 'options', width => 12, height => 12) %> <%= l('Languages') %></a>
+       <ul>
    %   foreach ( sort @{$langs} ) {
-    <li><%= link_to $_ => '/' . $config->{root} . "/setlang/$_" %></li>
+        <li><%= link_to $_ => '/' . $config->{root} . "/setlang/$_" %></li>
    %   }
-   </ul></span>
+       </ul>
+     </li>
+   </ul>
   </div>
   <div class="user">
  % if ($self->session('username')) {

@@ -92,7 +92,7 @@
 
 * Web interface
 
-** implement maxhits, pagesize, maxpagesize via config
+** switch to cwb-scancorups for frequency lists
 ** add total stats to root page
 ** konrad, imp, spook: multiple sort and multiple structure constraint
 ** wordlists: click on frequency number to get conjunction query

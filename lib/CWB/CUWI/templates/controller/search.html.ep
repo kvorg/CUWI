@@ -1,3 +1,4 @@
+% $self->languages($self->session('language')) if $self->session('language');
 % layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
 <%= include 'form' %>
 

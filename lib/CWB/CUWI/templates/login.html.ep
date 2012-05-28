@@ -1,8 +1,9 @@
+% $self->languages($self->session('language')) if $self->session('language');
 % layout 'main', title=>l('Login');
   <div class="form">
     <%= form_for $self->req->url => ( method => "post") => begin %>
-       l(Username): <%= text_field 'username', size=>10 %>
-       l(Password): <%= password_field 'password', size=>20 %>
+       <%= l('Username') %>: <%= text_field 'username', size=>10 %>
+       <%= l('Password') %>: <%= password_field 'password', size=>20 %>
       <%= submit_button l('Login') %>
     <% end %>
   </div>

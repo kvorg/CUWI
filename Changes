@@ -1,7 +1,7 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-05-25
-  - Rudimentary localization
+0.42 2012-05-28
+  - Localization framework, Slovene localization
   - More configuration options
   - Result looping for large wordlist result sets
   - Fixed table exporting bug, again
