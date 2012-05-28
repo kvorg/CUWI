@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
  <head>
-  <title>CUWI Search <%= $title ? " $title" : '' =%></title>
+  <title><%= l('CUWI Search') %> <%= $title ? " $title" : '' =%></title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <link rel="stylesheet" href="<%= '/' . $config->{root} . '/style.css' %>"  type="text/css" />
   <link rel="stylesheet" href="<%= '/' . $config->{root} . '/lib/jquery.cluetip.css' %>" type="text/css" />
@@ -9,17 +9,28 @@
   <script>!window.jQuery && document.write(unescape('%3Cscript src="<%= '/' . $config->{root} . '/lib/jquery-1.7.1.min.js' %>"%3E%3C/script%3E'));</script>
  </head>
  <body>
- <div class="user">
-   <%= link_to '/' . $config->{root} . '/doc/CWB/CUWI/Manual' => begin %>Help<% end %>
+ <div class="optionbar">
+  <div class="langselect">
+   <span class="langselect"><a class="langselect" href="#"><%= image ('/' . $config->{root} . '/lib/images/cog.png', alt => 'Select langauges', class => 'options', width => 12, height => 12) %> <%= l('Languages') %></a>
+   <ul>
+   %   foreach ( sort @{$langs} ) {
+    <li><%= link_to $_ => '/' . $config->{root} . "/setlang/$_" %></li>
+   %   }
+   </ul></span>
+  </div>
+  <div class="user">
  % if ($self->session('username')) {
-   Logged in as: <b><%= $self->session('username') %></b>. <%= link_to Logout => '/' . $config->{root} . '/logout' %>
+   <%= l('Logged in as') %>: <b><%= $self->session('username') %></b>. <%= link_to l('Logout') => '/' . $config->{root} . '/logout' %>
  %}
+  </div>
+   <%= link_to '/' . $config->{root} . '/doc/CWB/CUWI/Manual' => begin %><%= l('Help') %><% end %>
  </div>
+
   <h2><%= link_to 'index' => begin %>
-    CUWI Search
+    <%= l('CUWI Search') %>
   <% end %>
  % if (param('corpus')) {
-   on
+   :
    <%= link_to '/' . $config->{root} . '/' . param('corpus') => begin %>
      <%= ${$model->{corpora}}{param('corpus')}->title %>
    <% end %>

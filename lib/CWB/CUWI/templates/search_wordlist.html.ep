@@ -1,10 +1,12 @@
   <div class="report">
-   <p>Retrieved <b><%=  scalar @{$result->hits} %></b> 
+   <p>
 % if ($result->reduce) {
-      out of <b><%= $result->distinct %></b>
+  <%== l('result_msg_wordlist_sample x_out_of_y_distinct_from_z_for', scalar @{$result->hits}, $result->distinct, $result->hitno) %>
+% } else {
+  <%== l('result_msg_wordlist_x_distinct_out of_y', $result->distinct, $result->hitno) %>
 % }
-      distinct matches from <b><%= $result->hitno %></b> hits for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
-      in <%= sprintf('%0.3f', $result->time) %> s.
+<%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+  <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
     </p>
   </div>
 
@@ -22,7 +24,7 @@
 
   <div class="matches">
    <table>
-     <tr class="total"><td> </td><td>TOTAL: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
+     <tr class="total"><td> </td><td><%= l 'TOTAL' %>: <%= $result->distinct %></td><td class="count"><%= $result->hitno %></td></tr>
 % my $bigcontext = $result->bigcontext;
 % my $nr = 1;
 % foreach my $m (@{$result->hits}) {

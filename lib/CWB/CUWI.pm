@@ -49,6 +49,10 @@ sub startup {
     $self->log->info("Module Spreadsheet::Write loaded ok.") unless $e;
     $self->defaults->{table_export} = 1;
   }
+  my @langs = map { m/CWB::CUWI::I18N::(.*)/; $1 } 
+    @{$loader->search('CWB::CUWI::I18N')};
+  $self->defaults->{langs} = [@langs];
+
 
 # config - possibly use the config helper?
 # or stuff everything in a module or helper
@@ -208,6 +212,11 @@ FNORD
 
   my $r = $self->routes->under($config->{root});
 
+#  my $r = $lr->bridge( sub {
+#			$self->language($self->session('language'))
+#			  if $self->session('language');
+#		      });
+
   $r->get("/doc/" => sub { shift->redirect_to('/' . $config->{root} . '/doc/CWB/CUWI/Manual' ); } => 'perldoc');
 
   $r->get("/" => sub { $self->sanitize; } =>'index');
@@ -217,6 +226,13 @@ FNORD
 	 $self->session(username=>0);
 	 $self->redirect_to('/' . $config->{root} );
        });
+
+  $r->get("/setlang/:lang" => sub {
+	    my $self = shift;
+	    $self->session(expires => time + $self->app->config->{login_expiration});
+	    $self->session(language => $self->param('lang'));
+	    $self->redirect_to($self->req->headers->header('Referer'));
+	  });
 
   $r->get("/style.css" => sub { shift->render_static('cuwi.css'); });
 

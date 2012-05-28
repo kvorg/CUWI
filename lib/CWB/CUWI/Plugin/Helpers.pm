@@ -187,6 +187,13 @@ sub { #$c is controller, means generate contex links
 		 return $query . $qmods;
 	       });
 
+  $app->helper(lselect =>
+	       sub {
+		 my $c = shift;
+		 return map { [ $c->l($_) => $_ ] } @_;
+	       }
+	      );
+
 } #register
 
 1;

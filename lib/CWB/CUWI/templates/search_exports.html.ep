@@ -1,5 +1,5 @@
 <div class="exports">
- Export results:
+ <%= l('Export results') %>:
  <%= link_to_here { format=>'json', start_from=>1, size=>50000 } => begin %><span> JSON </span><% end %>
  <%= link_to_here { format=>'perl', start_from=>1, size=>50000 } => begin %><span> Perl </span><% end %>
 % if ($table_export) {

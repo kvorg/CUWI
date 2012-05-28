@@ -8,34 +8,34 @@
 % }
 
   <div class="description">
-    <%== $corpus->describe('en') %>
-  <h2>Physical Properties</h2>
+    <%== $corpus->describe( languages() ) %>
+  <h2><%= l 'Physical Properties' %></h2>
     <ul>
-      <li>Language: <%= $corpus->language ? $corpus->language : 'undef' %> </li>
-      <li>Encoding: <%= $corpus->encoding ? $corpus->encoding : 'undef' %></li>
-      <li>File size: <%= $corpus->size ? $corpus->size . ' bytes': 'undef' %></li>
+      <li><%= l 'Language' %>: <%= $corpus->language ? $corpus->language : 'undef' %> </li>
+      <li><%= l 'Encoding' %>: <%= $corpus->encoding ? $corpus->encoding : 'undef' %></li>
+      <li><%= l 'File size' %>: <%= $corpus->size ? $corpus->size . ' bytes': 'undef' %></li>
     </ul>
-% my @atts = grep { $corpus->tooltip(attribute => $_, 'en') }
+% my @atts = grep { $corpus->tooltip(attribute => $_, languages ) }
 %    @{$corpus->attributes};
 % if (@atts) {
-  <h2>Attribute Descriptions</h2>
+  <h2><%= l 'Attribute Descriptions' %></h2>
   <ul>
 %   foreach my $att (@atts) {
     <li><b><%= $att %></b>:
-     <%= $corpus->tooltip(attribute => $att, 'en') %>
+     <%= $corpus->tooltip(attribute => $att, languages ) %>
     </li>
 %   }
   </ul>
 % }
-% my @satts = grep { $corpus->tooltip(structure => $_, 'en') }
+% my @satts = grep { $corpus->tooltip(structure => $_, languages ) }
 %    @{$corpus->structures};
 % if (@satts) {
 
-  <h2>Structural Attribute Descriptions (Tags)</h2>
+  <h2><%= l 'Structural Attribute Descriptions (Tags)' %></h2>
   <ul>
 %   foreach my $satt (@satts) {
     <li><b><%= $satt %></b>:
-     <%= $corpus->tooltip(structure => $satt, 'en') %>
+     <%= $corpus->tooltip(structure => $satt, languages ) %>
     </li>
 %   }
   </ul>
@@ -44,7 +44,7 @@
 % my $corpora = $model->corpora;
 % if (@peers) {
 
-  <h2>Peer Corpora</h2>
+  <h2><%= l 'Peer Corpora' %></h2>
   <ul>
 %   foreach my $p (@peers) {
     <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->NAME %></b>: <%= $corpora->{$p}->title %></a></li>
@@ -53,31 +53,31 @@
 % }
 % if (keys %{$corpus->stats}) {
 
-  <h2>Statistics</h2>
+  <h2><%= l 'Statistics' %></h2>
   <table class="stats">
 %  if (${$corpus->stats}{tokens}) {
-    <tr><td>Size (tokens):</td><td class="num"><%= 1 + ${$corpus->stats}{tokens}  %></td></tr>
+    <tr><td><%= l 'Size (tokens)' %>:</td><td class="num"><%= 1 + ${$corpus->stats}{tokens}  %></td></tr>
 %  }
 %  if (scalar @{${$corpus->stats}{attributes}}) {
-    <tr><th>Positional attributes:</th></tr>
+    <tr><th><%= l 'Positional attributes' %>:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{attributes}}) {
-    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> attributes </td><td class="num"><%= $att->[2] %></td><td> types </td>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> <%= l 'attributes' %> </td><td class="num"><%= $att->[2] %></td><td> <%= l 'types' %> </td>
 % if (exists ${$corpus->stats}{freqs}{$att->[0]}) {
-   <td><a href="/<%= $config->{root} . '/' . $corpus->name . '/frequencies/' . $att->[0] %>">frequencies</a></td>
+   <td><a href="/<%= $config->{root} . '/' . $corpus->name . '/frequencies/' . $att->[0] %>"><%= l 'frequencies' %></a></td>
 % }
 </tr>
 %   }
 %  }
 %  if (scalar @{${$corpus->stats}{structures}}) {
-    <tr><th>Structural attributes:</th></tr>
+    <tr><th><%= l 'Structural attributes' %>:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{structures}}) {
-    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> regions </td></tr>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> <%= l 'regions' %> </td></tr>
 %   }
 %  }
 %  if (scalar @{${$corpus->stats}{alignements}}) {
-    <tr><th>Alignement attributes:</th></tr>
+    <tr><th><%= l 'Alignment attributes' %>:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{alignements}}) {
-    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> alignement blocks </td></tr>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> <%= l 'alignment blocks' %> </td></tr>
 %   }
 %  }
   </table>

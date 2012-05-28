@@ -1,13 +1,15 @@
   <div class="report">
+   <p>
 %  if ($result->reduce) {
-   <p>Sample of <b><%=  scalar @{$result->hits}  %></b> matches out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
-% }
-% elsif ($result->pages->{single} or $result->hitno > ${$result->pages}{pagesize}) {
-   <p>Matches <b><%= ${$result->pages}{this} %></b> to <b><%= ${$result->pages}{this} +  @{$result->hits} - 1 %></b> out of <b><%= $result->hitno %></b> retrieved for <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+%== l('result_msg_sample_retrieved_for',  scalar @{$result->hits}, $result->hitno )
+% } elsif ($result->pages->{single} or $result->hitno > ${$result->pages}{pagesize}) { #BUG
+%== l('result_msg_matches_x_to_y_retrieved_for', ${$result->pages}{this} , (${$result->pages}{this} +  @{$result->hits} - 1), $result->hitno )
 % } else {
-   <p><b><%= $result->hitno %></b> matches for <span class="querytext"><%= link_to_here {query => $result->query, ignoremeta => 0} => begin %><%= '+ ' . $result->query %><% end %></span>
+%== l('result_msg_x_matches_retrieved_for', $result->hitno )
 % }
- in <%= sprintf('%0.3f', $result->time) %> s.</p>
+    <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+    <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
+   </p>
   </div>
 % if (stash('cwbexception')) {
 <div class="exception">
@@ -33,12 +35,12 @@
 %  }
     <p>
      <span class="parno"><%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
-     <%= infotip $m, 'Structural Info' => begin %>
+     <%= infotip $m, l('Structural Info') => begin %>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
 %   }
-     <br /><i>Click result number for detailed view.</i>
+     <br /><i><%= l('Click result number for detailed view.') %></i>
       <% end %>
      <%== tabulator($m->{left}); %>
      <span class="match"><%== tabulator($m->{match}); %></span>

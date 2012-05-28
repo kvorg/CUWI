@@ -58,7 +58,7 @@ is(@{$t->tx->res->dom->at('html body div[class="nav"]')->find('a')}, 7,
 
 my $elt;
 $elt = $t->tx->res->dom->at('html body div[class="report"]');
-like($elt->at('p')->all_text, qr/Matches 1 to 51 out of 239 retrieved for \Q[word="a.*"]\E in \d+(.\d+)? s\./,
+like($elt->at('p')->all_text, qr/Matches 1 to 51 out of 239 retrieved for query \Q[word="a.*"]\E in \d+(.\d+)? s\./,
    'Cuwi results: report text');
 
 $elt = $t->tx->res->dom->at('html body div[class="exports"]');

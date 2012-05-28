@@ -1,9 +1,9 @@
-% layout 'main', title=>'Login';
+% layout 'main', title=>l('Login');
   <div class="form">
     <%= form_for $self->req->url => ( method => "post") => begin %>
-       Username: <%= text_field 'username', size=>10 %>
-       Password: <%= password_field 'password', size=>20 %>
-      <%= submit_button 'Login' %>
+       l(Username): <%= text_field 'username', size=>10 %>
+       l(Password): <%= password_field 'password', size=>20 %>
+      <%= submit_button l('Login') %>
     <% end %>
   </div>
 

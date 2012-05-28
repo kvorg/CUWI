@@ -30,7 +30,11 @@ sub describe {
 sub tooltip {
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->tooltip(<attribute|structure> => <name>. <lang>);.' unless @_ == 4;
   my ($self, $type, $name, $lang) = @_;
-  return ${$self->tooltips}{$type}{$name}{$lang};
+     return ${$self->tooltips}{$type}{$name}{$lang} 
+       if exists ${$self->tooltips}{$type}{$name}{$lang} ;
+     return ${$self->tooltips}{$type}{$name}{en}
+       if exists ${$self->tooltips}{$type}{$name}{en} ;
+     return undef;
 }
 
 sub reload {

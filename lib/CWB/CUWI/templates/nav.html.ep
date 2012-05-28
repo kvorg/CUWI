@@ -1,7 +1,7 @@
 % if ($result->hitno and not ${$result->pages}{single}) {
   <div class="nav">
-    <%= link_to_here { startfrom => ${$result->pages}{prev}, ignoremeta => 0 } => (class=>'prev') => begin %>Prev<% end %>
-    <%= link_to_here { startfrom => ${$result->pages}{next}, ignoremeta => 0 } => (class=>'next') => begin %>Next<% end %>
+    <%= link_to_here { startfrom => ${$result->pages}{prev}, ignoremeta => 0 } => (class=>'prev') => begin %><%= l('Prev') %><% end %>
+    <%= link_to_here { startfrom => ${$result->pages}{next}, ignoremeta => 0 } => (class=>'next') => begin %><%= l('Next') %><% end %>
    <span class="pagelist">
      % foreach my $page (@{$result->pagelist(11)}) {
      %  if ($page eq '...') {
