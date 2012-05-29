@@ -1,16 +1,18 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-05-28
-  - Localization framework, Slovene localization
+0.42 2012-05-30
   - More configuration options
   - Result looping for large wordlist result sets
+  - Added context links to wordlist display mode
+  - Virtual wordlist speed improvement (dropped unnecessary hitno query)
+  - Fixed buggy virtual corpus alignment issues
+  - cwb-scan-corpus initial interface for frequency lists with tuples
   - Fixed table exporting bug, again
   - Fixed constraint parsing to allow CQP constructs
-  - Fixed buggy virtual corpus alignment issues
   - Fixed css flashing for infotips
   - Split up search templates, cleanup
   - Fixed corpus subclass bugs
-  - Added context links to wordlist
+  - Localization framework, Slovene localization
 
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application

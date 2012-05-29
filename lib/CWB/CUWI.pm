@@ -226,7 +226,6 @@ FNORD
 	    my $self = shift;
 	    $self->session(expires => time + $self->app->config->{login_expiration});
 	    $self->session(language => $self->param('lang'));
-	    $DB::single = 2;
 	    $self->redirect_to(scalar $self->req->headers->header('Referer'));
 	  });
 

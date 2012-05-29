@@ -224,7 +224,6 @@ sub query {
 
   # multiple corpora: hitnums are needed for paging and interleaved (slow)
   # for this reason alone virtual query with caching is needed
-  my %hitinfo;
   my @subcorpora = @{$self->subcorpora};
   # BUG: something wierd here:
   # Use of uninitialized value $opts{"class"} in exists at lib/CWB/Model.pm line 438.
@@ -239,13 +238,7 @@ sub query {
     # 	. join(', ', @subcorpora)
     # 	. "\n";
   }
-  foreach my $subname (@subcorpora) {
-    my $subcorpus = ${$self->_subcorpora}{$subname};
-      $CWB::Model::exception_handler->("Query called on a virtual corpus with class containing nonexisting subcorpus $subname, skipping subicorpus.\n") and next
-	unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
-    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, \%opts), hitsonly=>1);
-#    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
-  }
+
   my $result = $self->_make_result(%opts);
   $result->attributes(exists $opts{show} ? (ref $opts{show} ? [$opts{show}] : [[$opts{show}]] ) : [[ 'word' ]]);
   $result->aligns(exists $opts{aligns} ? $opts{aligns} : []);
@@ -325,6 +318,14 @@ sub query {
       # sequential NOT FINISHED --- BUG
       # sequential subcorpora: check into which subcorpus we fall
       # rethink to be more objective and query hits on the fly
+      my %hitinfo;
+      foreach my $subname (@subcorpora) {
+	my $subcorpus = ${$self->_subcorpora}{$subname};
+	$CWB::Model::exception_handler->("Query called on a virtual corpus with class containing nonexisting subcorpus $subname, skipping subicorpus.\n") and next
+	  unless $subcorpus and ref $subcorpus and $subcorpus->can('query');
+	$hitinfo{$subcorpus->name}{hits} = $subcorpus->query($self->_map_opts($subcorpus, \%opts), hitsonly=>1);
+#    $hitinfo{$subcorpus->name}{hits} = $subcorpus->query(%opts, hitsonly=>1);
+      }
       foreach (@subcorpora) {
 	my $subcorpus = ${$self->_subcorpora}{$_};
 	$hitinfo{$subcorpus->name}{start} =
@@ -345,6 +346,83 @@ sub query {
   $result->time(Time::HiRes::gettimeofday() - $query_start_time);
 
 
+  return $result;
+}
+
+sub scan {
+  my $query_start_time = Time::HiRes::gettimeofday();
+
+  my $self = shift;
+  $CWB::Model::exception_handler->("Scan called on a virtual corpus with no subcorpora, aborting.\n") unless scalar @{$self->subcorpora};
+
+  my %opts = @_;
+
+  if (scalar @{$self->subcorpora} == 1) {
+    croak 'CWB::Model::Corpus error: atribute interlieved set on a virtual corpus with a single subcorpus - adding more corpora would help.' if $self->interlieved;
+    #cluck
+    return ${$self->_subcorpora}[0]->scan($self->_map_opts(${$self->_subcorpora}[0], \@_));
+  }
+
+  my @subcorpora = @{$self->subcorpora};
+  # BUG: something wierd here:
+  # Use of uninitialized value $opts{"class"} in exists at lib/CWB/Model.pm line 438.
+  #warn "Checking subclass $opts{class} with subclasses: " . join(', ', keys %{$self->classes}) . "\n";
+  if (exists $opts{class}) {
+    @subcorpora = @{${$self->classes}{$opts{class}}}
+      if ( exists ${$self->classes}{$opts{class}} );
+    delete $opts{class};
+    # warn "Subclass processing for $opts{class}:\n"
+    # 	. join(', ', @{$self->subcorpora})
+    # 	. ' -> ' 
+    # 	. join(', ', @subcorpora)
+    # 	. "\n";
+  }
+
+  my $result = $self->_make_result(%opts);
+  my %counts;
+
+  foreach  (@subcorpora) {
+    my $subcorpus = ${$self->_subcorpora}{$_};
+    next unless $subcorpus and ref $subcorpus and $subcorpus->can('scan');
+    my $sc_name = $subcorpus->name;
+    my $r = $subcorpus->scan($self->_map_opts($subcorpus, \%opts));
+    $result->query($r->query) unless $result->query;
+    $result->QUERY($r->QUERY) unless $result->QUERY;
+    $result->scantokens($r->scantokens) unless $result->scantokens;
+    $result->bigcontext($r->bigcontext) unless $result->bigcontext;
+    $result->hitno($result->hitno + $r->hitno);
+
+    # aggregate from result hits
+    foreach my $hit ( @{$r->hits} ) {
+      my $match = $hit->[2][0];
+      $counts{$match}{count} =   0 unless exists $counts{$match};
+      $counts{$match}{count} +=  $hit->[1];
+      $counts{$match}{value} =   $hit->[0];
+      $counts{$match}{tuple} =   $hit->[2]; #bugged? handle tuples
+    }
+
+  }
+  # compile back hits
+    @{$result->hits} = map { [
+			      $counts{$_}{value},
+			      $counts{$_}{count},
+			      $counts{$_}{tuple},
+			     ] } keys %counts;
+
+  # sorting
+  if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target}
+      =~ m{match|order|tuple}) {
+    $result->sort(%{$opts{sort}{a}});
+  } else {
+    $result->sort(target=>'order', normalize=>1, order=>'descending');
+  }
+
+  ${$result->pages}{single} = 1;
+  ${$result->pages}{this} = 1;
+  $result->table(1);
+  $result->distinct(scalar @{$result->hits});
+
+  $result->time(Time::HiRes::gettimeofday() - $query_start_time);
   return $result;
 }
 
