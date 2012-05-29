@@ -61,7 +61,7 @@ sub run {
     # handle ?
     next unless $token->{query};
     $keys .= ' ' . ($token->{token} || 'word');
-    $keys .= '+' . ($token->{pos} || '0');
+    $keys .= '+' . ($token->{pos} || '0'); #TODO: allow natural order for API?
     $keys .= '=/' . $self->_mangle_search($token->{query}) . '/'
       . ($token->{case} ?       'c' : '')
       . ($token->{diacritics} ? 'd' : '')
@@ -69,7 +69,9 @@ sub run {
   }
 
   warn "Generated keys: $keys\n" if $self->debug;
-  my $scancmd = "cwb-scan-corpus -q -r $registry $opts $corpus $keys";
+  my $_keys = encode($self->corpus->encoding, $keys);
+
+  my $scancmd = "cwb-scan-corpus -q -r $registry $opts $corpus $_keys";
   warn "Running cwb-scan-corpus with\n $scancmd\n" if $self->debug;
 
   my $cwbscan = open(my $CS, '-|', $scancmd)
@@ -81,7 +83,7 @@ sub run {
   my @results;
   while (<$CS>) {
     # decode here
-    push @results, [ split /\t/, $_ ];
+    push @results, [ split /\t/, decode($self->corpus->encoding, $_) ];
   }
 
   warn "cwb-scan-corpus returned " . scalar @results . " results\n"
@@ -96,7 +98,7 @@ sub run {
     or $self->exception("Failed to create a result object.");
 
   $result->query($keys);
-  $result->QUERY($keys);
+  $result->QUERY($_keys);
   $result->scantokens($self->tokens);
 
   $result->hitno(scalar @results);
