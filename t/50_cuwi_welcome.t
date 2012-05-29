@@ -28,7 +28,8 @@ $t->get_ok('/cuwi')
 ;
 
 # corpora
-my @corpora = $t->tx->res->dom->at('ul')->find('li b')->each;
+my @corpora = $t->tx->res->dom->at('div.corpora ul')->find('li b')->each;
+$DB::single = 2;
 cmp_ok(scalar @corpora, '==', 2, 'Cuwi main: number of corpora');
 is($corpora[0]->text, 'CUWI-FR', 'Cuwi main: first corpus name');
 
