@@ -272,6 +272,7 @@ sub run {
   foreach my $att (@{$self->show}) {
     $self->exec("show +$att;", "Can't set show for attribute $att");
   }
+  $self->exec("set DefaultNonbrackAttr " . $self->search, "Can't set DefaultNonbrackAttr to " . $self->search);
 
   my @aligns = grep { my $align = $_;
 		      scalar grep { $_ eq $align }
