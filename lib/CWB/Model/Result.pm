@@ -8,7 +8,7 @@ use Data::Dumper;
 has [qw(query QUERY QUERYMODS time distinct cpos next prev reduce table bigcontext corpusname)] ;
 has hitno => 0;
 has pages => sub { return {} } ;
-has [qw(hits attributes aligns peers language)]  => sub { return [] } ;
+has [qw(hits attributes aligns peers language scantokens)]  => sub { return [] } ;
 
 # function borrowed from List::Moreutils
 sub _firstidx (&@) {

@@ -16,6 +16,14 @@ span.form-h-strut { margin-left: 2em; }
 div.show { margin-top: 1ex; }
 div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }
+
+span.fcorpora { float: right; padding-left: 1em; }
+table.tokens {
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+table.tokens tr td { padding: 0em; white-space: nowrap; }
+
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.exception { margin: 3em; color: Red; }
 

@@ -66,6 +66,7 @@
 
 * Web interface BUGS
 
+** parse forwarded-for and clean up logs
 ** use chunked transfer encoding for results?
 ** form: nowrap where needed
 ** bugs in drop down menues

@@ -95,10 +95,10 @@ can limit yourself to simple tokens with optional <code>?</code> and
 <code>*</code> place-holders, where the search options can modify the
 meaning of the search query tokens.</p>
 
-<p>(Some of the
-information can be provided from the corpus info files and is only
-available for corpora with suitabily formatted info files. See <a
-href="$cuwiroot/doc/cuwi"</a>CUWI manual for more info.)</a></p>
+<p>(Some of the information can be provided from the corpus info files
+and is only available for corpora with suitabily formatted info
+files. See <a href="$cuwiroot/doc/cuwi"</a>CUWI manual for more
+info.)</a></p>
 
 FNORD
 
@@ -257,6 +257,10 @@ FNORD
 
   $r->get("/:corpus/search")->to(controller => 'controller', action => 'search',
 			  model=>$model);
+
+  $r->get("/:corpus/scan")->to(controller => 'controller', action => 'scan',
+			  model=>$model);
+
 
   $r->any("/login/:corpus" => sub {
 	    my $self = shift;

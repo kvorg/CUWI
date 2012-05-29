@@ -147,7 +147,7 @@ sub search {
     $params{sort}{a}{order}     = $self->param('sort_a_order');
     $params{sort}{a}{direction} = $self->param('sort_a_direction');
   }
-  #app->log->debug("Calling query with " . $self->dumper(\%params));
+  #$self->app->log->debug("Calling query with " . $self->dumper(\%params));
 
   my $result = $corpus->query(%params);
 
@@ -230,6 +230,61 @@ sub search {
 		   corpus=>$corpus,
 		 );
   }
+}
+
+sub scan {
+  my $self = shift;
+  my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
+
+  my $columns = $self->param('columns') || 4;
+  my %fields = ( query => '',
+		 token => 'word',
+		 pos => 0,
+		 case => 0,
+		 diacritics => 0,
+	       );
+  my $tokens = [];
+
+  foreach my $column (0 .. $columns) {
+    my $token = { %fields };
+    foreach my $row ( keys %fields ) {
+      $token->{$row} = $self->param("f${row}_$column")
+	if defined $self->param("f${row}_$column");
+    }
+    push @$tokens, $token;
+  }
+
+  # check parameters etc
+  my %c_attributes = map { $_ => 1 } @{$corpus->attributes};
+  my %c_structures = map { $_ => 1 } @{$corpus->structures};
+
+  my %params;
+  $params{within} = $self->param('within')
+    if ($self->param('within')
+	and not $self->param('within') eq '-'
+	and not $self->param('within') =~ m/_/
+	and $c_structures{$self->param('within')} );
+  $params{ignorecase} = $self->param('ignorecase');
+  $params{ignorediacritics} = $self->param('ignorediacritics');
+  $params{ignoremeta} = $self->param('ignoremeta') || 0;
+  $params{struct_constraint_struct}  = $self->param('in-struct')
+    if $self->param('in-struct')
+	and $self->param('in-struct') =~ m/_/
+ 	and $c_structures{$self->param('in-struct')};
+  $params{tokens} = $tokens;
+  # missing:
+  # from to freqlimit rangefile outfile
+
+  $self->app->log->debug("Calling scan with " . $self->dumper(\%params));
+
+  my $result = $corpus->scan(%params, debug => 1);
+
+  $self->render(
+		corpus => $corpus,
+		result => $result,
+		template=>'scantest',
+		query=>$self->dumper([ $self->req->params->params, $tokens, $result ]),
+	       );
 }
 
 1;

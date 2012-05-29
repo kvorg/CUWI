@@ -1,0 +1,69 @@
+% my $columns = 4;
+% my @atts = @{$corpus->attributes};
+% my @structs = grep { m{\w+[_]\w+} } @{$corpus->structures};
+<% my $maketoken = begin %>
+% my ($row, $column) = @_;
+<% if ($column == 0) { %><td><%= $row %>: </td><% } %>
+% given ($row) {
+%   when ('query') {
+     <td><%= text_field "f${row}_$column", size=>10 %></td>
+%   }
+%   when ('token') {
+     <td><%= select_field "f${row}_$column", [ @atts, @structs ]  %></td>
+%   }
+%   when ('pos')   { 
+     <td><%= select_field "f${row}_$column", [ 0 .. 20 ]  %></td>
+%   }
+%   when ('ignore')   { 
+     <td>c: <%= check_box_x "fcase_$column" => 1 %> d: <%= check_box_x "fdiacritics_$column" => 1 %></td>
+%   }
+% }
+% end
+  <div class="form">
+    <%= form_for "/$config->{root}/" . $corpus->name . "/scan", ( method => "get") => begin %>
+    <%= tooltip( l('Tokens'), l('ttip_tokens') ) %>:
+   <span class="fcorpora">
+% if (@{$corpus->peers}) {
+<%= tooltip( l('Corpus'), l('ttip_corpus_group') ) %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %>
+% }
+% if ($corpus->can('classes') and 0 + keys %{$corpus->classes}) {
+    <%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [$self->param('class') ? $self->param('class') : ${$corpus->classnames}[0] , @{$corpus->classnames}] %>
+% }
+   </span>
+   <table class="tokens">
+% foreach my $row ( qw(query token pos ignore) ) {
+    <tr>
+<%   foreach my $column ( 0..$columns ) { %><%= $maketoken->($row, $column) %><% } %>
+    <tr>
+% }
+   </table>
+   <%= hidden_field columns => $columns %>
+
+% my %withins = map { $_ => 1 }
+%    grep { not m{\w+[_]\w+} } @{$corpus->structures};
+% if ( keys %withins ) {
+% $self->param('within', 's') unless $self->param('within');
+    <%= tooltip( l('Within'), l('ttip_within') ) %>: <%= select_field 'within', ['-', keys %withins] %>
+<span class="form-h-strut"></span>
+% }
+
+% if ( @structs ) {
+    <div class="structs">
+      <%= tooltip( l('Only where'), l('Structural Constraint'), l('ttip_struct_constraint') ) %> <%= select_field 'in-struct', ['-', @structs] %>
+      <%= tooltip( l('matches'), l('Structural Constraint Query'), l('ttip_struct_query') ) %>:&nbsp;&nbsp;<%= text_field 'struct-query', size=>24 %>
+    </div>
+% }
+    <br />
+    <span class="ctrl"><%= tooltip( l('Results'), l('ttip_results') ) %>: <%= select_field 'fsize', ['*', 1000, 5000, 10000, 50000] %></span>
+    <span class="ctrl"><%= tooltip( l('Limit'), l('ttip_results') ) %>: <%= select_field 'lfimit', [0, 5, 10, 50, 100, 500, 1000] %></span>
+    <br />
+    <%= tooltip( l('Sort'), l('Sorting'), l('ttip_sort') ) %>:
+    <div class="sort">
+    <%= select_field 'sort_a',           [lselect(qw(order match))] %>
+    <%= select_field 'sort_a_order',     [lselect(qw(ascending descending))] %>
+    <%= select_field 'sort_a_direction', [lselect(qw(natural reversed))] %>
+    </div>
+    <span class="submit"><%= submit_button l('Run Frequency Query') %></span>
+  <% end %>
+  </div>
+

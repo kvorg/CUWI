@@ -1,0 +1,6 @@
+% $self->languages($self->session('language')) if $self->session('language');
+% layout 'main', title=>' frequencies in ' . $corpus->name ;
+<%= include 'scan_form' %>
+<pre>
+%= $query
+</pre>

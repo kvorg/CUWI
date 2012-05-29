@@ -3,6 +3,7 @@ package CWB::Model::Corpus::Filebased;
 use Mojo::Base 'CWB::Model::Corpus';
 
 use CWB::Model::Query;
+use CWB::Model::Scan;
 
 use Carp;
 
@@ -95,6 +96,14 @@ sub query {
   my $q = CWB::Model::Query->new(corpus => $self, model => $self->model, @_);
   return $q unless $q->DOES('CWB::Model::Query'); #exception occured
   return $q->run;
+}
+
+sub scan {
+  my $self = shift;
+  croak 'CWB::Model::Corpus syntax error: not called as $corpus->scan(tokens => <tokens>, %opts);' unless @_ >= 2 and scalar @_ % 2 == 0;
+  my $s = CWB::Model::Scan->new(corpus => $self, model => $self->model, @_);
+  return $s unless $s->DOES('CWB::Model::Scan'); #exception occured
+  return $s->run;
 }
 
 sub structures_ {
