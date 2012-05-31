@@ -95,10 +95,10 @@ can limit yourself to simple tokens with optional <code>?</code> and
 <code>*</code> place-holders, where the search options can modify the
 meaning of the search query tokens.</p>
 
-<p>(Some of the information can be provided from the corpus info files
+<p>Some of the information can be provided from the corpus info files
 and is only available for corpora with suitabily formatted info
 files. See <a href="$cuwiroot/doc/cuwi"</a>CUWI manual for more
-info.)</a></p>
+info.</a></p>
 
 FNORD
 
@@ -241,8 +241,8 @@ FNORD
 	    my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 	    if ( exists ${$corpus->stats}{freqs}{$self->param('att')} ) {
 	      $self->res->headers->content_type('text/plain; charset=' . $corpus->encoding);
-	      my $ss = Mojolicious::Static->new(root=>$config->{var});
-	      $self->app->log->info("Serving file " . $ss->root .
+	      my $ss = Mojolicious::Static->new(paths=>[$config->{var}]);
+	      $self->app->log->info("Serving file " . $ss->paths->[0] .
 				      $corpus->name . '.' . $self->param('att') . '.freq');
 	      $ss->serve($self, $corpus->name . '.' . $self->param('att') . '.freq');
 	      $self->rendered;

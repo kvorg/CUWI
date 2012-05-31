@@ -12,7 +12,7 @@ use Time::HiRes;
 use POSIX qw(locale_h);
 
 has [ qw(corpus model tokens debug from to freqlimit
-	 rangefile outfile ) ] ;
+	 rangefile outfile subcorpus ) ] ;
 has sort        =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
@@ -60,12 +60,14 @@ sub run {
   foreach my $token (@{$self->tokens}) {
     # handle ?
     next unless $token->{query};
+    $token->{query} =~ s/^\s*(.*?)\s*$/$1/;
     $keys .= ' ' . ($token->{token} || 'word');
     $keys .= '+' . ($token->{pos} || '0'); #TODO: allow natural order for API?
     $keys .= '=/' . $self->_mangle_search($token->{query}) . '/'
       . ($token->{case} ?       'c' : '')
       . ($token->{diacritics} ? 'd' : '')
-	if $token->{query} and not $token->{query} eq '.*';
+	if $token->{query} 
+	  and not ($token->{query} eq '*' or $token->{query} eq '".*"');
   }
 
   warn "Generated keys: $keys\n" if $self->debug;
@@ -82,7 +84,7 @@ sub run {
 
   my @results;
   while (<$CS>) {
-    # decode here
+    chomp;
     push @results, [ split /\t/, decode($self->corpus->encoding, $_) ];
   }
 
@@ -100,19 +102,60 @@ sub run {
   $result->query($keys);
   $result->QUERY($_keys);
   $result->scantokens($self->tokens);
+  ${$result->pages}{single} = 1;
+  ${$result->pages}{this} = 1;
 
-  $result->hitno(scalar @results);
-  @{$result->hits} =  [@results];
-# map { [
-			    # TODO do something smart with tokens here
-			    # such as:
-			    # add - for att when missing att in token
-			    # add token ..3.. for 3 skipped tokens
-#			   ] }
-#	@results;
+  $result->distinct(scalar @results);
+
+  my %atts = map { $_->{token} => 1 } grep { $_->{query} } @{$self->tokens};
+  my @atts = grep { exists $atts{$_} } @{$self->corpus->attributes};
+  my $i = 0;
+  my %attpos = map { $_ => $i++ } @atts;
+  my @tokens = grep { $_->{query} and not $_->{ignore} } @{$self->tokens};
+  my $matches = 0;
+
+  @{$result->hits} =
+    map { $matches += $_->[0]; $self->_tuple($_, \%attpos, \@tokens) }
+      @results;
+  $result->hitno($matches);
+
+  #sorting: subcorpus query does not sort (saves time)
+  if ( not $self->subcorpus ) {
+    if ($self->sort and exists ${$self->sort}{a} and ${$self->sort}{a}{target} =~ m{match|order} ) {
+      $result->sort(%{${$self->sort}{a}});
+    } else {
+      $result->sort(target=>'order', normalize=>1, order=>'descending');
+    }
+  }
+
   $result->time(Time::HiRes::gettimeofday() - $query_start_time);
 
   return $result;
+}
+
+sub _tuple {
+    my ($self, $tuple, $attpos, $tokens) = @_;
+    my $match = [];
+    $DB::single = 2;
+    # add * for att when missing att in token
+    # add token ..3.. for 3 skipped tokens
+    my $freq = shift @$tuple;
+    for (my $i = 0; $i < $#{$tuple}+1; $i++) {
+      $match->[$tokens->[$i]->{pos}][$attpos->{$tokens->[$i]->{token}}] =
+	$tuple->[$i];
+    }
+    my $skip = 0; my $s = scalar keys %$attpos;
+    foreach my $m (@$match) {
+      my $full = 0;
+      for (my $i = $s - 1 ; $i >= 0 ; $i--) {
+	if ($m->[$i]) { $full = 1 } else { $m->[$i] = '*' }
+      }
+      if ($full) { $skip = 0 } else {
+      	if ($skip) { $m = [] } else { $m = [ '...' ]; }
+      	$skip++;
+      }
+    }
+    return [ $match, $freq ];
 }
 
 sub _mangle_search {

@@ -10,8 +10,9 @@ This file documents the revision history for CWB::CUWI package.
   - Fixed table exporting bug, again
   - Fixed constraint parsing to allow CQP constructs
   - Fixed css flashing for infotips
-  - Split up search templates, cleanup
+  - Fixed static serve for frequencies due to root->paths change in Mojo
   - Fixed corpus subclass bugs
+  - Split up search templates, cleanup
   - Localization framework, Slovene localization
 
 0.41 2012-05-15

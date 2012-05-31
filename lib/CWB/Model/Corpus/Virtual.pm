@@ -394,21 +394,21 @@ sub scan {
 
     # aggregate from result hits
     foreach my $hit ( @{$r->hits} ) {
-      my $match = $hit->[2][0];
+      my $match = join(', ', map { join(' / ', @$_) }  @{$hit->[0]});
       $counts{$match}{count} =   0 unless exists $counts{$match};
       $counts{$match}{count} +=  $hit->[1];
       $counts{$match}{value} =   $hit->[0];
-      $counts{$match}{tuple} =   $hit->[2]; #bugged? handle tuples
+      #$counts{$match}{tuple} =   $hit->[2]; #bugged? handle tuples
     }
-
   }
+  warn "Aggregated results in virtual corpus.\n";
   # compile back hits
     @{$result->hits} = map { [
 			      $counts{$_}{value},
 			      $counts{$_}{count},
-			      $counts{$_}{tuple},
+			      #$counts{$_}{tuple},
 			     ] } keys %counts;
-
+  warn "Compiled back results in virtual corpus.\n";
   # sorting
   if ($opts{sort} and exists $opts{sort}{a} and $opts{sort}{a}{target}
       =~ m{match|order|tuple}) {
@@ -416,6 +416,7 @@ sub scan {
   } else {
     $result->sort(target=>'order', normalize=>1, order=>'descending');
   }
+  warn "Sorted " . scalar @{$result->hits} . " results in virtual corpus.\n";
 
   ${$result->pages}{single} = 1;
   ${$result->pages}{this} = 1;
@@ -423,6 +424,10 @@ sub scan {
   $result->distinct(scalar @{$result->hits});
 
   $result->time(Time::HiRes::gettimeofday() - $query_start_time);
+
+  use Data::Dumper;
+  warn Dumper($result);
+
   return $result;
 }
 

@@ -45,7 +45,9 @@
       }
     },
     "OPTIONS": {
-      "no_browse" : ["spook_engslv-eng", "spook_engslv-slv", "spook_fraslv-fra", "spook_fraslv-slv", "spook_gerslv-ger", "spook_gerslv-slv", "spook_itaslv-ita", "spook_itaslv-slv", "spook_slv-slv" ]
+      "no_browse" : ["spook_engslv-eng", "spook_engslv-slv", "spook_fraslv-fra", "spook_fraslv-slv", "spook_gerslv-ger", "spook_gerslv-slv", "spook_itaslv-ita", "spook_itaslv-slv", "spook_slv-slv" ],
+      "frequencies": ["spook_engslv-eng", "spook_engslv-slv", "spook_fraslv-fra", "spook_fraslv-slv", "spook_gerslv-ger", "spook_gerslv-slv", "spook_itaslv-ita", "spook_itaslv-slv", "spook_slv-slv" ],
+      "maxfreq": 50000000
      }
   }
 }

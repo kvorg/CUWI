@@ -234,8 +234,19 @@ sub search {
 
 sub scan {
   my $self = shift;
-  my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
+  my $config = $self->app->config;
 
+  # redirect to peer?
+  if ( $self->param('peer')
+       and $self->param('peer') ne $self->param('corpus') ) {
+    my $query = $self->req->url->query;
+    my $url = '/' . $config->{root} . '/' . $self->param('peer') . '/scan?';
+    $self->app->log->info('Redirecting query to peer ' . $self->param('peer') . '.');
+
+    $self->redirect_to($url . $query);
+  }
+
+  my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
   my $columns = $self->param('columns') || 4;
   my %fields = ( query => '',
 		 token => 'word',

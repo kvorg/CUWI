@@ -36,6 +36,9 @@ our %Lexicon =
    'regions' => 'območij',
    'alignment blocks' => 'poravnanih segmentov',
 
+   # corpus.html.ep
+   'No matches for query ' => 'Ni zadetkov za poizvedovanje ',
+
    # form.html.ep
    'Query' => 'Poizvedba',
    ttip_query => <<FNORD,

@@ -12,5 +12,20 @@
 %   } else {
    Unknown display mode: query aborted. (Stop playing with my query parameters or I will not be RESTful much longer!)
 %   }
+% } else {
+  <div class="report">
+   <p>
+%== l('No matches for query ')
+    <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+    <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
+    </p>
+  </div>
+
+%  if (stash('cwbexception')) {
+  <div class="exception">
+%== join('<br>', @{stash('cwbexception')});
+  </div>
+% }
+
 % }
 

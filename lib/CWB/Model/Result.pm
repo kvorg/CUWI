@@ -201,7 +201,6 @@ sub sort {
 	      );
 	$c = $aa cmp $bb;
 	($c + $x ? $c : ( $a->{cpos} <=> $b->{cpos} ) );
-#	$DB::single = 2;
       } @{$self->hits};
     @{$self->hits} = reverse @{$self->hits}
       if ($opts{order} eq 'descending');

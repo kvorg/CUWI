@@ -27,9 +27,9 @@
     <%= tooltip( l('Within'), l('ttip_within') ) %>: <%= select_field 'within', ['-', keys %withins] %>
 <span class="form-h-strut"></span>
 % }
-     Ignore:
-      <span class="ctrl"><%= check_box_x ignorecase => 1       %> case</span>
-      <span class="ctrl"><%= check_box_x ignorediacritics => 1 %> diacritics</span>
+     <%= l('Ignore') %>:
+      <span class="ctrl"><%= check_box_x ignorecase => 1       %> <%= l('case') %></span>
+      <span class="ctrl"><%= check_box_x ignorediacritics => 1 %> <%= l('diacritics') %></span>
 
 %  my %structs = map { $_ => 1 }
 %    grep { m{\w+[_]\w+} } @{$corpus->structures};
