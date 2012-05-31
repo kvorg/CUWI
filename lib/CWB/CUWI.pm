@@ -29,7 +29,6 @@ sub startup {
   $self->plugin('charset' => {charset => 'UTF-8'});
   $self->plugin('tag_helpers_extra');
   $self->plugin('helpers');
-  $self->plugin('PODRenderer'); #park it under root and use for help?
   $self->plugin(I18N => {default => 'en', namespace => 'CWB::CUWI::I18N'});
 
   # html
@@ -66,14 +65,6 @@ sub startup {
   $config->{root} = 'cuwi' unless $config->{root};
   $self->log->info("App web root: '$config->{root}'.");
   my $cuwiroot = $config->{root};
-  $self->hook(before_dispatch => sub {
-             my $self = shift;
-	     if ($self->req->url->path->contains("$cuwiroot/doc/")) {
-	       shift @{$self->req->url->path->parts};
-	       $self->req->url->path->parts->[0] = 'perldoc';
-	     }
-           });
-
 
   $config->{blurb} = <<"FNORD" unless $config->{blurb};
 <p>CUWI (Corpus Users\' Web interface) is a concordance browser and
@@ -97,7 +88,7 @@ meaning of the search query tokens.</p>
 
 <p>Some of the information can be provided from the corpus info files
 and is only available for corpora with suitabily formatted info
-files. See <a href="$cuwiroot/doc/cuwi"</a>CUWI manual for more
+files. See <a href="$cuwiroot/doc/"</a>CUWI manual for more
 info.</a></p>
 
 FNORD
@@ -212,7 +203,8 @@ FNORD
 
   my $r = $self->routes->under($config->{root});
 
-  $r->get("/doc/" => sub { shift->redirect_to('/' . $config->{root} . '/doc/CWB/CUWI/Manual' ); } => 'perldoc');
+  $r->get('/doc/*module')->to(controller => 'doc', action => 'doc',
+			  module => 'CWB/CUWI/Manual');
 
   $r->get("/" => sub { $self->sanitize; } =>'index');
 
