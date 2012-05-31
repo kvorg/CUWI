@@ -50,7 +50,7 @@
      <td class="right"><%== tabulator($m->{right}); %></td>
     </tr>
 %   foreach my $align (keys %{$m->{aligns}}) {
-    <tr><td class="head"><span class="no"><%= infotip $m, "Alignement to $align", '@' => begin %>
+    <tr><td class="head"><span class="no"><%= infotip $m, l('Alignment to ') . $align, '@' => begin %>
 <%= exists ${$model->corpora}{$align} ? ${$model->corpora}{$align}->title : '' %><% end %></span></td><td colspan="3" class="align"><%== tabulator($m->{aligns}{$align}); %></td></tr>
 %   }
 %  }

@@ -222,7 +222,7 @@ FNORD
    #search_exports.ep
       'Export results' => 'Izvoz zadetkov',
 
-   #search_{kwic,text,wordlist}.html.ep
+   #search_{kwic,text,wordlist}.html.ep, cpos.html.ep
    'result_msg_sample_retrieved_for' =>
    'Naključni vzorec <b>[_1]</b> od skupaj <b>[_2]</b> zadetkov za poizvedovanje ',
    'result_msg_matches_x_to_y_retrieved_for' =>
@@ -233,7 +233,10 @@ FNORD
    'Vzorec <b>[_1]</b> zadetkov izmed <b>[_2]</b> različnih zadetkov od skupno <b>[_3]</b> zadetkov za poizvedovanje ',
    'result_msg_wordlist_x_distinct_out of_y' =>
    '<b>[_1]</b> različnih zadetkov izmed <b>[_2]</b> zadetki za poizvedovanje ',
+   'result_msg_x_detailes_for_cpos' =>
+   'Podrobni prikaz korpusnega položaja <b>[_1]</b> iz poizvedovanja ',
    'result_msg_in_x_seconds' => ' v [_1] s.',
+   'Alignment to ' => 'Poravnava: ',
 
    #search_wordlist.html.ep - results
    TOTAL => 'VSEH',

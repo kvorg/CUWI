@@ -80,6 +80,12 @@ done_testing;
 
 # context downloads
 
+# cpos layout
+
+# cpos show options
+
+# cpos alignement
+
 # frequency layout
 
 # frequency show options

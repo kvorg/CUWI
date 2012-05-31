@@ -147,6 +147,8 @@ FNORD
    'Retrieved <b>[_1]</b> matches from <b>[_2]</b> distinct maches from the total of <b>[_3]</b> matches for query ',
    'result_msg_wordlist_x_distinct_out_of_y_for' =>
    'Retrieved <b>[_1]</b> distinct matches from the total of [_2] matches from query ',
+   'result_msg_x_detailes_for_cpos' =>
+   'Detailed view for corpus position <b>[_1]</b> from a query for ',
    'result_msg_in_x_seconds' => ' in [_1] s.'
   );
 

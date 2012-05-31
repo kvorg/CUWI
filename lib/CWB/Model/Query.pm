@@ -101,6 +101,13 @@ sub _check_options {
   # check all options here with corpus for sanity and reset faulty to defaults
   my @errors = ();
 
+  $self->align($self->corpus->alignements)
+    if ( (ref $self->align
+	  and scalar @{$self->align} == 1
+	  and ${$self->align}[0] eq '1')
+	 or ( not ref $self->align and $self->align eq '1')
+       );
+  $DB::single = 2;
   push(@errors, 'pagesize') unless $self->pagesize and $self->pagesize =~ m/[0-9]{1,4}/;
   push(@errors, 'struct_constraint_struct')
     if $self->struct_constraint_struct
@@ -277,7 +284,7 @@ sub run {
   my @aligns = grep { my $align = $_;
 		      scalar grep { $_ eq $align }
 			@{$self->corpus->alignements}
-		      } @{$self->align} ;
+		      } ref ($self->align) ? @{$self->align} : ( $self->align );
   warn "Aligned in query to " . $self->corpus->name . ": " . join(', ', @aligns) . "\n" if $self->debug;
 
   unless ($self->display eq 'wordlist') { # no alignment for wordlists
