@@ -1,6 +1,6 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-05-30
+0.42 2012-06-01
   - More configuration options
   - Result looping for large wordlist result sets
   - Added context links to wordlist display mode
@@ -12,8 +12,10 @@ This file documents the revision history for CWB::CUWI package.
   - Fixed css flashing for infotips
   - Fixed static serve for frequencies due to root->paths change in Mojo
   - Fixed corpus subclass bugs
+  - Added warnings for query constraints with CQP queries
   - Split up search templates, cleanup
   - Localization framework, Slovene localization
+  - Documentation interface
 
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application

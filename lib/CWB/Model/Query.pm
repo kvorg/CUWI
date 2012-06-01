@@ -227,8 +227,6 @@ sub run {
     # BUG: perhaps some kind of warning should be produced on illogical options,
     # i.e. inexisting corpora and the like?
 
-    warn("Parsing structural contraint.\n");
-
     # structural constraint
     my $struct_constraint_struct;
     my $struct_constraint_query;
@@ -243,8 +241,6 @@ sub run {
     }
     $structq = " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
       if $struct_constraint_struct;
-
-    warn("Parsing alignement contraint.\n") if $self->debug;
 
     # query on aligned corpus constraint
     my $align_query;
