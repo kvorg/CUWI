@@ -59,17 +59,17 @@ CWB corpora through the L<cqp> command with no binary Perl
 modules. L<CWB::Model> also permits scripting access to the
 corpora. (See tests in the distribution archive for examples.)
 
-=head1 INSTALATION
+=head1 INSTALLATION
 
-Please see included INSTALATION readme file for installation
-details. CUWI depends only on the L<Mojolicioius|http://mojolicio.us/>
-framework and the basic C<CWB> package.
+Please see included INSTALL readme file for installation details. CUWI
+depends only on the L<Mojolicioius|http://mojolicio.us/> framework and
+the basic C<CWB> package.
 
 Note that CUWI requires a reasonably modern Perl (v5.10.1 or later).
 
-CUWI comes with the CWB::CUWI package which includes CWB::Model and
+CUWI comes with the L<CWB::CUWI> package which includes L<CWB::Model> and
 supporting packages for native Perl programming API to CQP query
-langauge and CWB-encoded corpora, and CWB::CUWI, the web application,
+language and CWB-encoded corpora, and L<CWB::CUWI>, the web application,
 which this script is a part of.
 
 =head1 CONFIGURATION
@@ -85,10 +85,10 @@ corpus info files.
 
 =head2 Configuring Corpora
 
-It is very important for the system to be able to determine the
-language and
+It is possible to supply a number of configuration options for infidivual corpora and create virtual corpora, corpus groups and similar.
 
-=head2 Virtual Corpora
+Please refer to Configuration and Administration Manual:
+L<CWB::CUWI::Administration>.
 
 =head2 Deployment Options
 
@@ -158,6 +158,10 @@ Tomaz Erjavec <tomaz.erjavec@ijs.si>
 =head1 SEE ALSO
 
 =over 4
+
+=item *
+
+Configuration and Administration L<CWB::CUWI::Administration>
 
 =item *
 

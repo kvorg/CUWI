@@ -82,7 +82,7 @@ Additional info:
 ----------------
 
 Documentation can be found in cuwi and CWB::Model pods or man pages
-(in progress)..
+(in progress).
 
 For deployment information, see Mojolicious::Guides::Cookbook and INSTALL.
 

@@ -181,7 +181,7 @@ In Wordlist display mode, <b>Sample</b> only uses the selected sample
 to produce a frequeny list whereas <b>All</b> extracts the whole
 result set to produce the frequency list (possibly a time-consuming operation).
 FNORD
-   'Results' => 'Zadetkov',
+   'Results per page' => 'Zadetkov na stran',
    ttip_results => <<FNORD,
 Sets the number or results in the random sample or per page when all
 the results are being listed.

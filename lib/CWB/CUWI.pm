@@ -346,11 +346,11 @@ Tomaz Erjavec <tomaz.erjavec@ijs.si>
 
 =item *
 
-Installation and configuration: L<cuwi>
+CUWI Web users's Manual: L<CWB::CUWI::Manual>
 
 =item *
 
-CUWI Web users's Manual: L<CWB::CUWI::Manual>
+Configuration and Administration L<CWB::CUWI::Administration>
 
 =item *
 

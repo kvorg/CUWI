@@ -85,7 +85,7 @@
  </span>
     <br />
     <span class="ctrl"><%= tooltip( l('Listing mode'), l('Listing Mode'), l('ttip_listing_mode') ) %>: <%= select_field 'listing', [lselect(qw/all sample/)] %></span>
-    <span class="ctrl"><%= tooltip( l('Results'), l('ttip_results') ) %>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span>
+    <span class="ctrl"><%= tooltip( l('Results per page'), l('ttip_results') ) %>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span> 
     <br />
     <%= hidden_field startfrom => 1 %>
     <%= tooltip( l('Sort'), l('Sorting'), l('ttip_sort') ) %>:

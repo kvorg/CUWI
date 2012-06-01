@@ -41,7 +41,7 @@ Tomaz Erjavec <tomaz.erjavec@ijs.si>
 
 =item *
 
-Installation and configuration: L<cuwi>
+Configuration and Administration L<CWB::CUWI::Administration>
 
 =item *
 
