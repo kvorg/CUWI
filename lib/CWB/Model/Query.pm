@@ -107,11 +107,10 @@ sub _check_options {
 	  and ${$self->align}[0] eq '1')
 	 or ( not ref $self->align and $self->align eq '1')
        );
-  $DB::single = 2;
   push(@errors, 'pagesize') unless $self->pagesize and $self->pagesize =~ m/[0-9]{1,4}/;
   push(@errors, 'struct_constraint_struct')
     if $self->struct_constraint_struct
-      and not (grep { $_ eq $self->struct_constraint_struct } @{$self->corpus->structures}
+      and  not (grep { $_ eq $self->struct_constraint_struct } @{$self->corpus->structures}
 	       and $self->struct_constraint_struct =~ m/\w+_\w+/);
   push(@errors, 'align_query_corpus')
     if (($self->align_query_corpus and not $self->corpus->alignements) or
@@ -207,10 +206,28 @@ sub run {
   my $query = $self->_mangle_query($self->query);
   my $querymods = '';
 
+  $DB::single = 2;
+
   # handle additional constraints
-  unless ($cqpquery) {
+  my @warnings;
+  if ($cqpquery) {
+    push @warnings, "Form constraint ignored with a full CQP query:"
+      . " within '" . $self->within . "'"
+	if ($self->within);
+    push @warnings, "Form constraint ignored with a full CQP query:"
+      . " only where: '" . $self->struct_constraint_struct . "' = '"
+	. $self->struct_constraint_query . "'"
+	  if ($self->struct_constraint_struct and $self->struct_constraint_query);
+    push @warnings, "Form constraint ignored with a full CQP query:"
+      . " align: '" . $self->align_query_corpus . "' " 
+	. ($self->align_not ? '!' : '') .  " = '"
+	  . $self->align_query . "'"
+	    if ($self->align_query_corpus and $self->align_query);
+  } else {
     # BUG: perhaps some kind of warning should be produced on illogical options,
     # i.e. inexisting corpora and the like?
+
+    warn("Parsing structural contraint.\n");
 
     # structural constraint
     my $struct_constraint_struct;
@@ -226,6 +243,8 @@ sub run {
     }
     $structq = " :: match.$struct_constraint_struct=\"$struct_constraint_query\""
       if $struct_constraint_struct;
+
+    warn("Parsing alignement contraint.\n") if $self->debug;
 
     # query on aligned corpus constraint
     my $align_query;
@@ -353,6 +372,7 @@ sub run {
   $result->query($query);
   $result->QUERY($_query);
   $result->QUERYMODS($querymods);
+  $result->warnings([@warnings]);
   @{$result->attributes} = $self->show;
   @{$result->aligns} = @aligns;
   @{$result->peers} = $self->corpus->peers;

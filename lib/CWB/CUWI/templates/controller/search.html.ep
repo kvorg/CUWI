@@ -1,5 +1,12 @@
 % $self->languages($self->session('language')) if $self->session('language');
 % layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
+% if ($result and scalar @{$result->warnings}) {
+%  if (stash('cwbexception')) {
+%   stash(cwbexception => [@{stash('cwbexception')}, @{$result->warnings}]);
+%  } else {
+%   stash(cwbexception => $result->warnings);
+%  }
+% }
 <%= include 'form' %>
 
 % if ($result->hitno) {
