@@ -9,8 +9,17 @@ use Mojo::Util 'url_escape';
 use Pod::Simple::HTML;
 use Pod::Simple::Search;
 
+our $H = Mojo::Home->new;
 my @PATHS = map { $_, "$_/pods" } @INC, $ENV{MOJO_HOME};
-my $PERLDOC = $Mojolicious::Controller::H->slurp_rel_file('perldoc.html.ep');
+our $PERLDOC;
+
+sub new {
+  my $self = shift;
+  my $self = $self->SUPER::new(@_);
+  $H->parse($self->app->home->rel_dir('templates/Doc'));
+  $PERLDOC = $H->slurp_rel_file('perldoc.html.ep');
+  return $self;
+}
 
 sub doc {
   my $self = shift;
