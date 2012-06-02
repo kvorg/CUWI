@@ -220,7 +220,7 @@ sub run {
 	  if ($self->struct_constraint_struct and $self->struct_constraint_query);
     push @warnings, "Form constraint ignored with a full CQP query:"
       . " align: '" . $self->align_query_corpus . "' " 
-	. ($self->align_not ? '!' : '') .  " = '"
+	. ($self->align_query_not ? '!' : '') .  " = '"
 	  . $self->align_query . "'"
 	    if ($self->align_query_corpus and $self->align_query);
   } else {
