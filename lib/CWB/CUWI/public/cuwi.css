@@ -9,9 +9,9 @@ div.user, div.langselect { display: inline;  }
 img.options { width: 16px, height: 16px; }
 
 div.search, div.show { margin-left: 3.5em; }
-div.search > span.label, div.show > span.label { margin-left: -3.5em;  }
-div.search > span.label, div.show > span.label { width: 14em; }
-span.ctrl { white-space: nowrap; display: inline; }
+span.label { white-space: nowrap; } 
+div.search > span.first, div.show > span.first { margin-left: -3.5em;  }
+div.search > span.firs, div.show > span.first { width: 14em; }
 span.form-h-strut { margin-left: 2em; }
 div.show { margin-top: 1ex; }
 div.sort { display: inline-block; vertical-align: text-top; }
@@ -138,7 +138,7 @@ span.hlp span.hlptxt { display: none; }
 span.hlp:hover span.helptxt { display: block; }
 h2 { margin-left: 2em; margin-right: 2em; text-align: center ; }
 h2 + p, div.report, div.corpora { margin-left: 4em; margin-right: 4em; }
-div.form { margin-left: auto; margin-right: auto; width: 36em;
+div.form { margin-left: auto; margin-right: auto; width: 38em;
 	   background-color: white;
 	   padding: .4em; padding-bottom: .6em; padding-left: .6em;
 	   border-left: solid 3px black;

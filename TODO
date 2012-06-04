@@ -4,9 +4,6 @@
 
 ** Handle non-compatible info files
    (by parsing them as descriptions)
-** Paging: displays 1 match more than pagesize
-** Escapes for ?, handling for single "
-** Check query mangling in detail
 ** Bail out gracefully on faulty corpora:
    - no data files
    - skip non-existing peers (log error)
@@ -15,11 +12,14 @@
     use result for warning passing
     announce in red
     make a reduce to maxhits
-** In paging with Result objects, the end page calculation is wrong
-** Default overrides new for ingorecase (fixed)
+
+** Paging: displays 1 match more than pagesize
+** Check query mangling in detail
 ** CQP heurisitcs:
    - Bug in combined query syntax: a* [word="t.*"], add test!
    - enable quoting of CQP escapes for "[rule]" and '[rule]'
+** In paging with Result objects, the end page calculation is wrong
+** Default overrides new for ingorecase (fixed)
 ** Better tests/fails for failing/missing registry specifications
 ** Clean up newlines at the end of description
 ** Cleanup CQP query link situation with advanced query form options
@@ -27,8 +27,8 @@
 
 * CWB::Model
 
+** Implement maxquerytime properly
 ** Multiple sorting and structural / alignement queries 
-** Possibly keep wordlists with progressive building
 ** Add ->next method to result for API, evolve result
 ** document query and result
 ** Structure handling in Query:
@@ -39,7 +39,6 @@
 ** spook: sub-searches (based on existing search): subquery
    aka Support for chained query support -> store previous queries in link/params
 ** spook: any needed support for form-based alignement and structural queries
-** Implement maxquerytime properly
 ** Fix all file work to use IO::File and File::Spec
 ** Improve test coverage
 ** Colocation support (usin cwb-corpus-scan ?)
@@ -66,11 +65,16 @@
 
 * Web interface BUGS
 
-** parse forwarded-for and clean up logs
-** use chunked transfer encoding for results?
-** form: nowrap where needed
+** form: nowrap where needed = 
+   make label and checkbox unbreakable in attributes
+   (css white-space: nowrap and drop &nbsp;)
+** maxhits warning when reached
 ** bugs in drop down menues
+** escapes for ?, *, |, handling for single "
+** parse forwarded-for and clean up logs
+
 ** missing "not" for structural constraint
+** use chunked transfer encoding for results?
 ** wordlist -> ignoremeta in links disables ignorecase
 ** wordlist: quote metacharacters in string links: check/test
 ** classes: sanitize with the virtual corpus before sending (done?)
@@ -83,8 +87,6 @@
 ** make export modules work asynchroniously
 ** consider moving export modules to Model, caveat previous
 ** disable context links for biggest display mode (sentence or paragraph)
-** make label and checkbox unbreakable in attributes
-   (css? span? space: nowrap? drop &nbsp;)
 ** possibly closures for exception handling are buggy
    - should rethrow the exception and catch it in webapp?
    - or just check for return value?
@@ -93,18 +95,30 @@
 
 * Web interface
 
-** switch to cwb-scancorups for frequency lists
-** add total stats to root page
-** konrad, imp, spook: multiple sort and multiple structure constraint
-** wordlists: click on frequency number to get conjunction query
-** cleanup of templates: separation with includes:
-   search: form + mode
-   mode includes nav
-   some helpers -> named templates?
-** l18n
 ** running text context: (with visible structural tags)
+** add total stats to root page
+** do not use url-like attributes and *_id attributes in search forms
+** auto url-like attributes with /.{jpg,png,tif*,gif}/i for previews
+** handle corpus groups with top-level entries, hide members in top list
+   (just like virtual copora)
+** simple search form (word+lemma, configurable, with alignement
+** documentation
 ** document config, switch config to general config
+
+** add progress and redirect for result exports
+** add option for display title structural tag to config
+** log cleanup:
+   Production mode logging of queries and performance -> info
+   Development: info->debug
+** konrad, imp, spook: multiple sort and multiple structure constraint
 ** change wordlist exporting to divide matches into multiple fields
+** when more than 7 attributes are present, switch display to 4 drop-down lists 
+   (possibly list selection performs a direct query redirect)
+** concordance support
+   - probaly by supporting cwb-scan-corpus and disk-related
+     long-polled results, see CWB::Model TODO
+** split display modes into simple search, detail, frequencies, collocations
+** switch to cwb-scancorups for frequency lists
 ** spook: missing templates for query result exports
    oocalc, tab-delmited, corpus position dump, tei/xml, latex, yaml
 ** spook: password protected groups
@@ -116,21 +130,11 @@
    iskanj - use a link
 ** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
-** When more than 7 attributes are present, switch display to 4 drop-down lists 
-   (possibly list selection performs a direct query redirect)
-** Log cleanup:
-   Production mode logging of queries and performance -> info
-   Development: info->debug
-** Add sample implementation with redirect to a fixed sample seeed [till May 8]
+** add sample implementation with redirect to a fixed sample seeed [till May 8]
    [check status and add tests]
-** Split display modes into search, detail, frequencies, collocations
-** Add generate config helper to cuwi command line, and help
-** Add on-line form-based config with auth
-** Concordance support
-   - probaly by supporting cwb-scan-corpus and disk-related
-     long-polled results, see CWB::Model TODO
-** More sorting and grouping for wordlists:
-   - by frequency, by object found (using column headings for sort)
+** add generate config helper to cuwi command line, and help
+** add on-line form-based config with auth
+** more sorting and grouping for wordlists:
    - 2 or 3 sort keys = grouping
 
 * Tests

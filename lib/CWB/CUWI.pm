@@ -67,30 +67,22 @@ sub startup {
   my $cuwiroot = $config->{root};
 
   $config->{blurb} = <<"FNORD" unless $config->{blurb};
-<p>CUWI (Corpus Users\' Web interface) is a concordance browser and
-query engine with a <a href="http://cwb.sourceforge.net">Corpus
-WorkBench Toolkit</a> backend.</p>
 
-<p>This page lists all the currently available copora found in CWB
-registries as configured in the CUWI configuration file
-(<code>cuwi.json</code> or <code>cuwi.conf</code>). Select your
-corpus of choice and perform operations using the provided search
-form.</p>
+<p>CUWI (Corpus Users' Web interface) is a corpus browser and query
+engine with a <a href="http://cwb.sourceforge.net/">IMS Open Corpus
+Workbench</a> backend.  More information about CUWI is available in
+the <a href="$cuwiroot/doc/">manual</a>.</p>
 
-<p>Search functions are documented using tool-tips. In general, a
-search can be specified either by entering a <a
+<p>This page lists all the currently available corpora on this
+server. More information about a particular corpus is available once
+you select from the list.  Please note that a few of the corpora are
+not available for public access.</p>
+
+<p>Search functions are documented using tool-tips. In general, you can
+limit yourself to simple search (with <code>?</code> and
+<code>*</code> wildcards) or use <a
 href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP query
-language statements</a>, where the search-related options are ignored,
-but the display-related options are honoured, or, alternatively, you
-can limit yourself to simple tokens with optional <code>?</code> and
-<code>*</code> place-holders, where the search options can modify the
-meaning of the search query tokens.</p>
-
-<p>Some of the information can be provided from the corpus info files
-and is only available for corpora with suitabily formatted info
-files. See <a href="$cuwiroot/doc/"</a>CUWI manual for more
-info.</a></p>
-
+language statements</a>, which enable more complex searches.</p>
 FNORD
 
   # defaults

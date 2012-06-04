@@ -1,22 +1,22 @@
   <div class="form">
     <%= form_for "/$config->{root}/" . $corpus->name . "/search", ( method => "get") => begin %>
-    <%= tooltip( l('Query'), l('ttip_query') ) %>:&nbsp;&nbsp;<%= text_field 'query', size=>50 %>
+    <span class="label"><%= tooltip( l('Query'), l('ttip_query') ) %>: <%= text_field 'query', size=>50 %></span>
 % if (@{$corpus->peers}) {
-<%= tooltip( l('Corpus'), l('ttip_corpus_group') ) %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %>
+    <span class="label"><%= tooltip( l('Corpus'), l('ttip_corpus_group') ) %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %></span>
 % }
 % if ($corpus->can('classes') and 0 + keys %{$corpus->classes}) {
-    <%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [$self->param('class') ? $self->param('class') : ${$corpus->classnames}[0] , @{$corpus->classnames}] %>
+    <span class="label"><%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [$self->param('class') ? $self->param('class') : ${$corpus->classnames}[0] , @{$corpus->classnames}] %></span>
 % }
     <div class="search">
-    <span class="label"><%= tooltip( l('Search') => l('Search Attributes'), l('ttip_search_attributes') ) %>:</span>
+    <span class="label first"><%= tooltip( l('Search') => l('Search Attributes'), l('ttip_search_attributes') ) %>: </span>
 % my $checked = 0;
 % foreach my $att (@{$corpus->attributes}) {
   % my $ttip = $corpus->tooltip(attribute => $att, languages );
-     <span class="ctrl"><%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
+     <span class="label"><%= radio_button_x 'search' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
-    <%= tooltip( $att, $ttip) %><% } else {  %>&nbsp;<%= $att %>
+    <%= tooltip( $att, $ttip) %><% } else {  %> <%= $att %>
   % }
-    </span>
+     </span>
 % }
     </div>
 
@@ -24,68 +24,70 @@
 %    grep { not m{\w+[_]\w+} } @{$corpus->structures};
 % if ( keys %withins ) {
 % $self->param('within', 's') unless $self->param('within');
-    <%= tooltip( l('Within'), l('ttip_within') ) %>: <%= select_field 'within', ['-', keys %withins] %>
-<span class="form-h-strut"></span>
+    <span class="label"><%= tooltip( l('Within'), l('ttip_within') ) %>: <%= select_field 'within', ['-', keys %withins] %></span>
+    <span class="form-h-strut"></span>
 % }
-     <%= l('Ignore') %>:
-      <span class="ctrl"><%= check_box_x ignorecase => 1       %> <%= l('case') %></span>
-      <span class="ctrl"><%= check_box_x ignorediacritics => 1 %> <%= l('diacritics') %></span>
+     <span class="label"><%= l('Ignore') %>:
+      <span class="label"><%= check_box_x ignorecase => 1       %> <%= l('case') %></span>
+      <span class="label"><%= check_box_x ignorediacritics => 1 %> <%= l('diacritics') %></span>
+     </span>
 
 %  my %structs = map { $_ => 1 }
 %    grep { m{\w+[_]\w+} } @{$corpus->structures};
 % if ( keys %structs ) {
     <div class="structs">
-      <%= tooltip( l('Only where'), l('Structural Constraint'), l('ttip_struct_constraint') ) %> <%= select_field 'in-struct', ['-', keys %structs] %>
-      <%= tooltip( l('matches'), l('Structural Constraint Query'), l('ttip_struct_query') ) %>:&nbsp;&nbsp;<%= text_field 'struct-query', size=>24 %>
+      <span class="label"><%= tooltip( l('Only where'), l('Structural Constraint'), l('ttip_struct_constraint') ) %> <%= select_field 'in-struct', ['-', keys %structs] %></span>
+      <span class="label"><%= tooltip( l('matches'), l('Structural Constraint Query'), l('ttip_struct_query') ) %>: <%= text_field 'struct-query', size=>24 %></span>
     </div>
 % }
 %  my %alignes = map { $_ => 1 } @{$corpus->alignements};
 % if ( keys %alignes ) {
     <div class="structs">
     <%= select_field 'not-align', [ [l('If') => 0], [l('Unless') => 1] ] %>
-    <%= tooltip( l('aligned'), l('Alignment Constraint'), l('ttip_align_constraint') ) %> <%= select_field 'in-align', ['-', keys %alignes, '*'] %>
-   <%= tooltip( l('matches'), l('Alignment Constraint Query'), l('ttip_align_query') ) %>:&nbsp;&nbsp;<%= text_field 'align-query', size=>30 %>
+    <span class="label"><%= tooltip( l('aligned'), l('Alignment Constraint'), l('ttip_align_constraint') ) %> <%= select_field 'in-align', ['-', keys %alignes, '*'] %></span>
+   <span class="label"><%= tooltip( l('matches'), l('Alignment Constraint Query'), l('ttip_align_query') ) %>: <%= text_field 'align-query', size=>30 %></span>
     </div>
 % }
 
     <div class="show">
-    <span class="label"><%= tooltip( l('Show'), l('Show attributes'), l('ttip_show') ) %>:</span>
+    <span class="label first"><%= tooltip( l('Show'), l('Show attributes'), l('ttip_show') ) %>:
 % $checked = 0;
 % foreach my $att (@{$corpus->attributes}) {
   % my $ttip = $corpus->tooltip(attribute => $att, 'en');
-     <span class="ctrl"><%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
+     <span class="label"><%= check_box_x 'show' => $att, $checked++ ? () : (checked => 'checked') %>
   % if ($ttip) {
-    <%= tooltip( $att, $ttip) %><% } else {  %>&nbsp;<%= $att %>
+    <%= tooltip( $att, $ttip) %><% } else {  %> <%= $att %>
   % }
+     </span>
    </span>
 % }
     </div>
 % if (scalar @{$corpus->alignements}) {
 % if ($corpus->can('general_align') and $corpus->general_align) {
-     <%= tooltip( l('Align'), l('ttip_general_align') ) %>:
-     <span class="ctrl"><%= check_box_x 'align' => 1 %></span>
+     <%= tooltip( l('Align'), l('ttip_general_align') ) %>: <%= check_box_x 'align' => 1 %></span>
 % } else {
-     <%= tooltip( l('Align'), l('Alignments'), l('ttip_aligns') ) %>:
+     <span class="label"><%= tooltip( l('Align'), l('Alignments'), l('ttip_aligns') ) %>:
 % foreach my $align (@{$corpus->alignements}) {
   % my $ttip; $ttip = ${$model->corpora}{$align}->title if exists ${$model->corpora}{$align};
-     <span class="ctrl"><%= check_box_x 'align' => $align %>
+     <span class="label"><%= check_box_x 'align' => $align %>
   % if ($ttip) {
-    <%= tooltip( $align, $ttip) %><% } else {  %>&nbsp;<%= $align %>
+    <%= tooltip( $align, $ttip) %><% } else {  %> <%= $align %>
   % }
-  </span>
+     </span>
 %  }
 % }
  <br />
 %} #alignements
-    <span class="ctrl"><%= tooltip( l('Context tokens'), l('ttip_context_tokens') ) %>: <%= text_field 'contextsize', size=>2, value=>7 %></span>
-    <span class="ctrl"><%= tooltip( l('Display mode'), l('Display Mode'), l('ttip_display_mode') ) %>:
+    <span class="label"><%= tooltip( l('Context tokens'), l('ttip_context_tokens') ) %>: <%= text_field 'contextsize', size=>2, value=>7 %></span>
+    <span class="label"><%= tooltip( l('Display mode'), l('Display Mode'), l('ttip_display_mode') ) %>: 
 % my @extras = grep { $_ } map { my $s; $s = 'paragraphs' if $_ eq 'p'; $s = 'sentences' if $_ eq 's'; $s; }
 %  @{$corpus->structures};
- <%= select_field 'display', [lselect('kwic', @extras, 'wordlist')] %>
- </span>
+     <%= select_field 'display', [lselect('kwic', @extras, 'wordlist')] %>
+    </span>
     <br />
-    <span class="ctrl"><%= tooltip( l('Listing mode'), l('Listing Mode'), l('ttip_listing_mode') ) %>: <%= select_field 'listing', [lselect(qw/all sample/)] %></span>
-    <span class="ctrl"><%= tooltip( l('Results per page'), l('ttip_results') ) %>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span> 
+    <span class="label"><%= tooltip( l('Listing mode'), l('Listing Mode'), l('ttip_listing_mode') ) %>: <%= select_field 'listing', [lselect(qw/all sample/)] %></span>
+    <span class="submit"><%= submit_button l('Run Query') %></span>
+    <span class="label"><%= tooltip( l('Results per page'), l('ttip_results') ) %>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span>
     <br />
     <%= hidden_field startfrom => 1 %>
     <%= tooltip( l('Sort'), l('Sorting'), l('ttip_sort') ) %>:
@@ -95,7 +97,6 @@
     <%= select_field 'sort_a_order',     [lselect(qw(ascending descending))] %>
     <%= select_field 'sort_a_direction', [lselect(qw(natural reversed))] %>
     </div>
-    <span class="submit"><%= submit_button l('Run Query') %></span>
   <% end %>
   </div>
 
