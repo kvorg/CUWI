@@ -59,6 +59,14 @@ sub new {
 	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }
     $fh->close;
+    unless (${$self->description}{$lang} or ${$self->tooltips}{attribute}) {
+      $fh->open($self->infofile, '<:encoding(UTF-8)');
+      ${$self->description}{en} = do { local $/ = <$fh> };
+      # add newlines if no html is present
+      unless (${$self->description}{en} =~ m{<\w+[^>]*?/?>}ms) {
+	${$self->description}{en} =~ s{\n\s*\n}{<br />\n}ms;
+      }
+    }
   } else {
     #warn 'Could not access info file for ' . $self->file . ": $@\n";
   }

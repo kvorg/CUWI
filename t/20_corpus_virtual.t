@@ -19,7 +19,7 @@ my $m = CWB::Model->new(registry => $rg);
 
 $m->virtual(cuwoos => [ 'cuwi-sl', 'cuwi-fr' ], interleaved => 1);
 my $virt = ${$m->corpora}{'cuwoos'};
-isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: Instantiation');
+isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: instantiation:');
 is($virt->name, 'cuwoos', 'Virtual Corpus: name parsing');
 is($virt->NAME, 'CUWOOS', 'Virtual Corpus: id parsing');
 is($virt->title, 'Cuwoos', 'Virtual Corpus: title parsing');
@@ -227,6 +227,16 @@ is_deeply($r,
 is_deeply(${$r->hits}[0]{aligns}{'cuwi-fr'}[0][0], 'Des',
 	  "Virtual Query/Result: kwic general_align line start")
   or diag("CWB::Model::Result structure was:\n" . Dumper(${$r->hits}[0]{aligns}{'cuwi-fr'}));
+
+my $error;
+$CWB::Model::exception_handler = sub { $error = join('', @_) };
+$m->virtual(cuwees => [ 'cuwi-sl', 'cuwi-none' ], interleaved => 1);
+$virt = ${$m->corpora}{'cuwees'};
+isa_ok($virt, 'CWB::Model::Corpus::Virtual', 'Virtual Corpus: instantiation with a missing subcorpus: ');
+is_deeply($virt->subcorpora, [ qw(cuwi-sl) ],
+	  'Virtual Corpus: omission of the missing subcorpus');
+is($error, "Could not map subcorpus cuwi-none from model - missing among model's corpora.\n", 'Virtual corpus: missing subcorpus error');
+
 
 #TODO: missing advanced sorting on virtual corpora
 

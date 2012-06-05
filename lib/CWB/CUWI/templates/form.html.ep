@@ -5,7 +5,7 @@
     <span class="label"><%= tooltip( l('Corpus'), l('ttip_corpus_group') ) %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %></span>
 % }
 % if ($corpus->can('classes') and 0 + keys %{$corpus->classes}) {
-    <span class="label"><%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [$self->param('class') ? $self->param('class') : ${$corpus->classnames}[0] , @{$corpus->classnames}] %></span>
+    <span class="label"><%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [@{$corpus->classnames}] %></span>
 % }
     <div class="search">
     <span class="label first"><%= tooltip( l('Search') => l('Search Attributes'), l('ttip_search_attributes') ) %>: </span>
@@ -44,7 +44,7 @@
 % if ( keys %alignes ) {
     <div class="structs">
     <%= select_field 'not-align', [ [l('If') => 0], [l('Unless') => 1] ] %>
-    <span class="label"><%= tooltip( l('aligned'), l('Alignment Constraint'), l('ttip_align_constraint') ) %> <%= select_field 'in-align', ['-', keys %alignes, '*'] %></span>
+    <span class="label"><%= tooltip( l('aligned'), l('Alignment Constraint'), l('ttip_align_constraint') ) %> <%= select_field 'in-align', ['-',  '*', keys %alignes] %></span>
    <span class="label"><%= tooltip( l('matches'), l('Alignment Constraint Query'), l('ttip_align_query') ) %>: <%= text_field 'align-query', size=>30 %></span>
     </div>
 % }

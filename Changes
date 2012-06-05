@@ -1,23 +1,24 @@
 This file documents the revision history for CWB::CUWI package.
 
 0.42 2012-06-05
-  - More configuration options
-  - Result looping for large wordlist result sets
-  - Added context links to wordlist display mode
-  - Virtual wordlist speed improvement (dropped unnecessary hitno query)
-  - Fixed buggy virtual corpus alignment issues
-  - cwb-scan-corpus initial interface for frequency lists with tuples
-  - Fixed table exporting bug, again
-  - Fixed constraint parsing to allow CQP constructs
-  - Fixed css flashing for infotips
-  - Fixed static serve for frequencies due to root->paths change in Mojo
-  - Fixed corpus subclass bugs
-  - Fixed css breakege in form
-  - Added warnings for query constraints with CQP queries
   - Split up search templates, cleanup
   - Localization framework, Slovene localization
   - Documentation interface
-  - More resilient model: skips faulty file-based corpora, missing peers
+  - More configuration options
+  - Result looping for large wordlist result sets, speedup
+  - Added context links to wordlist display mode
+  - Fixed buggy virtual corpus alignment issues
+  - Fixed virtual corpus subclass bugs
+  - Fixed table exporting bug, again
+  - Fixed static serve for frequencies due to root->paths change in Mojo
+  - Fixed constraint parsing to allow CQP constructs
+  - Fixed css flashing for infotips
+  - Fixed css breakege in form
+  - Fixed repeated drop-down menu entries in form
+  - Added warnings for query constraints with CQP queries
+  - More resilient model: skips missing corpora, subcorpora
+  - Handle non-compatible info files by parsing them as descriptions
+  - cwb-scan-corpus initial interface for frequency lists with tuples
 
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application

@@ -59,17 +59,20 @@ sub reload {
   $CWB::Model::exception_handler->("Could not map subcorpora from model instances - no model passed to virtual coprus.\n") unless $self->model;
 
   $self->_subcorpora(
-    {
-     map {
-           $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - missing among model's corpora.\n") unless ${$self->model->corpora}{$_};
-# CURIOUS: this should work, but fails in t 20
-#           $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - subcorpus $_ not instantiated.\n") 
-#	     unless ref ${$self->model->corpora}{$_} 
-#	       and ${$self->model->corpora}{$_}->isa('CWB::Corpus');
-	   ($_ => ${$self->model->corpora}{$_})
-	 } @{$self->subcorpora}
-    }
-			   );
+		     {
+		      map {
+			($_ => ${$self->model->corpora}{$_})
+		      } grep {
+			if (${$self->model->corpora}{$_}) {
+			  1
+			} else {
+			  $CWB::Model::exception_handler->("Could not map subcorpus $_ from model - missing among model's corpora.\n");
+			  undef;
+			}
+		      } @{$self->subcorpora}
+		     }
+		    );
+  $self->subcorpora( [ grep { ${$self->model->corpora}{$_} } @{$self->subcorpora} ]);
 
   if ($self->propagate) {
 

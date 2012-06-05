@@ -2,12 +2,8 @@
 
 * CWB::Model BUGS:
 
-** Handle non-compatible info files
-   (by parsing them as descriptions)
-** Bail out gracefully on faulty corpora:
-   - no data files
-   - skip non-existing peers (log error)
-   - skip non-existing virtaul corpora members (log error)
+** Skip missing peers from info file
+** Log errors from Model instantiation (handle exceptions)
 
 ** Paging: displays 1 match more than pagesize
 ** Check query mangling in detail
@@ -61,7 +57,6 @@
 
 * Web interface BUGS
 
-** bugs in drop down menues
 ** escapes for ?, *, |, handling for single "
 ** parse forwarded-for and clean up logs
 
