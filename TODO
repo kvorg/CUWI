@@ -8,10 +8,6 @@
    - no data files
    - skip non-existing peers (log error)
    - skip non-existing virtaul corpora members (log error)
-** Bail-out gracefully with maxhits:
-    use result for warning passing
-    announce in red
-    make a reduce to maxhits
 
 ** Paging: displays 1 match more than pagesize
 ** Check query mangling in detail

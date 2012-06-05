@@ -39,7 +39,9 @@ sub search {
 
   # redirect to peer?
   if ( $self->param('peer')
-       and $self->param('peer') ne $self->param('corpus') ) {
+       and $self->param('peer') ne $self->param('corpus') 
+       and ${$self->stash->{model}->corpora}{$self->param('peer')}->isa('CWB::Model::Corpus') )
+    {
     my $query = $self->req->url->query;
     my $url = '/' . $config->{root} . '/' . $self->param('peer') . '/search?';
     $self->app->log->info('Redirecting query to peer ' . $self->param('peer') . '.');

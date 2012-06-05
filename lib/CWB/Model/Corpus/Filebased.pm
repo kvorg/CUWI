@@ -17,7 +17,8 @@ sub new {
 
   my $fh = new IO::File;
   $fh->open($self->file, '<:encoding(UTF-8)')
-    or croak "CWB::Model::Corpus Exception: Could not open $self->file for reading during corpus init.\n";
+    or croak "CWB::Model::Corpus Exception: Could not open " 
+      . $self->file . " for reading during corpus init.\n";
   while (<$fh>) {
     $self->title($1)               if m/NAME\s+"([^#]*)"/ ;
     $self->infofile($1)            if m/INFO\s+([^# \n]*)/ ;
@@ -34,7 +35,13 @@ sub new {
     unless grep { $_ eq 'word' } @{$self->attributes};
   my $datahome = $self->datahome;
   $self->size(`du $datahome`);
-  $self->size =~ m/^(\d+)/; $self->size($1 || $!);
+  if (-r $datahome and -d $datahome
+      and $self->size and $self->size =~ m/^(\d+)/) {
+    $self->size($1);
+  } else {
+    carp "CWB::Model::Corpus Exception: Could not open $datahome for reading during corpus init, aborted: " . $self->name . " dropped from the registry.\n";
+    return undef;
+  }
 
   if ($self->infofile and
       $fh->open($self->infofile, '<:encoding(UTF-8)') ) {
@@ -82,6 +89,8 @@ sub new {
       push @{${$self->stats}{alignements}}, [ $1, $2 ]
 	if m/a-ATT\s+([^ \t]+)\s+(\d+)/;
     }
+  } else {
+      return undef;
   }
 
   return $self;

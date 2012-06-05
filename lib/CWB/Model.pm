@@ -43,10 +43,11 @@ sub reload {
 
   $self->corpora( {
 		map {
-		  my $corpus = CWB::Model::Corpus::Filebased->new($_, $self);
-		  croak "CWB::Model::Corpus Exception: Could not instantiate Corpus object for $_ "
-		    unless $corpus->isa('CWB::Model::Corpus::Filebased');
-		  ($corpus->name, $corpus);
+		  ($_->name, $_);
+		} grep {
+		  $_ and $_->isa('CWB::Model::Corpus::Filebased');
+		} map {
+		  CWB::Model::Corpus::Filebased->new($_, $self);
 		} grep {
 		  -f $_  and not ( m{/[#]} or m {[#~]$});
 		} map {
