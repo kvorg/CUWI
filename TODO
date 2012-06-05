@@ -65,10 +65,6 @@
 
 * Web interface BUGS
 
-** form: nowrap where needed = 
-   make label and checkbox unbreakable in attributes
-   (css white-space: nowrap and drop &nbsp;)
-** maxhits warning when reached
 ** bugs in drop down menues
 ** escapes for ?, *, |, handling for single "
 ** parse forwarded-for and clean up logs

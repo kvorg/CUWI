@@ -29,6 +29,7 @@ has ignoremeta  => 0;
 has startfrom   => 1;
 has pagesize    => 25;
 has maxhits     => 20000;
+has maxfreq     => 50000000;
 has context     => 25;
 has display     => 'kwic';
 has result      => sub { CWB::Model::Result->new };
@@ -500,7 +501,7 @@ sub run {
     $result->table(1);
     my %counts;
     my $step;
-    for (my $pos = 0  ; $pos < $result->hitno; $pos += $self->maxhits ) {
+    for (my $pos = 0  ; $pos < $result->hitno and $pos < $self->maxfreq; $pos += $self->maxhits ) {
       $step++;
       my @kwic = $self->cqp->exec("cat Last $pos " . ($pos + $self->maxhits -1));
       warn "Got " . scalar @kwic . " lines in step $step.\n" if $self->debug;
@@ -563,6 +564,14 @@ sub run {
       } else {
 	$result->sort(target=>'order', normalize=>1, order=>'descending');
       }
+    }
+
+    #handle maxfreq
+    if ($result->hitno > $self->maxfreq) {
+      push (@{$result->warnings},
+	    'More than ' .  $self->maxfreq . ' hits were returned for the query (' . $result->hitno . ') , but not all results were processed and shown due to the max hit number per wordlist query constraint.');
+      $result->hits([ splice (@{$result->hits}, 0, $self->maxfreq) ]) ;
+      $result->distinct(scalar @{$result->hits});
     }
   } else {
     $self->exception("No known display mode specified, aborting query.");

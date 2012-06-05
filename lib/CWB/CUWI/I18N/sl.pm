@@ -231,8 +231,8 @@ FNORD
    '<b>[_1]</b> zadetkov za poizvedovanje ',
    'result_msg_wordlist_sample x_out_of_y_distinct_from_z_for' =>
    'Vzorec <b>[_1]</b> zadetkov izmed <b>[_2]</b> različnih zadetkov od skupno <b>[_3]</b> zadetkov za poizvedovanje ',
-   'result_msg_wordlist_x_distinct_out of_y' =>
-   '<b>[_1]</b> različnih zadetkov izmed <b>[_2]</b> zadetki za poizvedovanje ',
+   'result_msg_wordlist_x_distinct_out_of_y_for' =>
+   '<b>[_1]</b> različnih zadetkov izmed <b>[_2]</b> zadetkov za poizvedovanje ',
    'result_msg_x_detailes_for_cpos' =>
    'Podrobni prikaz korpusnega položaja <b>[_1]</b> iz poizvedovanja ',
    'result_msg_in_x_seconds' => ' v [_1] s.',

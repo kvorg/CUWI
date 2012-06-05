@@ -30,9 +30,12 @@ sub search {
   return 0 unless $self->auth;
 
   # to application config
-  my $maxhits =     $config->{maxhits};
-  my $maxuserhits = $config->{maxuserhits};
-  my $maxpagesize = $config->{maxpagesize};
+  my $maxhits     = $config->{corpora}{OPTIONS}{maxhits};
+  my $maxuserhits = $config->{corpora}{OPTIONS}{maxuserhits};
+  my $maxpagesize = $config->{corpora}{OPTIONS}{maxpagesize};
+  my $maxfreq     = $config->{corpora}{OPTIONS}{maxfreq};
+  warn "Maxfreq is $maxfreq.\n";
+  my $maxuserfreq = $config->{corpora}{OPTIONS}{maxuserfreq};
 
   # redirect to peer?
   if ( $self->param('peer')
@@ -55,6 +58,8 @@ sub search {
   # corpus settings overrule global settings for wordlist hit limits
   $maxhits = $corpus->maxhits || $maxhits;
   $maxuserhits = $corpus->maxuserhits || $maxuserhits;
+  #$maxfreq = $corpus->maxfreq || $maxfreq;
+  #$maxuserfreq = $corpus->maxuserfreq || $maxuserfreq;
 
   $self->app->log->info("Redirecting to registry, corpus init aborted.")
     and $self->redirect_to('index')
@@ -73,8 +78,10 @@ sub search {
 
   $params{cpos} = $self->param('cpos')
     if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
-  $params{maxhits} = $self->session('username') ?
-    $maxuserhits : $maxhits ;
+  $params{maxhits} = $self->session('username')  ?
+    $maxuserhits : $maxhits;
+  $params{maxfreq} = $self->session('username') ?
+    $maxuserfreq : $maxfreq ;
   $params{query} = $self->param('query');
   $params{class} = $self->param('class')
     if $corpus->isa('CWB::Model::Corpus::Virtual')
