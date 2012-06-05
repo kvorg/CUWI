@@ -1,11 +1,38 @@
 body { font-family: Palatino, Times, serif;
        font-size: 120%;
        background-color: #F0F0F0;
-       padding-bottom: 8ex;
+       padding: 0px;
+       margin: 0px;
 }
 
-div.optionbar { font-family: sans-serif; font-size: 50%; text-align: right; }
-div.user, div.langselect { display: inline;  }
+div.optionbar { width: 100%; color: white; background: black;
+		padding-bottom: .2em;
+		font-family: sans-serif; font-size: 50%; 
+		text-align: right;
+	      }
+div.optionbar a { color: white; padding-right: 2em; text-decoration: none;}
+div.optionbar a.hover { text-decoration: underline;}
+span.logo {
+    margin: 0px;
+    font-weight: bold;
+    font-family: 'Alfa Slab One', cursive;
+    letter-spacing: .3em;
+    line-height: 110%;
+    padding: .4em; 
+    padding-right: .2em; 
+    display: block;
+    float: left;
+    font-size: 220%;
+    color: white;
+    background: black;
+    border-bottom-right-radius: 1em;
+}
+span.logo span:nth-child(4n+5) { color: red; }
+span.logo span:nth-child(4n+2) { color: green; }
+span.logo span:nth-child(4n+3) { color: purple; }
+span.logo span:nth-child(4n+4) { color: blue; }
+span.adlogo { }
+div.user, div.langselect { display: inline; margin-left: 1em; margin-right: 1em;  }
 img.options { width: 16px, height: 16px; }
 
 div.search, div.show { margin-left: 3.5em; }
