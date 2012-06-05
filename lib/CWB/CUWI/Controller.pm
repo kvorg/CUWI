@@ -34,7 +34,6 @@ sub search {
   my $maxuserhits = $config->{corpora}{OPTIONS}{maxuserhits};
   my $maxpagesize = $config->{corpora}{OPTIONS}{maxpagesize};
   my $maxfreq     = $config->{corpora}{OPTIONS}{maxfreq};
-  warn "Maxfreq is $maxfreq.\n";
   my $maxuserfreq = $config->{corpora}{OPTIONS}{maxuserfreq};
 
   # redirect to peer?
@@ -149,7 +148,7 @@ sub search {
   $params{pagesize} = $self->param('size') || 50;
   $params{pagesize} = 50 unless $params{pagesize} =~ m/[0-9]+/
 		     and $params{pagesize} >= 1
-		     and $params{pagesize} <= $maxpagesize;
+		     and $params{pagesize} <= ($maxpagesize || 10000);
   if ( $self->param('sort_a') and $self->param('sort_a') !~ m{none|order} ) {
     $params{sort}{a}{target}    = $self->param('sort_a');
     $params{sort}{a}{att}       = $self->param('sort_a_att');
