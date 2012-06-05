@@ -7,6 +7,25 @@ our %Lexicon =
   (
    _AUTO => 1,
 
+   # index.html.ep
+   blurb => <<"FNORD",
+<p>CUWI (Corpus Users' Web interface) is a corpus browser and query
+engine with an <a href="http://cwb.sourceforge.net/">IMS Open Corpus
+Workbench</a> backend.  More information about CUWI is available in
+the <a href="[_1]">manual</a>.</p>
+
+<p>This page lists all the currently available corpora on this
+server. More information about a particular corpus is available once
+you select from the list.  Please note that a few of the corpora are
+not available for public access.</p>
+
+<p>Search functions are documented using tool-tips. In general, you can
+limit yourself to simple search (with <code>?</code> and
+<code>*</code> wildcards) or use <a
+href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP query
+language statements</a>, which enable more complex searches.</p>
+FNORD
+
    # form.html.ep
    ttip_query => <<FNORD,
 

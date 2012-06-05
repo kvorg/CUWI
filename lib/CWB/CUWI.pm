@@ -66,25 +66,6 @@ sub startup {
   $self->log->info("App web root: '$config->{root}'.");
   my $cuwiroot = $config->{root};
 
-  $config->{blurb} = <<"FNORD" unless $config->{blurb};
-
-<p>CUWI (Corpus Users' Web interface) is a corpus browser and query
-engine with a <a href="http://cwb.sourceforge.net/">IMS Open Corpus
-Workbench</a> backend.  More information about CUWI is available in
-the <a href="$cuwiroot/doc/">manual</a>.</p>
-
-<p>This page lists all the currently available corpora on this
-server. More information about a particular corpus is available once
-you select from the list.  Please note that a few of the corpora are
-not available for public access.</p>
-
-<p>Search functions are documented using tool-tips. In general, you can
-limit yourself to simple search (with <code>?</code> and
-<code>*</code> wildcards) or use <a
-href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP query
-language statements</a>, which enable more complex searches.</p>
-FNORD
-
   # defaults
   $config->{maxsize} ||= 50000;
   $config->{maxpagesize} ||=  500;

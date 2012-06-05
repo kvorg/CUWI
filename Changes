@@ -16,6 +16,7 @@ This file documents the revision history for CWB::CUWI package.
   - Fixed css breakege in form
   - Fixed repeated drop-down menu entries in form
   - Added warnings for query constraints with CQP queries
+  - Added top level statistics
   - More resilient model: skips missing corpora, subcorpora
   - Handle non-compatible info files by parsing them as descriptions
   - cwb-scan-corpus initial interface for frequency lists with tuples

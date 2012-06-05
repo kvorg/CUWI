@@ -82,8 +82,8 @@
 
 * Web interface
 
-** running text context: (with visible structural tags)
 ** add total stats to root page
+** running text context: (with visible structural tags)
 ** do not use url-like attributes and *_id attributes in search forms
 ** auto url-like attributes with /.{jpg,png,tif*,gif}/i for previews
 ** handle corpus groups with top-level entries, hide members in top list
@@ -91,12 +91,13 @@
 ** simple search form (word+lemma, configurable, with alignement
 ** documentation
 ** document config, switch config to general config
-
-** add progress and redirect for result exports
-** add option for display title structural tag to config
 ** log cleanup:
    Production mode logging of queries and performance -> info
    Development: info->debug
+
+** structural attribute filters from toolitps (possibly use subqueries or such)
+** add progress and redirect for result exports
+** add option for display title structural tag to config
 ** konrad, imp, spook: multiple sort and multiple structure constraint
 ** change wordlist exporting to divide matches into multiple fields
 ** when more than 7 attributes are present, switch display to 4 drop-down lists 

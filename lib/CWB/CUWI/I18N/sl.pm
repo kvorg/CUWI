@@ -13,6 +13,35 @@ our %Lexicon =
    Logout => 'Odjavi',
    Help => 'Pomoč',
 
+   # index.html.ep
+   blurb => <<"FNORD",
+
+<p>CUWI (Corpus Users' Web interface) je pregledovalnik in iskalnik za
+korpuse, zapisane v sistemu <a href="http://cwb.sourceforge.net/">IMS
+Open Corpus Workbench</a>.  Več o iskalniku CUWI najdete v <a
+href="[_1]">navodilih</a>.</p>
+
+<p>Spodaj najdete seznam korpusov, ki so na voljo na tem
+strežniku. Več podatkov o posameznem korpusu boste dobili, ko ga
+izberete v seznamu. Upoštevajte, da nekateri korpusi niso na voljo za
+javno uporabo.</p>
+
+<p>Dokumentacijo posameznih funkcij iskalnega vmesnika lahko dobite s
+klikom na ime polja. V splošnem lahko uporabljate preprosti način
+iskanja (z znakoma <code>?</code> in <code>*</code> za poljubni znak
+in več poljubnih znakov) ali pa uporabite <a
+href="http://cwb.sourceforge.net/files/CQP_Tutorial/">poizvedovalni
+jezik CQP</a>, ki doupušča bolj zapletena poizvedovanja.</p>
+FNORD
+
+   'Available Corpora' => 'Izbor korpusov',
+   Statistics => 'Statistični podatki',
+   'Number of corpora' => 'Število korpusov',
+   'Total size (tokens)' => 'Skupno število besed',
+   'Total size (disk)' => 'Skupna velikost na disku',
+   Languages => 'jeziki',
+   Encodings => 'kodiranja',
+
    # login.html.ep
    Login => 'Prijava',
    Username => 'Uporabniško ime',
@@ -26,7 +55,6 @@ our %Lexicon =
    'Attribute Descriptions' => 'Opis pozicijskih atributov',
    'Structural Attribute Descriptions (Tags)' => 'Opis stukturnih atributov',
    'Peer Corpora' => 'Korpusi v skupini',
-   Statistics => 'Statistični podatki',
    'Size (tokens)' => 'Velikost (število besed)',
    'Positional attributes' => 'Pozicijski atributi',
    'Structural attributes' => 'Strukturni atributi',

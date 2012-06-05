@@ -18,9 +18,7 @@ our $VERSION = '0.2';
 has registry => sub {
   return $ENV{CORPUS_REGISTRY} ? $ENV{CORPUS_REGISTRY} : $CWB::Config::Registry;
 } ;
-has corpora => sub {
-  return { } ;
-};
+has [qw(corpora stats)] => sub { return { } };
 
 sub new {
   my $self = shift->SUPER::new(@_);
@@ -32,6 +30,7 @@ sub new {
 sub reload {
   use Carp qw(croak);
   my $self = shift;
+  my %stats = ( size => 0, tokens => 0, );
 
   # existing virtual corpora cannot be reloaded
   my %virtuals =
@@ -43,6 +42,16 @@ sub reload {
 
   $self->corpora( {
 		map {
+		  $stats{languages}{$_->language} =
+		    ( defined $stats{languages}{$_->language} ? 
+		      $stats{languages}{$_->language} +1 : 1)
+		      if $_->language;
+		  $stats{encodings}{$_->encoding} =
+		    ( defined $stats{encodings}{$_->encoding} ?
+		      $stats{encodings}{$_->encoding} + 1 : 1)
+		      if $_->encoding;
+		  $stats{size} += $_->size if $_->size;
+		  $stats{tokens} += ${$_->stats}{tokens} if ${$_->stats}{tokens};
 		  ($_->name, $_);
 		} grep {
 		  $_ and $_->isa('CWB::Model::Corpus::Filebased');
@@ -59,6 +68,7 @@ sub reload {
 	      } ) ;
   ${$self->corpora}{$_}->reload
     foreach keys %virtuals; #reload subcorpora
+  $self->stats(\%stats);
 };
 
 # factory for virtual corpora

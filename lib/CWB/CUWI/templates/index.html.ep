@@ -1,8 +1,19 @@
 % layout 'main', title=>'Form';
+% $self->languages($self->session('language')) if $self->session('language');
 
+% my $blurb;
 % if ($config->{blurb}) {
-  <p><%== $config->{blurb} %></p>
+%  if (ref $config->{blurb} eq 'HASH') {
+%   $blurb = exists $config->{blurb}{langugages} ? $config->{blurb}{langugages} : '';
+%   $blurb //= exists $config->{blurb}{'en'} ? $config->{blurb}{en} : '';
+%  } else {
+%   $blurb //= $config->{blurb} if not ref $config->{blurb};
+%  }
 % }
+% $blurb //= l('blurb', $config->{root} . '/doc/');
+<div class="description">
+ <p><%== $blurb %></p>
+</div>
 
 % if (stash('cwbexception')) {
 <div class="exception">
@@ -11,7 +22,7 @@
 % }
 
 <div class="corpora">
- <h3>Available corpora:</h3>
+ <h3><%= l('Available Corpora') %>:</h3>
  <ul>
 % my $corpora = $model->corpora;
 % foreach my $corpusname ( sort keys %{$corpora} ) {
@@ -20,5 +31,17 @@
    <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a> </li>
 % }
  </ul>
+
+<h3><%= l 'Statistics' %></h2>
+<ul>
+%  if (${$model->stats}{tokens}) {
+  <li><%= l 'Number of corpora' %>: <%= scalar keys %{$model->corpora}  %></li>
+  <li><%= l 'Total size (tokens)' %>: <%= 0 + ${$model->stats}{tokens}  %></li>
+  <li><%= l 'Total size (disk)' %>: <%= sprintf('%.3f', ${$model->stats}{size} / (1024 ** 2))  %> Mb</li>
+  <li><%= l 'Languages' %>: <%= join (', ', keys %{$model->stats->{languages}}) %></li>
+  <li><%= l 'Encodings' %>: <%= join (', ', keys %{$model->stats->{encodings}}) %></li>
+%  }
+</ul>
 </div>
+
 
