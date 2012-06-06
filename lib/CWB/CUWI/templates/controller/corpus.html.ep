@@ -85,7 +85,7 @@
 %}
 
 % if ($corpus->can('subcorpora')) {
-  <h2>Subcorpora</h2>
+  <h2><%= l 'Subcorpora' %></h2>
   <ul>
  <ul>
 % my $corpora = $model->corpora;
