@@ -26,8 +26,10 @@
 %    }
 %   } else {
 %    foreach (keys %{$m->{data}}) {
-%    if ($m->{data}{$_} =~ m/[.]jpeg|jpg|gif|png|tif|tiff$/) {
+%     if ($m->{data}{$_} =~ m/[.]jpeg|jpg|gif|png|tif|tiff$/) {
    <a href="<%= $m->{data}{$_} %>"><img class="preview" src="<%= $m->{data}{$_} %>" /></a>
+%     last; 
+%     }
 %    }
 %   }
  <p>
