@@ -7,6 +7,7 @@ body { font-family: Palatino, Times, serif;
 
 div.optionbar { width: 100%; color: white; background: black;
 		padding-bottom: .2em;
+		padding-top: .1em;
 		font-family: sans-serif; font-size: 50%; 
 		text-align: right;
 	      }
@@ -15,11 +16,11 @@ div.optionbar a.hover { text-decoration: underline;}
 span.logo {
     margin: 0px;
     font-weight: bold;
-    font-family: 'Alfa Slab One', cursive;
+    font-family: sans-serif;
     letter-spacing: .3em;
     line-height: 110%;
     padding: .4em; 
-    padding-right: .2em; 
+    padding-right: 0px; 
     display: block;
     float: left;
     font-size: 220%;
@@ -27,13 +28,13 @@ span.logo {
     background: black;
     border-bottom-right-radius: 1em;
 }
+span.logo a { display: block; width: .4em; }
 span.logo span:nth-child(4n+5) { color: red; }
 span.logo span:nth-child(4n+2) { color: green; }
 span.logo span:nth-child(4n+3) { color: purple; }
 span.logo span:nth-child(4n+4) { color: blue; }
-span.adlogo { }
 div.user, div.langselect { display: inline; margin-left: 1em; margin-right: 1em;  }
-img.options { width: 16px, height: 16px; }
+img.options { width: 12px; height: 12px; margin-top: 4px; margin-bottom: -2px; }
 
 div.search, div.show { margin-left: 3.5em; }
 span.label { white-space: nowrap; } 
@@ -128,8 +129,8 @@ div.matches td.head  { white-space: nowrap; text-align: center;
            padding-left: .3em; padding-right: .3em; }
 div.matches td.head span.no, div.matches td.head span.parno   { font-weight: bold; text-align: center; font-size: 80%;}
 div.matches td.head span.parno   { font-weight: bold; vertical-align: top;}
-a.itip { font-size: 60%; text-align: left; white-space: nowrap; }
-div.matches td.head > a.itip { display: block; white-space: nowrap; }
+a.itip { font-size: 80%; text-align: left; white-space: nowrap; }
+div.matches td.head > a.itip { display: inline; white-space: nowrap; }
 div.matches td.head span.infotip { text-align: left; white-space: nowrap; }
 a.tooltip, a.infobox {
     border-bottom: 1px dotted #000000; color: #000000; outline: none;
@@ -163,7 +164,24 @@ span.token span.part:nth-child(4n+4) > a { color: purple; }
 span.match span.token span.part:first-child { color: red; }
 span.hlp span.hlptxt { display: none; }
 span.hlp:hover span.helptxt { display: block; }
-h2 { margin-left: 2em; margin-right: 2em; text-align: center ; }
+h1 {
+    font-size: 1em;
+    margin-right: 0px;
+    margin-top: -.05em;
+    margin-bottom: .7em;
+    margin-left: 2.78em;
+    padding-left: 1em;
+    border-left: thick solid black;
+    border-top: thick solid black;
+    padding-bottom: .15em;
+    background: #FAFAFA;
+    text-align: left ;
+    width: 100%;
+    border-top-left-radius: 12px;
+   }
+h1 a { color: gray; text-decoration: none }
+h1 a.hover { text-decoration: underline }
+
 h2 + p, div.report, div.corpora { margin-left: 4em; margin-right: 4em; }
 div.form { margin-left: auto; margin-right: auto; width: 38em;
 	   background-color: white;
@@ -215,8 +233,9 @@ table.examples tr td.t { font-family: serf; font-size: 70%; }
 
 #navbar {
    margin: 0;
-   margine-right: 2em;
+   margin-right: 1em;
    padding: 0;
+   padding-bottom: 6px;
    height: 1em;
    display: inline-block
 }
@@ -238,6 +257,9 @@ table.examples tr td.t { font-family: serf; font-size: 70%; }
    display: block;
    position: absolute;
    margin: 0;
+   border-top:  6px solid black;
+   border-right: thin solid black;
+   border-bottom: thin solid black;
    padding: 0; }
 #navbar li:hover li, #navbar li.hover li {
    float: none; }

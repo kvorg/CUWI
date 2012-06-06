@@ -11,7 +11,7 @@
  </head>
  <body>
  <div class="optionbar">
-   <span class="logo"><span>C</span><span>U</span><br /><span>W</span><span>I</span></span>
+   <span class="logo"><%= link_to '/' . $config->{root} => begin %><span>C</span><span>U</span><br /><span>W</span><span>I</span><% end %></span>
   <div class="langselect">
    <ul class="langselect" id="navbar">
      <li><%= image ('/' . $config->{root} . '/lib/images/cog-white.png', alt => 'Select languages', class => 'options', width => 12, height => 12) %> <%= l('Languages') %></a>
@@ -31,16 +31,16 @@
    <%= link_to '/' . $config->{root} . '/doc/CWB/CUWI/Manual' => begin %><%= l('Help') %><% end %>
  </div>
 
-  <h2><%= link_to 'index' => begin %>
+  <h1><%= link_to 'index' => begin %>
     <%= l('CUWI Search') %>
   <% end %>
  % if (param('corpus')) {
-   :
+   &#x2022;
    <%= link_to '/' . $config->{root} . '/' . param('corpus') => begin %>
      <%= ${$model->{corpora}}{param('corpus')}->title %>
    <% end %>
  %}
-  </h2>
+  </h1>
 <%== content %>
 % if (stash('tooltipdata')) {
   <%= Mojo::ByteStream->new(stash('tooltipdata')) =%>
