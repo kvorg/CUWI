@@ -65,7 +65,7 @@ sub new {
     }
     $fh->close;
     unless (${$self->tooltips}{attribute} or ref $self->description and keys %{$self->description} ) {
-      $fh->open($self->infofile, '<:encoding($iENC)');
+      $fh->open($self->infofile, "<:encoding($iENC)");
       ${$self->description}{en} = do { local $/ = <$fh> };
       # add newlines if no html is present
       unless (${$self->description}{en} =~ m{<\w+[^>]*?/?>}ms) {
