@@ -1,6 +1,7 @@
 package CWB::Model::Corpus::Filebased;
 
 use Mojo::Base 'CWB::Model::Corpus';
+use Mojo::Util qw(html_escape);
 
 use CWB::Model::Query;
 use CWB::Model::Scan;
@@ -67,9 +68,9 @@ sub new {
     unless (${$self->tooltips}{attribute} or ref $self->description and keys %{$self->description} ) {
       $fh->open($self->infofile, "<:encoding($iENC)");
       ${$self->description}{en} = do { local $/ = <$fh> };
-      # add newlines if no html is present
-      unless (${$self->description}{en} =~ m{<\w+[^>]*?/?>}ms) {
-	${$self->description}{en} =~ s{\n\s*\n}{<br />\n}ms;
+      # use pre if no html start tag is present
+      unless (${$self->description}{en} =~ m{^\s*[<]\w+[^>]*?/?>}) {
+	${$self->description}{en} = "<pre>\n" . html_escape(${$self->description}{en}) . "\n</pre>\n";
       }
     }
   } else {

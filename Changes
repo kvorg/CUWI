@@ -17,7 +17,7 @@ This file documents the revision history for CWB::CUWI package.
   - Fixed repeated drop-down menu entries in form
   - Added warnings for query constraints with CQP queries
   - Added top level statistics
-  - More resilient model: skips missing corpora, subcorpora
+  - More resilient model: skips missing/broken corpora, subcorpora
   - Handle non-compatible info files by parsing them as descriptions
   - cwb-scan-corpus initial interface for frequency lists with tuples
   - Standardized encodings, used corpus encoding for info file reading
