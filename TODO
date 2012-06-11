@@ -32,7 +32,7 @@
 ** spook: any needed support for form-based alignement and structural queries
 ** Fix all file work to use IO::File and File::Spec
 ** Improve test coverage
-** Colocation support (usin cwb-corpus-scan ?)
+** Colocation support (using cwb-corpus-scan?)
 ** Info files: translateable names/titles
 ** Add a handle for literal matching (no regexps) with %l
 ** Test cwb beta release compatibiliy
@@ -60,10 +60,10 @@
 ** parse forwarded-for and clean up logs
 
 ** missing "not" for structural constraint
-** use chunked transfer encoding for results?
 ** wordlist -> ignoremeta in links disables ignorecase
 ** wordlist: quote metacharacters in string links: check/test
-** classes: sanitize with the virtual corpus before sending (done?)
+** classes: sanitize with the virtual corpus before sending
+   done, missing: tests
 ** fix controller params / %params ambiguity in controller
    (probably unify names, fix values with redirect and pass to model
    through a filter - setting params is proven to work ok
@@ -82,30 +82,30 @@
 * Web interface
 
 ** running text context: (with visible structural tags)
-** do not use url-like attributes and *_id attributes in search forms
-** auto url-like attributes with /.{jpg,png,tif*,gif}/i for previews
-** handle corpus groups with top-level entries, hide members in top list
-   (just like virtual copora)
 ** simple search form (word+lemma, configurable, with alignement
    configuration file sets: possible contraint, attributes to search and to show
    defaults are: ignore case, in s, lemma/word, show word
    general align button, display = kwic
-** documentation
+** add option for display title structural tag to config
 ** document config, switch config to general config
+** change wordlist format to et spec
+** change wordlist exporting to divide matches into multiple fields
+** handle corpus groups with top-level entries, hide members in top list
+   (just like virtual copora)
+** when more than 7 attributes are present, switch display to 4 drop-down lists 
+   (possibly list selection performs a direct query redirect)
+** documentation
 ** log cleanup:
    Production mode logging of queries and performance -> info
    Development: info->debug
+** do not use url-like attributes and *_id attributes in search forms
 
-** structural attribute filters from toolitps (possibly use subqueries or such)
+** structural attribute filters from tooltips (possibly use subqueries or such)
 ** add progress and redirect for result exports
-** add option for display title structural tag to config
+** use chunked transfer encoding for results?
 ** konrad, imp, spook: multiple sort and multiple structure constraint
-** change wordlist exporting to divide matches into multiple fields
-** when more than 7 attributes are present, switch display to 4 drop-down lists 
-   (possibly list selection performs a direct query redirect)
-** concordance support
-   - probaly by supporting cwb-scan-corpus and disk-related
-     long-polled results, see CWB::Model TODO
+** finish frequency support with cwb-scan-corpus
+     and disk-related long-polled results, see CWB::Model TODO
 ** split display modes into simple search, detail, frequencies, collocations
 ** switch to cwb-scancorups for frequency lists
 ** spook: missing templates for query result exports
@@ -119,12 +119,10 @@
    iskanj - use a link
 ** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
-** add sample implementation with redirect to a fixed sample seeed [till May 8]
+** add sample implementation with redirect to a fixed sample seeed
    [check status and add tests]
 ** add generate config helper to cuwi command line, and help
 ** add on-line form-based config with auth
-** more sorting and grouping for wordlists:
-   - 2 or 3 sort keys = grouping
 
 * Tests
 
