@@ -43,8 +43,13 @@ sub new {
     return undef;
   }
 
+  my $iENC = 'utf8';
+  $iENC = $self->encoding
+    if $self->encoding and not $self->encoding =~ m/utf-?8/i;
+  $iENC = "iso-8859-$1" if $iENC =~ m/latin[- ]?(\d)/i;
+
   if ($self->infofile and
-      $fh->open($self->infofile, '<:encoding(UTF-8)') ) {
+      $fh->open($self->infofile, "<:encoding($iENC)") ) {
     my $lang;
     while (<$fh>) {
       $lang = $1 || 'en'
@@ -59,8 +64,8 @@ sub new {
 	if m/(ATTRIBUTE|STRUCTURE)\s+([^# \n]+)\s+(?:([^# \n]+)\s+)?"([^#]*)"/ ;
     }
     $fh->close;
-    unless (${$self->description}{$lang} or ${$self->tooltips}{attribute}) {
-      $fh->open($self->infofile, '<:encoding(UTF-8)');
+    unless (${$self->tooltips}{attribute} or ref $self->description and keys %{$self->description} ) {
+      $fh->open($self->infofile, '<:encoding($iENC)');
       ${$self->description}{en} = do { local $/ = <$fh> };
       # add newlines if no html is present
       unless (${$self->description}{en} =~ m{<\w+[^>]*?/?>}ms) {
@@ -74,6 +79,7 @@ sub new {
   $self->encoding('utf8')  unless $self->encoding;
   $self->Encoding($self->encoding) ;
   $self->encoding('utf8')  if $self->encoding eq 'UTF-8';
+  $self->encoding("iso-8859-$1") if $self->encoding =~ m/latin[- ]?(\d)/i;
   $self->Encoding('UTF-8') if $self->encoding eq 'utf8';
 
   $self->language('en_US') unless $self->language;

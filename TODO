@@ -4,7 +4,6 @@
 
 ** Skip missing peers from info file
 ** Log errors from Model instantiation (handle exceptions)
-
 ** Paging: displays 1 match more than pagesize
 ** Check query mangling in detail
 ** CQP heurisitcs:
@@ -76,19 +75,21 @@
 ** disable context links for biggest display mode (sentence or paragraph)
 ** possibly closures for exception handling are buggy
    - should rethrow the exception and catch it in webapp?
-   - or just check for return value?
+   - or just check for return valu?e
    - make a nice exception page or part of page for fatals
    - find a way to test all of this
 
 * Web interface
 
-** add total stats to root page
 ** running text context: (with visible structural tags)
 ** do not use url-like attributes and *_id attributes in search forms
 ** auto url-like attributes with /.{jpg,png,tif*,gif}/i for previews
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)
 ** simple search form (word+lemma, configurable, with alignement
+   configuration file sets: possible contraint, attributes to search and to show
+   defaults are: ignore case, in s, lemma/word, show word
+   general align button, display = kwic
 ** documentation
 ** document config, switch config to general config
 ** log cleanup:
