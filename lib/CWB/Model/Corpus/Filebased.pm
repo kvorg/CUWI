@@ -87,13 +87,12 @@ sub new {
   my $cwb_describe = 'cwb-describe-corpus -s -r '
     . $self->model->registry . ' '
     . $self->NAME ;
-  my $description = `$cwb_describe`;
-  if ($description) {
+  my @description = `$cwb_describe`;
+  if (scalar @description) {
       ${$self->stats}{attributes} = [];
       ${$self->stats}{structures} = [];
       ${$self->stats}{alignements} = [];
 
-    my @description = split(/^/, $description);
     foreach (@description) {
       ${$self->stats}{tokens} = $1 if m/size\s+.tokens.:\s+(\d+)/;
       push @{${$self->stats}{attributes}}, [ $1, $2, $3 ]
@@ -103,9 +102,11 @@ sub new {
       push @{${$self->stats}{alignements}}, [ $1, $2 ]
 	if m/a-ATT\s+([^ \t]+)\s+(\d+)/;
     }
-  } else {
-      return undef;
-  }
+    }
+   unless( exists ${$self->stats}{tokens} and ${$self->stats}{tokens} )  {
+     carp "CWB::Model::Corpus Exception: $datahome exists but does not contain a valid corpus, aborted: " . $self->name . " dropped from the registry.\n";
+     return undef;
+   }
 
   return $self;
 }
