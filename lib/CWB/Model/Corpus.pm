@@ -25,7 +25,8 @@ sub new {
 
 sub describe {
   croak 'CWB::Model::Corpus syntax error: not called as $corpus->describe(<lang>);' unless @_ == 2;
-  return ${shift->description}{shift()};
+  my ($self, $lang) = @_;
+  return ${$self->description}{$lang} ? ${$self->description}{$lang} : ${$self->description}{en};
 }
 
 sub tooltip {
