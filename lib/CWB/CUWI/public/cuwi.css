@@ -225,6 +225,7 @@ div.description table.stats tr td {
 span.infotip { display: none; }
 
 /* Infotip markup */
+span.infotip h4 { font-size: .2em; font-weight: bold; margin-top: .2em; margin-bottom: .1em; }
 table.examples tr th { text-align: left; font-size: 80%; }
 table.examples tr td { font-family: monospace; font-size: 90%; vertical-align: text-top; }
 table.examples tr td.t { font-family: serf; font-size: 70%; }

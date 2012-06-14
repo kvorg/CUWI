@@ -31,7 +31,7 @@ FNORD
 
 The search query can contain simple words with optional <code>?</code>
 and <code>*</code> place-holders. You can separate alternatives with
-<code>|</code> and use [] for 'any token'.<br />Your query will be
+<code>|</code> and use ~[~] for 'any token'.<br />Your query will be
 converted into CQP query language, using the 'Search' attributes
 bellow to select the token attribute to searhc on. The search result
 page will display how the simple search is transformed into a CQP
@@ -44,7 +44,7 @@ disable all processing. See <a
 href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP Tutorial</a>
 for more info.<br />
 
-<b>Examples for search on <code>word</code>:</b><br />
+<h4>Examples for search on <code>word</code></h4>
 <table class="examples">
 <tr><th>Simple</th><th>CQP</th><th>Explanation</th></tr>
 <tr><td>where</td><td>~[word="where"~]</td><td class="t">instances of word 'where'</td></tr>
@@ -56,7 +56,7 @@ for more info.<br />
 <tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
 <tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
 </table>
-<b>Advanced CQP Examples</b><br />
+<h4>Advanced CQP Examples</h4>
 <table class="examples">
 <tr><th>CQP</th><th>Explanation</th></tr>
 <tr><td>~[word=".*ies" & lemma=".*y"~]</td><td class="t">words ending on 'ies' with lemma ending on 'y'</td></tr>
