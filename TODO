@@ -98,7 +98,6 @@
 ** log cleanup:
    Production mode logging of queries and performance -> info
    Development: info->debug
-** do not use url-like attributes and *_id attributes in search forms
 
 ** structural attribute filters from tooltips (possibly use subqueries or such)
 ** add progress and redirect for result exports
@@ -117,6 +116,7 @@
 ** spook: home page info:
    navodila za uporabo v slovenščini s čimveč primeri različnih tipov
    iskanj - use a link
+** do not use url-like attributes and *_id attributes in search forms
 ** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
 ** add sample implementation with redirect to a fixed sample seeed

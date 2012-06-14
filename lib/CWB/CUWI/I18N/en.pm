@@ -52,9 +52,9 @@ for more info.<br />
 <tr><td>wh*e</td><td>~[word="wh.*e"~]</td><td class="t">words starting with 'wh' and ending with 'e'</td></tr>
 <tr><td>wh?</td><td>~[word="wh."~]</td><td class="t">3-letter words starting with 'wh'</td></tr>
 <tr><td>who|what|whom</td><td>~[word="who|what|whom"~]</td><td class="t">any of words 'who', 'what', 'whom'</td></tr>
-<tr><td>who|what has</td><td>~[word="who|what"~] ~[has~]</td><td class="t">sequences of 'who' or 'what', followed by 'has'</td></tr>
-<tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[has~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
-<tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[has~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
+<tr><td>who|what has</td><td>~[word="who|what"~] ~[word="has"~]</td><td class="t">sequences of 'who' or 'what', followed by 'has'</td></tr>
+<tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
+<tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
 </table>
 <b>Advanced CQP Examples</b><br />
 <table class="examples">

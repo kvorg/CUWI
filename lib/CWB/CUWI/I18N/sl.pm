@@ -70,14 +70,46 @@ FNORD
    # form.html.ep
    'Query' => 'Poizvedba',
    ttip_query => <<FNORD,
-The search query can contain simple words with optional ? and *
-place-holders. Your query will be converted into a CQP langauge query,
-using the 'Search' attributes bellow. The search result page will
-display how the simple search is transformed into a CQP query. If CQP
+
+The search query can contain simple words with optional <code>?</code>
+and <code>*</code> place-holders. You can separate alternatives with
+<code>|</code> and use [] for 'any token'.<br />Your query will be
+converted into CQP query language, using the 'Search' attributes
+bellow to select the token attribute to searhc on. The search result
+page will display how the simple search is transformed into a CQP
+query, and you can click on the CQP query to edit it further. If CQP
 syntax (triggered by any use of quoting in the search query) is
 detected, no conversion is applied and the 'Search' attributes are
-ignored for that term. If you want full CQP syntax for the whole
-query, preceede the query with + followed by a space.",
+ignored for that term.<br />If you want full CQP syntax for the whole
+query, preceede the query with <code>+</code> followed by a space to
+disable all processing. See <a
+href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP Tutorial</a>
+for more info.<br />
+
+<b>Examples for search on <code>word</code>:</b><br />
+<table class="examples">
+<tr><th>Simple</th><th>CQP</th><th>Explanation</th></tr>
+<tr><td>where</td><td>~[word="where"~]</td><td class="t">instances of word 'where'</td></tr>
+<tr><td>wher*</td><td>~[word="wher.*"~]</td><td class="t">words starting with 'wher'</td></tr>
+<tr><td>wh*e</td><td>~[word="wh.*e"~]</td><td class="t">words starting with 'wh' and ending with 'e'</td></tr>
+<tr><td>wh?</td><td>~[word="wh."~]</td><td class="t">3-letter words starting with 'wh'</td></tr>
+<tr><td>who|what|whom</td><td>~[word="who|what|whom"~]</td><td class="t">any of words 'who', 'what', 'whom'</td></tr>
+<tr><td>who|what has</td><td>~[word="who|what"~] ~[word="has"~]</td><td class="t">sequences of 'who' or 'what', followed by 'has'</td></tr>
+<tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
+<tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
+</table>
+<b>Advanced CQP Examples</b><br />
+<table class="examples">
+<tr><th>CQP</th><th>Explanation</th></tr>
+<tr><td>~[word=".*ies" & lemma=".*y"~]</td><td class="t">words ending on 'ies' with lemma ending on 'y'</td></tr>
+<tr><td>~[word=".*ies" & lemma!=".*y"~]</td><td class="t">words ending on 'ies' with lemma <b>not</b> ending on 'y'</td></tr>
+<tr><td>~[word="...*a" | lemma=".*um"~]</td><td class="t">3 or more letter words ending on 'a' or lemma ending on 'um'</td></tr>
+<tr><td>~[word="interest|interested"~]</td><td class="t">interest or interested</td></tr>
+<tr><td>~[word="interest(s|(ed|ing)(ly)?)?"~]</td><td class="t">interest, interests, interested, interesting, interestedly, interestingly</td></tr>
+<tr><td>~[word="wh.+" & lemma!=word~]</td><td class="t">three or more letter words beginning with 'wh' which do not match their lemma</td></tr>
+<tr><td>~[(lemma="go") & !(word="went"%c | word="gone"%c)~]</td><td class="t">words with lemma 'go' except for 'went' and 'gone', case insensitive</td></tr>
+<tr><td>~[(lemma="go") & word!="went|gone"%c~]</td><td class="t">the same, shorter syntax</td></tr>
+</table>
 FNORD
    'Corpus' => 'Korpus',
    ttip_corpus_group => <<FNORD,
