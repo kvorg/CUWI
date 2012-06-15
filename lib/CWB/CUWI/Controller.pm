@@ -30,7 +30,7 @@ sub search {
   return 0 unless $self->auth;
 
   my $chost = $self->tx->remote_address;
-  $chost = $self->tx->req->header('X-Forwarded-For')
+  $chost = $self->tx->req->headers->header('X-Forwarded-For')
     if $self->tx->req->headers->header('X-Forwarded-For');
 
   # to application config
