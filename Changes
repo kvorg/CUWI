@@ -23,7 +23,7 @@ This file documents the revision history for CWB::CUWI package.
   - Handle non-compatible info files by parsing them as descriptions
   - cwb-scan-corpus initial interface for frequency lists with tuples
   - Standardized encodings, used corpus encoding for info file reading
-  - Better logging
+  - Better logging, use X-Forwarded-For header when proxied
 
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application

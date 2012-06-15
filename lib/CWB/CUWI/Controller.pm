@@ -29,6 +29,10 @@ sub search {
   $model->install_exception_handler(sub { $self->app->log->error(@_); $self->stash->{cwbexception} = [@_]; return @_;} );
   return 0 unless $self->auth;
 
+  my $chost = $self->tx->remote_address;
+  $chost = $self->tx->req->header('X-Forwarded-For')
+    if $self->tx->req->headers->header('X-Forwarded-For');
+
   # to application config
   my $maxhits     = $config->{corpora}{OPTIONS}{maxhits};
   my $maxuserhits = $config->{corpora}{OPTIONS}{maxuserhits};
@@ -49,9 +53,9 @@ sub search {
   }
 
   if ($self->param('cpos')) {
-    $self->app->log->info('Received cpos query: ' . $self->param('cpos') . ' from ' . $self->tx->remote_address . '.');
+    $self->app->log->info('Received cpos query: ' . $self->param('cpos') . " from $chost.");
   } else {
-    $self->app->log->info('Received ' . $self->param('display') . ' query: \'' . $self->param('query')  . '\' from ' . $self->tx->remote_address . '.');
+    $self->app->log->info('Received ' . $self->param('display') . ' query: \'' . $self->param('query')  . "' from $chost on " . $self->param('corpus') . '.');
   }
   $self->app->log->debug('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
@@ -164,7 +168,8 @@ sub search {
 			  ' query \'' . $self->param('query') . "'" .
 			  ($self->session('username') ?
 			   ' by ' . $self->session('username') : '') .
-			   ' from ' . $self->tx->remote_address .
+			   " from $chost" .
+			   ' on ' . $corpus->name .
 			   ' with cqp query \'' . $result->query . '\' in ' .
 			  sprintf('%0.3f', $result->time) . ' s ' .
 			  'with ' . $result->hitno . ' hits.' );
