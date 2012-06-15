@@ -51,7 +51,7 @@ sub search {
   if ($self->param('cpos')) {
     $self->app->log->info('Received cpos query: ' . $self->param('cpos') . ' from ' . $self->tx->remote_address . '.');
   } else {
-    $self->app->log->info('Received query: ' . $self->param('query')  . ' from ' . $self->tx->remote_address . '.');
+    $self->app->log->info('Received ' . $self->param('display') . ' query: \'' . $self->param('query')  . '\' from ' . $self->tx->remote_address . '.');
   }
   $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
@@ -160,8 +160,12 @@ sub search {
   my $result = $corpus->query(%params);
 
   if ( $result and $result->isa('CWB::Model::Result') ) {
-    $self->app->log->info(
-			  'Query processed in '.
+    $self->app->log->info( 'Processed ' . $self->param('display') .
+			  ' query \'' . $self->param('query') . "'" .
+			  ($self->session('username') ?
+			   ' by ' . $self->session('username') : '') .
+			   ' from ' . $self->tx->remote_address .
+			   ' with cqp query \'' . $result->query . '\' in ' .
 			  sprintf('%0.3f', $result->time) . ' s ' .
 			  'with ' . $result->hitno . ' hits.' );
   } else {

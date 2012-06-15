@@ -557,7 +557,7 @@ sub run {
       if $self->reduce and $self->pagesize > 0;
     $result->distinct(scalar keys %counts);
 
-    #sorting: subcorpus query does not sort (saves time)
+    #sorting: subcorpus wordlist query does not sort (saves time)
     if ( not $self->subcorpus ) {
       if ($self->sort and exists ${$self->sort}{a} and ${$self->sort}{a}{target} =~ m{match|order} ) {
 	$result->sort(%{${$self->sort}{a}});
