@@ -1,6 +1,6 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-06-05
+0.42 2012-06-15
   - Split up search templates, cleanup
   - Localization framework, Slovene localization
   - Documentation interface
@@ -9,6 +9,8 @@ This file documents the revision history for CWB::CUWI package.
   - Added context links to wordlist display mode
   - Fixed buggy virtual corpus alignment issues
   - Fixed virtual corpus subclass bugs
+  - Fixed buggy sorting with regional locales
+  - Fixed sorting of reduced results
   - Fixed table exporting bug, again
   - Fixed static serve for frequencies due to root->paths change in Mojo
   - Fixed constraint parsing to allow CQP constructs
@@ -21,6 +23,7 @@ This file documents the revision history for CWB::CUWI package.
   - Handle non-compatible info files by parsing them as descriptions
   - cwb-scan-corpus initial interface for frequency lists with tuples
   - Standardized encodings, used corpus encoding for info file reading
+  - Better logging
 
 0.41 2012-05-15
   - Expanded CUWI from Mojolicous::Lite to Mojolicious application

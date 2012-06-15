@@ -7,12 +7,12 @@ use Data::Dumper;
 
 sub corpus {
   my $self = shift;
-  $self->app->log->info("Got to controller.");
+  $self->app->log->debug("Got to controller.");
   return 0 unless $self->auth;
 
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 
-  $self->app->log->info("Redirecting to registry, corpus init aborted.")
+  $self->app->log->info("Redirecting to registry, corpus init aborted on non-existing corpus" .	($self->param('corpus') ? ' ' . $self->param('corpus') : '') . '.' )
     and $self->redirect_to('index')
       and return
 	unless $self->param('corpus')
@@ -53,7 +53,7 @@ sub search {
   } else {
     $self->app->log->info('Received ' . $self->param('display') . ' query: \'' . $self->param('query')  . '\' from ' . $self->tx->remote_address . '.');
   }
-  $self->app->log->info('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
+  $self->app->log->debug('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};
 
   # corpus settings overrule global settings for wordlist hit limits
@@ -253,7 +253,7 @@ sub scan {
        and $self->param('peer') ne $self->param('corpus') ) {
     my $query = $self->req->url->query;
     my $url = '/' . $config->{root} . '/' . $self->param('peer') . '/scan?';
-    $self->app->log->info('Redirecting query to peer ' . $self->param('peer') . '.');
+    $self->app->log->info('Redirecting scan query to peer ' . $self->param('peer') . '.');
 
     $self->redirect_to($url . $query);
   }

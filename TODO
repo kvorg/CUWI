@@ -2,8 +2,8 @@
 
 * CWB::Model BUGS:
 
-** broken sorting with sl_SI and en_GB type locale
 ** maxfreq default fails
+
 ** Skip missing peers from info file
 ** Log errors from Model instantiation (handle exceptions)
 ** Paging: displays 1 match more than pagesize
@@ -59,7 +59,7 @@
 * Web interface BUGS
 
 ** escapes for ?, *, |, handling for single "
-** parse forwarded-for and clean up logs
+** parse forwarded-for
 
 ** missing "not" for structural constraint
 ** wordlist -> ignoremeta in links disables ignorecase
@@ -83,23 +83,21 @@
 
 * Web interface
 
+** document config, switch config to general config
+** change export formats to et spec
 ** running text context: (with visible structural tags)
 ** simple search form (word+lemma, configurable, with alignement
    configuration file sets: possible contraint, attributes to search and to show
    defaults are: ignore case, in s, lemma/word, show word
    general align button, display = kwic
 ** add option for display title structural tag to config
-** document config, switch config to general config
-** change wordlist format to et spec
 ** change wordlist exporting to divide matches into multiple fields
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)
 ** when more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
 ** documentation
-** log cleanup:
-   Production mode logging of queries and performance -> info
-   Development: info->debug
+** more logging: paging, sorting, shows, tx->query
 
 ** structural attribute filters from tooltips (possibly use subqueries or such)
 ** add progress and redirect for result exports
