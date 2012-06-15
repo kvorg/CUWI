@@ -65,7 +65,10 @@ sub new {
   # instantiate CQP - but should have more than one in the future
   #                   also pass corpus-specific collation to CQP env
   my $old_collate = $ENV{LC_COLLATE};
-  $ENV{LC_COLLATE} = ($self->corpus->language ? $self->corpus->language : 'en_US') . '.' . $self->corpus->Encoding;
+  my $lang = ($self->corpus->language ? $self->corpus->language : 'en');
+  # bug fix: sorting fails with regional locales
+  $lang =~ s/^(\w+?)(:?_\w+)?$/$1/;
+  $ENV{LC_COLLATE} =  $lang . '.' . $self->corpus->Encoding;
   warn "LC_COLLATE set to: $ENV{LC_COLLATE}\n" if $self->debug;
   my $cqp = CWB::CQP->new
     or CWB::Model::exception_handler->('CWB::Model::Query Exception: Could not instantiate CWB::CQP.');
