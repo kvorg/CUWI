@@ -388,6 +388,15 @@ sub run {
     return $result;
   }
 
+  # reduce?
+  if ($self->display eq 'kwic'
+      or $self->display eq 'sentences'
+      or $self->display eq 'paragraphs') {
+    if ($self->reduce and $self->pagesize and not $self->cpos) {
+      $self->exec("reduce Last to " . $self->pagesize);
+      $result->reduce(1);
+    }
+
   # sorting
   if ($self->sort and exists ${$self->sort}{a} and not $self->cpos and not $self->display eq 'wordlist') {
     $self->exec("set ExternalSort on", 'Could not enable ExternalSort');
@@ -406,15 +415,6 @@ sub run {
     $self->exec("set ExternalSort off", 'Could not disable ExternalSort');
     $self->exec('sort');
   }
-
-  # reduce?
-  if ($self->display eq 'kwic'
-      or $self->display eq 'sentences'
-      or $self->display eq 'paragraphs') {
-    if ($self->reduce and $self->pagesize and not $self->cpos) {
-      $self->exec("reduce Last to " . $self->pagesize);
-      $result->reduce(1);
-    }
 
     # compute page list for navigation
     my $pages = '';
