@@ -2,6 +2,8 @@
 
 * CWB::Model BUGS:
 
+** broken sorting with sl_SI and en_GB type locale
+** maxfreq default fails
 ** Skip missing peers from info file
 ** Log errors from Model instantiation (handle exceptions)
 ** Paging: displays 1 match more than pagesize
@@ -116,8 +118,8 @@
 ** spook: home page info:
    navodila za uporabo v slovenščini s čimveč primeri različnih tipov
    iskanj - use a link
-** do not use url-like attributes and *_id attributes in search forms
-** additional grid query compositing interface
+** do not use url-like attributes and *_id attributes in search forms*
+* additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
 ** add sample implementation with redirect to a fixed sample seeed
    [check status and add tests]
