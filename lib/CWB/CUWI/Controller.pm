@@ -38,7 +38,7 @@ sub search {
   my $maxuserhits = $config->{corpora}{OPTIONS}{maxuserhits};
   my $maxpagesize = $config->{corpora}{OPTIONS}{maxpagesize};
   my $maxfreq     = $config->{corpora}{OPTIONS}{maxfreq};
-  my $maxuserfreq = $config->{corpora}{OPTIONS}{maxuserfreq};
+  my $maxuserfreq = $config->{corpora}{OPTIONS}{maxuserfreq} || $config->{corpora}{OPTIONS}{maxfreq};
 
   # redirect to peer?
   if ( $self->param('peer')
@@ -86,7 +86,8 @@ sub search {
   $params{maxhits} = $self->session('username')  ?
     $maxuserhits : $maxhits;
   $params{maxfreq} = $self->session('username') ?
-    $maxuserfreq : $maxfreq ;
+    $maxuserfreq : $maxfreq
+      if $maxfreq;
   $params{query} = $self->param('query');
   $params{class} = $self->param('class')
     if $corpus->isa('CWB::Model::Corpus::Virtual')
@@ -158,6 +159,9 @@ sub search {
     $params{sort}{a}{att}       = $self->param('sort_a_att');
     $params{sort}{a}{order}     = $self->param('sort_a_order');
     $params{sort}{a}{direction} = $self->param('sort_a_direction');
+    unless (grep {$_ eq $params{sort}{a}{att}} @{$params{show}} ) {
+      $params{sort}{a}{att} = $params{show}[0]; #set first show att to sort if wrong att is used
+    }
   }
   #$self->app->log->debug("Calling query with " . $self->dumper(\%params));
 

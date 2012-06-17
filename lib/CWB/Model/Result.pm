@@ -127,7 +127,7 @@ sub sort {
     if $opts{target} =~ m{left|right} and $wordlist;
   cluck('CWB::Model::Result::sort() called unknown direction => ' . $opts{direction} . ', ignoring option')
     if exists $opts{direction}
-      and not $opts{direction} =~ m/reversed|atergo|normal/;
+      and not $opts{direction} =~ m/reversed|atergo|normal|natural/;
   cluck('CWB::Model::Result::sort() called unknown order => ' . $opts{order} . ', using default: ascending')
     and $opts{order} = 'ascending'
       unless $opts{order} =~ m/descending|ascending/;

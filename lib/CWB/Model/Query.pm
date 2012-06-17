@@ -58,6 +58,8 @@ sub new {
   weaken($self->corpus);  #avoid circular references
   weaken($self->model);
   $self->structures(@{$structures}) if $structures;
+  warn "Bad maxfreq " . $self->maxfreq . " passed to query" and $self->maxfreq(50000000)
+    unless $self->maxfreq and $self->maxfreq =~ m/\d+/ and $self->maxfreq > 0;
 
   my $error = $self->_check_options;
   return $error if ref $error;

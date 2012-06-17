@@ -207,8 +207,10 @@ sub startup {
 	    if ( exists ${$corpus->stats}{freqs}{$self->param('att')} ) {
 	      $self->res->headers->content_type('text/plain; charset=' . $corpus->encoding);
 	      my $ss = Mojolicious::Static->new(paths=>[$config->{var}]);
-	      $self->app->log->info("Serving file " . $ss->paths->[0] .
-				      $corpus->name . '.' . $self->param('att') . '.freq');
+	      $self->app->log->info("Serving frequencies from file " . 
+				    $ss->paths->[0] .
+				    $corpus->name . '.' .
+				    $self->param('att') . '.freq');
 	      $ss->serve($self, $corpus->name . '.' . $self->param('att') . '.freq');
 	      $self->rendered;
 	    } else {

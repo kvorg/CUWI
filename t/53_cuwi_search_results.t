@@ -39,8 +39,8 @@ my $corpus = 'cuwi-fr';
 $t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic', show=>'word', show=>'tag'))
   ->status_is(200)
   ->content_type_is('text/html;charset=UTF-8')
-  ->element_exists('html body h2',
-		   'Cuwi results: h2')
+  ->element_exists('html body h1',
+		   'Cuwi results: h1')
   ->element_exists('html body div[class="form"]',
 		   'Cuwi results: form div')
   ->element_exists('html body div[class="report"]',

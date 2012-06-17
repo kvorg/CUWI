@@ -63,35 +63,36 @@ is(($form->at('div[class="search"]')->find('input[checked]') and $form->at('div[
 
 done_testing;
 
+# 55 config and defaults
 
-# kwic layout
+# 56 module detection
 
-# kwic show options
+# 60 kwic layout
 
-# kwic alignement
+# 61 kwic show options
 
-# kwic download templates
+# 62 kwic alignement
 
-# context layout
+# 63 kwic download templates
 
-# context show options
+# 70 context layout
 
-# context alignement
+# 71 context show options
 
-# context downloads
+# 72 context alignement
 
-# cpos layout
+# 73 context downloads
 
-# cpos show options
+# 80 cpos layout
 
-# cpos alignement
+# 81 cpos show options
 
-# frequency layout
+# 82 cpos alignement
 
-# frequency show options
+# 90 frequency layout
+# get layout stuff out of sort tests
 
-# frequency download templates
+# 91 frequency show options
 
-# config and defaults
+# 92 frequency download templates
 
-# module detection

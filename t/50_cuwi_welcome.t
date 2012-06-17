@@ -23,8 +23,8 @@ $t->get_ok('/cuwi')
   ->status_is(200)
   ->content_type_is('text/html;charset=UTF-8')
   ->element_exists('html head title', 'Cuwi main: title')
-  ->element_exists('html body h2', 'Cuwi main: header')
-  ->text_like('h2 > a' => qr/CUWI Search/, 'Cuwi main: header contents')
+  ->element_exists('html body h1', 'Cuwi main: header')
+  ->text_like('h1 > a' => qr/CUWI Search/, 'Cuwi main: header contents')
 ;
 
 # corpora
