@@ -160,7 +160,9 @@ sub search {
     $params{sort}{a}{order}     = $self->param('sort_a_order');
     $params{sort}{a}{direction} = $self->param('sort_a_direction');
     unless (grep {$_ eq $params{sort}{a}{att}} @{$params{show}} ) {
-      $params{sort}{a}{att} = $params{show}[0]; #set first show att to sort if wrong att is used
+      #set first show att to sort if wrong att is used
+      $params{sort}{a}{att} = $params{show}[0];
+      $self->param('sort_a_att', $params{show}[0]);
     }
   }
   #$self->app->log->debug("Calling query with " . $self->dumper(\%params));
