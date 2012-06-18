@@ -189,6 +189,7 @@ sub query {
 
   my %opts = @_;
   $opts{startfrom} ||= 0;
+  $opts{pagesize}  ||= 25;
   if (($opts{align}
       and ref $opts{align}
       and scalar @{$opts{align}} == 1

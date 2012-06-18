@@ -98,6 +98,7 @@ sub search {
     if $corpus->isa('CWB::Model::Corpus::Virtual')
       and ${$corpus->classes}{$self->param('class')};
   #warn "Class param set to $params{class}\n";
+  $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
 
   if ($opts{simple}) {
     my @candidates = (qw( word lemma nform mform ));
@@ -172,7 +173,6 @@ sub search {
 	$params{align} = [ grep { $c_aligns{$_} } @{$params{align}} ];
       }
     }
-    $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
     $params{display} = $self->param('display');
     #NASTY - used in tabulator and match templates
     # should be using result
