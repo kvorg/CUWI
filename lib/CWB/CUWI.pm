@@ -221,6 +221,9 @@ sub startup {
   $r->get("/:corpus")->to(controller => 'controller', action => 'corpus',
 			  model=>$model);
 
+  $r->get("/:corpus/simple")->to(controller => 'controller', action => 'simple',
+			  model=>$model);
+
   $r->get("/:corpus/search")->to(controller => 'controller', action => 'search',
 			  model=>$model);
 

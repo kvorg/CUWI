@@ -1,6 +1,6 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-06-17
+0.42 2012-06-18
   - Split up search templates, cleanup
   - Localization framework, Slovene localization
   - Documentation interface
@@ -23,6 +23,7 @@ This file documents the revision history for CWB::CUWI package.
   - Added top level statistics
   - More resilient model: skips missing/broken corpora, subcorpora
   - Handle non-compatible info files by parsing them as descriptions
+  - Simple search initial interface
   - cwb-scan-corpus initial interface for frequency lists with tuples
   - Standardized encodings, used corpus encoding for info file reading
   - Better logging, use X-Forwarded-For header when proxied

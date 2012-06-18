@@ -58,6 +58,7 @@
 
 * Web interface BUGS
 
+** fix missing display mode before logging on line 65
 ** escapes for ?, *, |, handling for single "
 ** parse forwarded-for
 
