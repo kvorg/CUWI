@@ -1,0 +1,38 @@
+% $self->languages($self->session('language')) if $self->session('language');
+% layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
+% if ($result and scalar @{$result->warnings}) {
+%  if (stash('cwbexception')) {
+%   stash(cwbexception => [@{stash('cwbexception')}, @{$result->warnings}]);
+%  } else {
+%   stash(cwbexception => $result->warnings);
+%  }
+% }
+<%= include 'form_simple' %>
+
+% if ($result->hitno) {
+%   if ($self->param('display') eq 'kwic') {
+%=    include 'search_kwic'
+%   } elsif ($self->param('display') eq 'sentences' or $self->param('display') eq 'paragraphs') {
+%=    include 'search_text'
+%   } elsif ($self->param('display') eq 'wordlist') {
+%=    include 'search_wordlist'
+%   } else {
+   Unknown display mode: query aborted. (Stop playing with my query parameters or I will not be RESTful much longer!)
+%   }
+% } else {
+  <div class="report">
+   <p>
+%== l('No matches for query ')
+    <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+    <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
+    </p>
+  </div>
+
+%  if (stash('cwbexception')) {
+  <div class="exception">
+%== join('<br>', @{stash('cwbexception')});
+  </div>
+% }
+
+% }
+

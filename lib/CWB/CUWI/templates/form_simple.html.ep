@@ -1,0 +1,13 @@
+  <div class="form">
+    <%= form_for "/$config->{root}/" . $corpus->name . "/simple", ( method => "get") => begin %>
+    <span class="label"><%= tooltip( l('Simple query'), l('ttip_simple_query') ) %>: <%= text_field 'simple_query', size=>35 %></span>
+% if (@{$corpus->peers}) {
+    <span class="label"><%= tooltip( l('Corpus'), l('ttip_corpus_group') ) %>: <%= select_field 'peer', [$corpus->name, @{$corpus->peers}] %></span>
+% }
+% if ($corpus->can('classes') and 0 + keys %{$corpus->classes}) {
+    <span class="label"><%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [@{$corpus->classnames}] %></span>
+% }
+    <span class="submit"><%= submit_button l('Run Query') %></span>
+    </div>
+  <% end %>
+  </div>
