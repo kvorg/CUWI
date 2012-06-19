@@ -183,14 +183,14 @@ h1 a { color: gray; text-decoration: none }
 h1 a.hover { text-decoration: underline }
 
 h2 + p, div.report, div.corpora { margin-left: 4em; margin-right: 4em; }
-div.form { margin-left: auto; margin-right: auto; width: 38em;
-	   background-color: white;
-	   padding: .4em; padding-bottom: .6em; padding-left: .6em;
-	   border-left: solid 3px black;
-	   border-top: solid 3px black;
-	   border-bottom: solid 3px gray;
-	   border-right: solid 3px gray;
-	   border-radius: 10px;
+div.form {
+    background-color: white;
+    padding: .4em; padding-bottom: .6em; padding-left: .6em;
+    border-left: solid 3px black;
+    border-top: solid 3px black;
+    border-bottom: solid 1px gray;
+    border-right: solid 1px gray;
+    border-radius: 10px;
 }
 span.submit { float: right; }
 div.corpora > li {
@@ -270,3 +270,70 @@ table.examples tr td.t { font-family: serf; font-size: 70%; }
    color: #000; }
 #navbar li li a:hover {
    background-color: gray; }
+
+/* css tabs six, from http://css-tricks.com/examples/CSSTabs/ by Chris Coyier*/
+
+
+.disabled { min-height: 34ex; position: relative; padding-left: 20%; }
+.disabled > div { display: inline; }
+.disabled > div > a { 
+    margin-left: -1px;
+    position: relative;
+    left: 1px;
+    text-decoration: none;
+    color: black;
+    background: white;
+    display: block;
+    float: left;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-bottom: 1px solid white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.disabled > div:not(:target) > a {
+    border-bottom: 0;
+    background: -moz-linear-gradient(top, white, #eee);
+}	
+.disabled > div:target > a { background: white; }	
+.disabled > div > div {
+    background: white;
+    z-index: -2;
+    left: 0;
+    top: 36px;
+    bottom: 0;
+    right: 0;
+    padding: 20px;
+    border: 1px solid #ccc;
+}	
+.disabled > div:not(:target) > div { position: absolute }
+.disabled > div:target > div { position: absolute; z-index: -1; }
+
+.searchtabs {
+    margin-left: auto; margin-right: auto;   width: 38em;
+    padding-top: 4ex;
+}
+.searchtabs > div { display: inline; }
+
+.searchtabs > div:first-child > a {
+    margin-left: .8em;
+}
+
+.searchtabs > div > a {
+    postion: absolute; top: 20px;
+    padding: 5px 10px;
+    margin: 0px;
+    margin-top: -4ex;
+    border: 1px solid #ccc;
+    border-bottom: 1px solid white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.searchtabs > div:not(:target) > a {
+    border-bottom: 0;
+    background: -moz-linear-gradient(top, white, #eee);
+    background: linear-gradient(top, white, #eee);
+}	
+.searchtabs > div:target > a { background: white; }	
+.searchtabs > div:not(:target) > div { display: none }
+.serchtabs > div:target > div { display: block; position: absolute; }

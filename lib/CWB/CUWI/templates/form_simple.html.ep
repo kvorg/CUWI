@@ -8,6 +8,5 @@
     <span class="label"><%= tooltip( l('Subcorpora'), l('ttip_subcorpora') ) %>: <%= select_field 'class', [@{$corpus->classnames}] %></span>
 % }
     <span class="submit"><%= submit_button l('Run Query') %></span>
-    </div>
   <% end %>
   </div>
