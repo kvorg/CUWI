@@ -29,7 +29,7 @@ sub startup {
   $self->plugin('charset' => {charset => 'UTF-8'});
   $self->plugin('tag_helpers_extra');
   $self->plugin('helpers');
-  $self->plugin(I18N => {default => 'en', namespace => 'CWB::CUWI::I18N'});
+  $self->plugin(CI18N => {default => 'en', namespace => 'CWB::CUWI::I18N'});
 
   # html
   $self->secret('re9phoothieX4dah4chi');

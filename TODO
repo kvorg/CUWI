@@ -2,8 +2,6 @@
 
 * CWB::Model BUGS:
 
-** maxfreq default fails
-
 ** Skip missing peers from info file
 ** Log errors from Model instantiation (handle exceptions)
 ** Paging: displays 1 match more than pagesize
@@ -60,7 +58,7 @@
 
 ** fix missing display mode before logging on line 65
 ** escapes for ?, *, |, handling for single "
-** parse forwarded-for
+** format info tags, links
 
 ** missing "not" for structural constraint
 ** wordlist -> ignoremeta in links disables ignorecase
@@ -84,17 +82,18 @@
 
 * Web interface
 
-** document config, switch config to general config
-** change export formats to et spec
-** running text context: (with visible structural tags)
 ** simple search form (word+lemma, configurable, with alignement
    configuration file sets: possible contraint, attributes to search and to show
    defaults are: ignore case, in s, lemma/word, show word
    general align button, display = kwic
-** add option for display title structural tag to config
-** change wordlist exporting to divide matches into multiple fields
+** change navigation line to use |< < > >|
+** document config, switch config to general config
+** change export formats to et spec
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)
+** running text context: (with visible structural tags)
+** add options to ignore structural tags (urls, strings, regexes)
+** change wordlist exporting to divide matches into multiple fields
 ** when more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
 ** documentation
@@ -124,6 +123,7 @@
    [check status and add tests]
 ** add generate config helper to cuwi command line, and help
 ** add on-line form-based config with auth
+** handle metadata with structural attributes via config /re/s
 
 * Tests
 
