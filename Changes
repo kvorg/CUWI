@@ -1,6 +1,7 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-07-10
+0.42 2012-07-18
+  - Switched to perlish conf format
   - Split up search templates, cleanup
   - Localization framework, Slovene localization
   - Imported Localization plugin (dropped in newer Mojolicious)

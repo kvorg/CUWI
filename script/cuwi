@@ -74,55 +74,8 @@ which this script is a part of.
 
 =head1 CONFIGURATION
 
-=head2 Configuration File
-
-=head2 Registry Information
-
-CUWI parses all the registry files found in the registry path (a comma
-separated list of paths) using L<CWB::Model>. Additional information
-is acquired using C<cwb-statistics> (if available) and by parsing the
-corpus info files.
-
-=head2 Configuring Corpora
-
-It is possible to supply a number of configuration options for infidivual corpora and create virtual corpora, corpus groups and similar.
-
-Please refer to Configuration and Administration Manual:
-L<CWB::CUWI::Administration>.
-
-=head2 Deployment Options
-
-The recommended way to deploy CUWI is to run it with the stand-alone
-production pre-forking web server Hypnotoad, possibly behind a proxy
-web server.
-
-However, many other options are available. For documentation and
-examples, see L<Mojolicious::Guides::Cookbook/DEPLOYMENT>.
-
-=head2 Configuring Hypnotoad
-
-Hypnotoad, the stand-alone Mojolicious web server for Cuwi ...
-
-  # start or hot-deploy and update
-  hypnotoad cuwi
-  
-  # stop
-  hypnotoad -s cuwi
-
-Fore more information, try C<hypnotoad -help> and
-L<Mojo::Server::Hypnotoad>, for details on configuration parameters
-see L<Mojo::Server::Hypnotoad/SETTINGS>.
-
-=head2 Log files
-
-=head2 Optional Dependencies
-
-CUWI will use L<Spreadsheet::Write> to enable exporting results in C<CSV> and
-Excel formats.
-
-L<Mojolicious> has a number of optional dependencies for additional
-functionality, such as L<EV>, L<IO::Socket::IP>, L<IO::Socket::SSL>,
-L<Net::Rendezvous::Publish> and L<Plack>.
+Please see L<CWB::CUWI::Administration> for information on setup and
+configuration of CUWI.
 
 =head1 BUGS
 
