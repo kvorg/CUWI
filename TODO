@@ -88,6 +88,7 @@
    general align button, display = kwic
 ** change navigation line to use |< < > >|
 ** document config, switch config to general config
+** corpus groups
 ** change export formats to et spec
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)

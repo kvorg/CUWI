@@ -55,8 +55,8 @@ sub startup {
 
 # config - possibly use the config helper?
 # or stuff everything in a module or helper
-  my $config = $self->plugin(JSONConfig => {
-				     file      => 'cuwi.json',
+  my $config = $self->plugin(Config => {
+				     file      => 'cuwi.conf',
 				     stash_key => 'config',
 				     default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
 				    });
