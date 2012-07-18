@@ -6,11 +6,60 @@ CUWI Manual - Corpus Users' Web Interface Administration Manual
 
 B<** documentation in progress, stand by **>
 
-This document contains configuration and administration documentation
-for the CUWI Web interface.
+This document contains documentation intended for configuration,
+administration and the running of the CUWI Web interface. Please use
+the provided INSTALL document for installation information. See also
+the included README and supplied examples in C<doc/examples/>.
 
-At this time, you are kindly asked to rely on INSTALL, README and
-supplied examples in C<examples/>.
+In general, you should do the following:
+
+=over 4
+
+=item *
+
+Decide on a home for your application - by default, this should be the
+location of CUWI.pm. If this is not practical, you can set it by
+setting the MOJO_HOME environment variable. If you do this, however,
+you should also copy the included C<public/> and C<templates/> directories.
+
+** this is not practical, so a different set-up could be introduced in
+   the future **
+
+=item *
+
+Copy the config file from C<doc/examples/cuwi.conf> to the location of application home.
+
+=item *
+
+Create a C<log/> directory in the application home, if you want CUWI
+to write logs.
+
+=item *
+
+Edit the config file. At least change the registry to the location of
+your CWB registry.
+
+=item *
+
+Test-run the application:
+
+  $ morbo scripts/cuwi
+
+=item *
+
+Kill the development server and try the production server:
+
+  $ hypnotoad scripts/cuwi
+
+=item *
+
+Create a service file for your operating system. If needed, change the
+port or set up a proxy service.
+
+=back
+
+The rest of this documents gives all the gory details.
+
 
 =head1 CONFIGURATION FILE
 
