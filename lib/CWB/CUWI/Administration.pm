@@ -22,8 +22,7 @@ location of CUWI.pm. If this is not practical, you can set it by
 setting the MOJO_HOME environment variable. If you do this, however,
 you should also copy the included C<public/> and C<templates/> directories.
 
-** this is not practical, so a different set-up could be introduced in
-   the future **
+Alternatively, you can use the C<appdir> configuration variable.
 
 =item *
 
@@ -171,6 +170,15 @@ C<hypnotoad> section, for example), and set a different C<appname> for
 each instance. When you use the development server under your
 username, CUWI will ignore the setting and use the console or the
 local C<log/> directory, if it exists and is writable.
+
+=item C<appdir>
+
+Value: a string or an array. Defaults to the current working
+directory. The directory or directories specified will be searched for
+C<static> or C<templates> subdirectories, and any files found there
+have precedence over the ones supplied with CUWI. This is intended to
+enable the administrator to copy and edit the existing files to
+customize an instance of CUWI.
 
 =item C<corpora>
 

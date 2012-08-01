@@ -73,11 +73,12 @@ sub startup {
 
   # add override directories for public, templates
   if ($config->{homedir}) {
-    warn "GOT: $config->{homedir}";
     $config->{homedir} = [ $config->{homedir} ] unless ref $config->{homedir} eq 'ARRAY';
     $config->{homedir} = [ grep { -d $_ and -r $_ } @{$config->{homedir}} ];
-    unshift (@{$self->static->paths}, @{$config->{homedir}});
-    unshift (@{$self->renderer->paths}, @{$config->{homedir}});
+    unshift (@{$self->static->paths},
+	     map { $_ . '/public' } @{$config->{homedir}});
+    unshift (@{$self->renderer->paths},
+	     map { $_ . '/templates' } @{$config->{homedir}});
   }
     $self->log->debug("Using static paths: " . join(', ', @{$self->static->paths}));
     $self->log->debug("Using renderer paths: " . join(', ', @{$self->renderer->paths}));
