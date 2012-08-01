@@ -14,10 +14,13 @@ use IO::Dir;
 use File::Spec;
 use File::Spec::Functions 'catdir';
 use File::Basename 'dirname';
+use Cwd;
 use Encode 'decode';
-
 sub startup {
   my $self = shift;
+  my $cwd = getcwd;
+  my $homedir = $cwd;
+  $homedir = $ENV{CUWI_HOME} if defined $ENV{CUWI_HOME} and -d $ENV{CUWI_HOME} and -r $ENV{CUWI_HOME};
 
   # switch to installable directies for home, public, templates
   $self->home->parse(catdir(dirname(__FILE__), 'CUWI'));
@@ -38,15 +41,18 @@ sub startup {
   $self->types->type(xls => 'application/excel');
 
   # config
-  my $config = $self->plugin(Config => {
-					file      => 'cuwi.conf',
-					stash_key => 'config',
-					appname   => 'cuwi',
-					default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
-					maxsize => 50000,
-					maxpagesize => 5000,
-					login_expiration => 172800, #two days
-					tmp => $ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
+  my $config = $self->plugin(Config =>
+			     {
+			      file      => $ENV{CUWI_CONFIG} || 'cuwi.conf',
+			      stash_key => 'config',
+			      default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry',
+					     appname   => 'cuwi',
+					     maxsize => 50000,
+					     maxpagesize => 5000,
+					     login_expiration => 172800, #two days
+					     tmp => $ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
+					     homedir => $homedir,
+					   },
 				    });
 
   # set log directory
@@ -64,6 +70,17 @@ sub startup {
   }
 
   $self->log->info("Config parsed.");
+
+  # add override directories for public, templates
+  if ($config->{homedir}) {
+    warn "GOT: $config->{homedir}";
+    $config->{homedir} = [ $config->{homedir} ] unless ref $config->{homedir} eq 'ARRAY';
+    $config->{homedir} = [ grep { -d $_ and -r $_ } @{$config->{homedir}} ];
+    unshift (@{$self->static->paths}, @{$config->{homedir}});
+    unshift (@{$self->renderer->paths}, @{$config->{homedir}});
+  }
+    $self->log->debug("Using static paths: " . join(', ', @{$self->static->paths}));
+    $self->log->debug("Using renderer paths: " . join(', ', @{$self->renderer->paths}));
 
   # check http root path
   $config->{root} =~ s{/?^(.*)/$}{$1};

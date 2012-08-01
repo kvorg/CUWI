@@ -4,7 +4,7 @@ CUWI Manual - Corpus Users' Web Interface Administration Manual
 
 =head1 OVERVIEW
 
-B<** documentation in progress, stand by **>
+B<*** documentation in progress, stand by ***>
 
 This document contains documentation intended for configuration,
 administration and the running of the CUWI Web interface. Please use
@@ -27,7 +27,9 @@ you should also copy the included C<public/> and C<templates/> directories.
 
 =item *
 
-Copy the config file from C<doc/examples/cuwi.conf> to the location of application home.
+Copy the config file from C<doc/examples/cuwi.conf> to the location of
+application home or an alternative location, specified with the
+CUWI_CONFIG environemnt variable.
 
 =item *
 
@@ -75,7 +77,15 @@ development mode (when run under C<Morbo> development server).
 
 CUWI will look for the configuration file in its home directory, which
 is the directory C<CUWI.pm> resides in by default, but can be changed
-by setting the C<MOJO_HOME> environment variable.
+by setting the C<MOJO_HOME> environment variable. You can also set the
+location of the configuration file with the CUWI_CONFIG environemnt
+variable, which can be a relative or absolute path to the file. Note
+that even if you set an absolute path, ie. C</etc/mycuwi.conf>, CUWI
+will still use mode-specific configuration files, if available
+(C</etc/mycuwi.production.conf> and C</etc/mycuwi.development.conf> in
+this case). In combination with C<registry>, C<var>, C<root>,
+C<appname> and C<logdir> configuration variables, this makes it easy
+to run multiple instances of CUWI from the same installation.
 
 The configuration file is simply a file containing an anyonymous Perl
 hash, in perl syntax (including comments etc.).
@@ -99,11 +109,11 @@ The following configuration file variables are meaningful for CUWI:
 
 =over 4
 
-=item registry
+=item C<registry>
 
 Specifies the registry directory paths. See L</Registry Information>.
 
-=item root
+=item C<root>
 
 Value: a string. Specfies the HTTP request root for the
 application. Ie. if C<root> is set to C<cuwi>, all request paths must
@@ -113,28 +123,32 @@ such as L<http://localhost/cuwi/corpusname/search?query...>
 Note that if you deploy CUWI behind a proxy, you should not change the
 request path.
 
-=item var
+=item C<var>
 
 Value: a string. Specifies the cache directory for frequency lists
 etc. Recommended value: C<'/var/cache/cuwi'>. No default. Directory
 must exist and be writable by the application.
 
-=item tmp
+=item C<tmp>
 
-Value: a string. Specifies the temporary directory for export files. 
-Recommended value: C<'/tmp'>. No default. Directory
-must exist and be writable by the application. Any files generated will be removed after use.
+Value: a string. Specifies the temporary directory for export files.
+Recommended value: C<'/tmp'>. No default. Directory must exist and be
+writable by the application. Any files generated will be removed after
+use.
 
-=item appname
+=item C<appname>
 
 Value: a string. Specifies the name of the application as used in log
 fiels and messages. Default: 'cuwi'.
 
-=item logdir
+=item C<logdir>
 
-Value: a string. Specifies the directory for log files.  Recommended
-value: C<'/var/log'>. No default. Directory must exist and be writable
-by the application.
+Value: a string. Specifies the directory path for log files.
+Recommended value: C<'/var/log'>. No default. Directory must exist and
+be writable by the application. If a relative path is specified, it is
+relative to the CUWI application home, which is the directory
+C<CUWI.pm> resides in by default, but can be changed by setting the
+C<MOJO_HOME> environment variable.
 
 Note that the naming of the log files is different if you use this
 configuration variable. By default, cuwi uses the Mojolicious
@@ -158,11 +172,11 @@ each instance. When you use the development server under your
 username, CUWI will ignore the setting and use the console or the
 local C<log/> directory, if it exists and is writable.
 
-=item corpora
+=item C<corpora>
 
 Value: a hash. See L</Configuring corpora>.
 
-=item OPTIONS
+=item C<OPTIONS>
 
 Value: a hash. Additional options. See L</Additional Configuration
 Options>.
@@ -248,7 +262,7 @@ by declaring the new value under the C<corpora> configuration variable
     }
   }
 
-[*** Not tested in this version, possibly faulty. ***]
+*** Not tested in this version, possibly faulty. ***
 
 =head3 Corpus groups
 
@@ -281,35 +295,35 @@ new corpus, its value is a hash of cration options:
 
 =over
 
-=item description
+=item C<description>
 
 Value: a hash where keys are langauge tags and values HTML description
 strings. Used for the description of the virtual corpus.
 
-=item subcorpora
+=item C<subcorpora>
 
 Value: an array of strings. Lists non-virtual (file-based) corpora to
 be included in the virtual corpus.
 
-=item options
+=item C<options>
 
 Value: a hash of key/value pairs for coprus configuration options. The following options are supported:
 
 =over 4
 
-=item general_align
+=item C<general_align>
 
 Value: boolean. Only present an align option in the search form and
 align with any aligned corpora when selected.
 
-=item interleaved
+=item C<interleaved>
 
 Value: boolean. Interleave results from all member copora on every page.
 
 *** Only interleaved virutal corpus form is supported at this time,
     this option must be set. ***
 
-=item classes
+=item C<classes>
 
 Value: a hash. Keys must match the classnames array. Values are arrays
 of lowercased names of member corpora to be used when a class is selected.
@@ -320,13 +334,16 @@ performed on the subcorpora included in the class. This efectively
 allows a virtual corpus to be used as a number of different composed
 corpora.
 
-=item classnames
+=item C<classnames>
 
 Value: array of strings. The list must mach the class declaration if
 any of the two is used.
 
-*** Warning: This is to be removed in a future version since it
-duplicates information from C<classes>. ***
+*** Warning: This is currently used so that the order of classes,
+where the first is the default, can be specified, since a hash is used
+for classes themselves. This variable is to be removed in a future
+version since it duplicates information from C<classes>, and
+C<classes> will be changed to be a list of pairs ***
 
 
 =back
@@ -409,12 +426,12 @@ C<OPTIONS>. They include the following options:
 
 =over 4
 
-=item no_browse
+=item C<no_browse
 
 Value: an array of strings, containging lowercased corpus names. The
 corpora specified will not be visible in the main listing of available corpora.
 
-=item frequencies
+=item C<frequencies
 
 Value: an array of strings, containging lowercased corpus names. CUWI
 will try to generate frequenciy lists for these corpora if none are
@@ -424,7 +441,7 @@ page. The frequency files are stored in the cache directory specified
 with the C<var> configuration variable, and frequency generation is
 not attempted if no C<var> is specified.
 
-=item maxfreq
+=item C<maxfreq
 
 Value: integer. Limits the maximal size of frequency lists.
 
