@@ -37,6 +37,48 @@ sub startup {
   $self->types->type(csv => 'application/csv');
   $self->types->type(xls => 'application/excel');
 
+  # config
+  my $config = $self->plugin(Config => {
+					file      => 'cuwi.conf',
+					stash_key => 'config',
+					appname   => 'cuwi',
+					default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
+					maxsize => 50000,
+					maxpagesize => 5000,
+					login_expiration => 172800, #two days
+					tmp => $ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
+				    });
+
+  # set log directory
+  if ($config->{logdir} and -d $config->{logdir} and -w $config->{logdir}) {
+    my $loglevel = 'debug';
+    $loglevel = 'info' if $self->mode ne 'development';
+    $loglevel = $ENV{MOJO_LOG_LEVEL} if $ENV{MOJO_LOG_LEVEL};
+    $self->log(Mojo::Log->new(
+			      path => $config->{logdir} . '/'
+			      . $config->{appname} . '.'
+			      . $self->mode . '.log',
+			      level => $loglevel,
+			     ));
+	       warn "Setting log dir to $config->{logdir} with level $loglevel.";
+  }
+
+  $self->log->info("Config parsed.");
+
+  # check http root path
+  $config->{root} =~ s{/?^(.*)/$}{$1};
+  $config->{root} = 'cuwi' unless $config->{root};
+  my $cuwiroot = $config->{root};
+
+  # check tmp dir
+  $config->{tmp} = File::Spec->tmpdir
+    unless defined $config->{tmp} and -d $config->{tmp} and -w $config->{tmp};
+
+  # report critical config values
+  $self->log->info("App web root: '$config->{root}'.");
+  $self->log->info("Temporary directory: $config->{tmp}");
+
+  # optional dependencies
   $self->defaults->{table_export} = 0;
   my $loader = Mojo::Loader->new;
   my $e = $loader->load('Spreadsheet::Write');
@@ -52,32 +94,7 @@ sub startup {
     @{$loader->search('CWB::CUWI::I18N')};
   $self->defaults->{langs} = [@langs];
 
-
-# config - possibly use the config helper?
-# or stuff everything in a module or helper
-  my $config = $self->plugin(Config => {
-				     file      => 'cuwi.conf',
-				     stash_key => 'config',
-				     default   => { registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry' },
-				    });
-  $self->log->info("Config parsed.");
-  $config->{root} =~ s{/?^(.*)/$}{$1};
-  $config->{root} = 'cuwi' unless $config->{root};
-  $self->log->info("App web root: '$config->{root}'.");
-  my $cuwiroot = $config->{root};
-
-  # defaults
-  $config->{maxsize} ||= 50000;
-  $config->{maxpagesize} ||=  500;
-
-  $config->{tmp} = (
-		    ( defined $config->{tmp}
-		      and -d $config->{tmp} and -w defined $config->{tmp} ) ?
-		    $config->{tmp} :
-		    ( $ENV{MOJO_TMPDIR} || File::Spec->tmpdir )
-		   );
-  $self->log->info("Temporary directory: $config->{tmp}");
-  $config->{login_expiration} //= 172800; #two days
+  # set up model 
   my $model = CWB::Model->new(
 			      ( $config->{registry} ? 
 				(registry => $config->{registry}) : () )

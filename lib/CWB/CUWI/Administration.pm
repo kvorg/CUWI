@@ -32,7 +32,8 @@ Copy the config file from C<doc/examples/cuwi.conf> to the location of applicati
 =item *
 
 Create a C<log/> directory in the application home, if you want CUWI
-to write logs.
+to write logs. Alternatively, use C<logdir> and C<appname>
+configuration fields to override the location and name of log files.
 
 =item *
 
@@ -122,6 +123,38 @@ must exist and be writable by the application.
 Value: a string. Specifies the temporary directory for export files. 
 Recommended value: C<'/tmp'>. No default. Directory
 must exist and be writable by the application. Any files generated will be removed after use.
+
+=item appname
+
+Value: a string. Specifies the name of the application as used in log
+fiels and messages. Default: 'cuwi'.
+
+=item logdir
+
+Value: a string. Specifies the directory for log files.  Recommended
+value: C<'/var/log'>. No default. Directory must exist and be writable
+by the application.
+
+Note that the naming of the log files is different if you use this
+configuration variable. By default, cuwi uses the Mojolicious
+convention and writes log files only if a C<log/> subdirectory is
+available in the application home. Log files have the name
+'development' or 'production', depending on the current mode, and the
+suffix C<.log>. If you set the L<logdir> configuration variable and it
+points to an existing direcotry writable by the application, the value
+of the C<appname> configuration variable is prepended to the name of
+the log files. This makes it easier to use multiple instances that all
+log into a common log directory.
+
+If the directory is not writable (ie., you are trying to use
+C</var/log>, which is only writable by root), CUWI will ignore your
+setting and revert to the Mojolicious default convention. 
+
+It is recommended to create C</var/log/cuwi>, writable by the
+production sytem user used by the application, and set a different
+C<appname> for each instance. When you use the development server
+under your username, CUWI will ignore the setting and use the console
+or the local C<log/> directory, if it exists and is writable.
 
 =item corpora
 
