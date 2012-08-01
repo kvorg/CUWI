@@ -33,7 +33,8 @@ Copy the config file from C<doc/examples/cuwi.conf> to the location of applicati
 
 Create a C<log/> directory in the application home, if you want CUWI
 to write logs. Alternatively, use C<logdir> and C<appname>
-configuration fields to override the location and name of log files.
+configuration variables to override the location and name of log
+files.
 
 =item *
 
@@ -94,7 +95,7 @@ like this:
     root => "cuwi",           # available under http://*/cuwi
   }
 
-The following configuration file fields are meaningful for CUWI:
+The following configuration file variables are meaningful for CUWI:
 
 =over 4
 
@@ -148,13 +149,14 @@ log into a common log directory.
 
 If the directory is not writable (ie., you are trying to use
 C</var/log>, which is only writable by root), CUWI will ignore your
-setting and revert to the Mojolicious default convention. 
+setting and revert to the Mojolicious default convention.
 
 It is recommended to create C</var/log/cuwi>, writable by the
-production sytem user used by the application, and set a different
-C<appname> for each instance. When you use the development server
-under your username, CUWI will ignore the setting and use the console
-or the local C<log/> directory, if it exists and is writable.
+production sytem user used by the application (as set in the
+C<hypnotoad> section, for example), and set a different C<appname> for
+each instance. When you use the development server under your
+username, CUWI will ignore the setting and use the console or the
+local C<log/> directory, if it exists and is writable.
 
 =item corpora
 
@@ -233,7 +235,8 @@ using the configuration file filed C<corpora>.
 =head3 Changing Corpus Info
 
 You can overrule any value for a corpus as specified in the registry
-by declaring the new value under the C<corpora> field:
+by declaring the new value under the C<corpora> configuration variable
+(hash):
 
   {
     registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry',
@@ -250,9 +253,9 @@ by declaring the new value under the C<corpora> field:
 =head3 Corpus groups
 
 Multiple corpora can be joined in a group with the C<GROUPS>
-field. C<GROUPS> is a hash, where every key is the name of the group
-and its value is a list of strings, represetning lower-cased names of
-corpora.
+configuration variable. C<GROUPS> is a hash, where every key is the
+name of the group and its value is a list of strings, represetning
+lower-cased names of corpora.
 
   {
     registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry',
@@ -272,9 +275,9 @@ corpora.
 Virtual corpora are corpora, entirely created and cofigured form the
 config file (or directly in your program using the L<CWB::Model> API).
 
-A virtual corpus is defined with an entry under the C<VIRTUALS> field
-(a hash). The key is the lowercased name of the new corpus, its value
-is a hash of cration options:
+A virtual corpus is defined with an entry under the C<VIRTUALS>
+configuration variable (a hash). The key is the lowercased name of the
+new corpus, its value is a hash of cration options:
 
 =over
 
@@ -364,10 +367,10 @@ A virtual corpus example, with frequencies and no-browse for members:
    limited, and passwords are stored in cleartext. ***
 
 Access for a corpus can be limited to authenticated users. This is
-declared under the L<AUTH> field in the C<corpus> section of the
-configuration file. The value is a hash, where each entry has
-lowercased corpus name for its key a has with authentication options
-for its value.
+declared under the L<AUTH> configuration variable in the C<corpus>
+section of the configuration file. The value is a hash, where each
+entry has lowercased corpus name for its key a has with authentication
+options for its value.
 
 Only one authentication option is available: the domain.
 
@@ -418,8 +421,8 @@ will try to generate frequenciy lists for these corpora if none are
 availabe or if the existing frequency files are older than the corpus
 data files. Links to the files will be displayed on the corpus info
 page. The frequency files are stored in the cache directory specified
-with the C<var> field, and frequency generation is not attempted if no
-C<var> is specified.
+with the C<var> configuration variable, and frequency generation is
+not attempted if no C<var> is specified.
 
 =item maxfreq
 
@@ -450,9 +453,9 @@ Apache HTTPD or NGINX.
   # stop
   $ hypnotoad -s cuwi
 
-Hypnotoad is configured with a hash under the field 'hypnotoad' in the
-config file. This is an example configuration for a CUWI instance on
-port 3001, running 8 workers.
+Hypnotoad is configured with a hash under the configuration variable
+'hypnotoad' in the config file. This is an example configuration for a
+CUWI instance on port 3001, running 8 workers.
 
   {
     hypnotoad => {
