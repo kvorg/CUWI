@@ -7,6 +7,15 @@ our %Lexicon =
   (
    _AUTO => 1,
 
+   thousands_sep => ',',
+   decimal_sep => '.',
+   kb => 'kb',
+   kB => 'kb',
+   Mb => 'Mb',
+   MB => 'Mb',
+   Gb => 'Gb',
+   GB => 'Gb',
+
    # index.html.ep
    blurb => <<"FNORD",
 <p>CUWI (Corpus Users' Web interface) is a corpus browser and query

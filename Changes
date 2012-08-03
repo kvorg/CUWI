@@ -1,12 +1,13 @@
 This file documents the revision history for CWB::CUWI package.
 
-0.42 2012-07-18
+0.42 2012-08-03
   - Switched to perlish conf format
+  - More configuration options
   - Split up search templates, cleanup
+  - Printout cleanups
   - Localization framework, Slovene localization
   - Imported Localization plugin (dropped in newer Mojolicious)
   - Documentation interface
-  - More configuration options
   - Result looping for large wordlist result sets, speedup
   - Added context links to wordlist display mode
   - Fixed buggy virtual corpus alignment issues
@@ -25,7 +26,7 @@ This file documents the revision history for CWB::CUWI package.
   - Added top level statistics
   - More resilient model: skips missing/broken corpora, subcorpora
   - Handle non-compatible info files by parsing them as descriptions
-  - Simple search initial interface
+  - Simple search interface
   - cwb-scan-corpus initial interface for frequency lists with tuples
   - Standardized encodings, used corpus encoding for info file reading
   - Better logging, use X-Forwarded-For header when proxied

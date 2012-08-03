@@ -180,6 +180,8 @@ have precedence over the ones supplied with CUWI. This is intended to
 enable the administrator to copy and edit the existing files to
 customize an instance of CUWI.
 
+The default can be specified with the CUWI_HOME environemnt variable.
+
 =item C<corpora>
 
 Value: a hash. See L</Configuring corpora>.

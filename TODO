@@ -82,13 +82,15 @@
 
 * Web interface
 
+** index stats: human readable output
 ** simple search form (word+lemma, configurable, with alignement
    configuration file sets: possible contraint, attributes to search and to show
    defaults are: ignore case, in s, lemma/word, show word
    general align button, display = kwic
+   default, menu to select
 ** change navigation line to use |< < > >|
 ** document config, switch config to general config
-** corpus groups
+** corpus groups -> by default no_browse, home as with top list, description
 ** change export formats to et spec
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)

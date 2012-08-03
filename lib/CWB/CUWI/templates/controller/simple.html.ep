@@ -1,5 +1,5 @@
 % $self->languages($self->session('language')) if $self->session('language');
-% layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
+% layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query, searchmode=>'simple' ;
 % if ($result and scalar @{$result->warnings}) {
 %  if (stash('cwbexception')) {
 %   stash(cwbexception => [@{stash('cwbexception')}, @{$result->warnings}]);
@@ -23,7 +23,7 @@
   <div class="report">
    <p>
 %== l('No matches for query ')
-    <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+    <span class="querytext"><%= link_to_here './search', {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
     <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
     </p>
   </div>

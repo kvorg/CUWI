@@ -5,6 +5,10 @@ use utf8;
 #sub new { return };
 our %Lexicon =
   (
+
+   thousands_sep => '.',
+   decimal_sep => ',',
+
    # layouts/main.html.ep
    'CUWI Search' => 'Iskalnik CUWI',
    'Logged in as' => 'Uporabnik',
@@ -55,12 +59,13 @@ FNORD
    'Attribute Descriptions' => 'Opis pozicijskih atributov',
    'Structural Attribute Descriptions (Tags)' => 'Opis stukturnih atributov',
    'Peer Corpora' => 'Korpusi v skupini',
-   'Size (tokens)' => 'Velikost (število besed)',
+   'Size' => 'Velikost',
    'Positional attributes' => 'Pozicijski atributi',
    'Structural attributes' => 'Strukturni atributi',
    'Alignment attributes' => 'Poravnave',
    'attributes' => 'atributov',
    'types' => 'različnih',
+   'tokens' => 'besed',
    'regions' => 'območij',
    'alignment blocks' => 'poravnanih segmentov',
 

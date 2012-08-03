@@ -52,6 +52,7 @@ sub startup {
 					     login_expiration => 172800, #two days
 					     tmp => $ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
 					     homedir => $homedir,
+					     searchmode => 'advanced',
 					   },
 				    });
 
@@ -83,6 +84,10 @@ sub startup {
     $self->log->debug("Using static paths: " . join(', ', @{$self->static->paths}));
     $self->log->debug("Using renderer paths: " . join(', ', @{$self->renderer->paths}));
 
+  # placeholders
+  $self->defaults->{searchmode} = undef;
+  $self->defaults->{result} = undef;
+
   # check http root path
   $config->{root} =~ s{/?^(.*)/$}{$1};
   $config->{root} = 'cuwi' unless $config->{root};
@@ -112,7 +117,7 @@ sub startup {
     @{$loader->search('CWB::CUWI::I18N')};
   $self->defaults->{langs} = [@langs];
 
-  # set up model 
+  # set up model
   my $model = CWB::Model->new(
 			      ( $config->{registry} ? 
 				(registry => $config->{registry}) : () )

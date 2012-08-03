@@ -1,14 +1,14 @@
   <div class="report">
    <p>
 %  if ($result->reduce) {
-%== l('result_msg_sample_retrieved_for',  scalar @{$result->hits}, $result->hitno )
+%== l('result_msg_sample_retrieved_for', printnum scalar @{$result->hits}, $result->hitno )
 % } elsif ($result->pages->{single} or $result->hitno > ${$result->pages}{pagesize}) { #BUG
-%== l('result_msg_matches_x_to_y_retrieved_for', ${$result->pages}{this} , (${$result->pages}{this} +  @{$result->hits} - 1), $result->hitno )
+%== l('result_msg_matches_x_to_y_retrieved_for', ${$result->pages}{this} , (${$result->pages}{this} +  @{$result->hits} - 1), printnum $result->hitno )
 % } else {
-%== l('result_msg_x_matches_retrieved_for', $result->hitno )
+%== l('result_msg_x_matches_retrieved_for', printnum $result->hitno )
 % }
-    <span class="querytext"><%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
-    <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
+    <span class="querytext"><%= link_to_here './search', {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+    <%= l('result_msg_in_x_seconds', printnum sprintf('%0.3f', $result->time)) %>
    </p>
   </div>
 

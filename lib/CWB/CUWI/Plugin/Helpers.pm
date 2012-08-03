@@ -194,6 +194,30 @@ sub { #$c is controller, means generate contex links
 	       }
 	      );
 
+  $app->helper(printbyte =>
+	       sub {
+		 my ($c, $v) = @_;
+		 return $v >= 1073741824 ? $c->printnum($v/1073741824) . ' ' . $c->l('GB')
+		   : $v >= 1048576 ? $c->printnum($v/1048576) . ' ' . $c->l('MB')
+		     : $v >= 1024 ? $c->printnum($v/1024) . ' ' . $c->l('KB')
+		       : $c->printnum($v) . ' ' . $c->l('bytes');
+	       }
+	      );
+
+  $app->helper(printnum =>
+	       sub {
+		 my $c = shift;
+		 my $t = $c->l('thousands_sep');
+		 my $d = $c->l('decimal_sep');
+		 my $input = shift;
+		 $input = reverse "$input";
+		 $input =~ s<^(\d+)\.><${1}D>;
+		 $input =~ s<(\d\d\d)(?=\d)(?!\d*\.)><$1$t>g;
+		 $input =~ s<^(\d+)D><$1$d>;
+		 return reverse $input;
+	       }
+	      );
+
 } #register
 
 1;

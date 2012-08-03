@@ -1,5 +1,5 @@
 % $self->languages($self->session('language')) if $self->session('language');
-% layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query ;
+% layout 'main', title=>'in ' . $corpus->name . ' for ' . $result->query, searchmode=>'advanced' ;
 % if ($result and scalar @{$result->warnings}) {
 %  if (stash('cwbexception')) {
 %   stash(cwbexception => [@{stash('cwbexception')}, @{$result->warnings}]);

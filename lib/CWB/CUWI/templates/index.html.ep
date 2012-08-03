@@ -36,8 +36,8 @@
 <ul>
 %  if (${$model->stats}{tokens}) {
   <li><%= l 'Number of corpora' %>: <%= scalar keys %{$model->corpora}  %></li>
-  <li><%= l 'Total size (tokens)' %>: <%= 0 + ${$model->stats}{tokens}  %></li>
-  <li><%= l 'Total size (disk)' %>: <%= sprintf('%.3f', ${$model->stats}{size} / (1024 ** 2))  %> Mb</li>
+  <li><%= l 'Total size (tokens)' %>: <%= printnum ${$model->stats}{tokens}  %></li>
+  <li><%= l 'Total size (disk)' %>: <%=  sprintf('%.3f', ${$model->stats}{size} / (1024 ** 2))  %> Mb</li>
   <li><%= l 'Languages' %>: <%= join (', ', keys %{$model->stats->{languages}}) %></li>
   <li><%= l 'Encodings' %>: <%= join (', ', keys %{$model->stats->{encodings}}) %></li>
 %  }

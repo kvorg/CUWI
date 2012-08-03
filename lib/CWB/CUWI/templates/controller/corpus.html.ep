@@ -1,6 +1,10 @@
 % $self->languages($self->session('language')) if $self->session('language');
 % layout 'main', title=>'Form';
+% if ($self->config->{searchmode} eq 'simple') {
+%= include 'form_simple', simple_query=>undef, corpus=>$corpus
+% } else {
 %= include 'form', query=>undef, contextsize=>7, size=>50, startfrom=>0, listing=>'all', corpus=>$corpus
+%}
 
 % if (stash('cwbexception')) {
 <div class="exception">
@@ -14,7 +18,7 @@
     <ul>
       <li><%= l 'Language' %>: <%= $corpus->language ? $corpus->language : 'undef' %> </li>
       <li><%= l 'Encoding' %>: <%= $corpus->encoding ? $corpus->encoding : 'undef' %></li>
-      <li><%= l 'File size' %>: <%= $corpus->size ? $corpus->size . ' bytes': 'undef' %></li>
+      <li><%= l 'File size' %>: <%= $corpus->size ? printbyte $corpus->size : 'undef' %></li>
     </ul>
 % my @atts = grep { $corpus->tooltip(attribute => $_, languages ) }
 %    @{$corpus->attributes};
@@ -57,12 +61,12 @@
   <h2><%= l 'Statistics' %></h2>
   <table class="stats">
 %  if (${$corpus->stats}{tokens}) {
-    <tr><td><%= l 'Size (tokens)' %>:</td><td class="num"><%= 1 + ${$corpus->stats}{tokens}  %></td></tr>
+    <tr><td><%= l 'Size' %>:</td><td class="num"><%= printnum ${$corpus->stats}{tokens}  %></td><td> <%= l 'tokens' %> </td></tr>
 %  }
 %  if (scalar @{${$corpus->stats}{attributes}}) {
-    <tr><th><%= l 'Positional attributes' %>:</th></tr>
+    <tr><th span="2"><%= l 'Positional attributes' %>:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{attributes}}) {
-    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> <%= l 'attributes' %> </td><td class="num"><%= $att->[2] %></td><td> <%= l 'types' %> </td>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= printnum $att->[2] %></td><td> <%= l 'types' %> </td>
 % if (exists ${$corpus->stats}{freqs}{$att->[0]}) {
    <td><a href="/<%= $config->{root} . '/' . $corpus->name . '/frequencies/' . $att->[0] %>"><%= l 'frequencies' %></a></td>
 % }
@@ -70,15 +74,15 @@
 %   }
 %  }
 %  if (scalar @{${$corpus->stats}{structures}}) {
-    <tr><th><%= l 'Structural attributes' %>:</th></tr>
+    <tr><th span="2"><%= l 'Structural attributes' %>:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{structures}}) {
-    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> <%= l 'regions' %> </td></tr>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= printnum $att->[1] %></td><td> <%= l 'regions' %> </td></tr>
 %   }
 %  }
 %  if (scalar @{${$corpus->stats}{alignements}}) {
-    <tr><th><%= l 'Alignment attributes' %>:</th></tr>
+    <tr><th span="2"><%= l 'Alignment attributes' %>:</th></tr>
 %   foreach my $att (@{${$corpus->stats}{alignements}}) {
-    <tr><td><%= $att->[0] %>:</td><td class="num"><%= $att->[1] %></td><td> <%= l 'alignment blocks' %> </td></tr>
+    <tr><td><%= $att->[0] %>:</td><td class="num"><%= printnum $att->[1] %></td><td> <%= l 'alignment blocks' %> </td></tr>
 %   }
 %  }
   </table>
