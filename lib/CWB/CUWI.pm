@@ -87,6 +87,8 @@ sub startup {
   # placeholders
   $self->defaults->{searchmode} = undef;
   $self->defaults->{result} = undef;
+  $self->defaults->{corpus} = undef;
+  $self->defaults->{searchtype} = undef;
 
   # check http root path
   $config->{root} =~ s{/?^(.*)/$}{$1};

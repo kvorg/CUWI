@@ -1,6 +1,7 @@
 This file documents the revision history for CWB::CUWI package.
 
 0.42 2012-08-03
+  - Unescape HTML in corpus text
   - Switched to perlish conf format
   - More configuration options
   - Split up search templates, cleanup

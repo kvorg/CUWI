@@ -34,6 +34,7 @@ sub search {
   my $model = $self->stash('model');
   $model->install_exception_handler(sub { $self->app->log->error(@_); $self->stash->{cwbexception} = [@_]; return @_;} );
   return 0 unless $self->auth;
+  my $searchtype = exists $opts{simple} ? 'simple' : 'advanced';
 
   my $chost = $self->tx->remote_address;
   $chost = $self->tx->req->headers->header('X-Forwarded-For')
@@ -72,6 +73,17 @@ sub search {
   $maxuserhits = $corpus->maxuserhits || $maxuserhits;
   #$maxfreq = $corpus->maxfreq || $maxfreq;
   #$maxuserfreq = $corpus->maxuserfreq || $maxuserfreq;
+
+  # show corpus info on no query
+  $self->app->log->info("Showing corpus info with $searchtype form, no query specified")
+    and $self->render( template=>'controller/corpus',
+		       searchtype => $searchtype,
+		       corpus=>$corpus,
+		     )
+      and return
+    if $self->param('corpus')
+      and $corpus and $corpus->isa('CWB::Model::Corpus')
+	and not ($self->param('query') or $self->param('simple_query'));
 
   $self->app->log->info("Redirecting to registry, corpus init aborted.")
     and $self->redirect_to('index')

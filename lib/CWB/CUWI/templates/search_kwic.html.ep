@@ -37,7 +37,7 @@
 %  }
     <tr>
      <td class="head"><span class="no">
-<%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : '', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
+<%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : './search', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
      <%= infotip $m, l('Structural Info') => begin %>
       <b>cpos:</b> <%= $m->{'cpos'} %>
 %   foreach my $struct (keys %{$m->{data}}) {

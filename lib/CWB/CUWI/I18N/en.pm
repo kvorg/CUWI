@@ -10,11 +10,11 @@ our %Lexicon =
    thousands_sep => ',',
    decimal_sep => '.',
    kb => 'kb',
-   kB => 'kb',
+   kB => 'kB',
    Mb => 'Mb',
-   MB => 'Mb',
+   MB => 'MB',
    Gb => 'Gb',
-   GB => 'Gb',
+   GB => 'GB',
 
    # index.html.ep
    blurb => <<"FNORD",

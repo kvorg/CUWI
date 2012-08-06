@@ -8,6 +8,7 @@ use CWB::CQP;
 
 use Carp;
 use Encode qw(encode decode);
+use Mojo::Util qw(html_unescape);
 use Scalar::Util qw(weaken);
 use Time::HiRes;
 use POSIX qw(locale_h);
@@ -587,7 +588,7 @@ sub run {
 }
 
 sub _tokens {
-  return [ map { push @$_, "∅" while scalar @$_ < $_[1]; $_; } # fix missing attrs
+  return [ map { push @$_, "∅" while scalar @$_ < $_[1]; html_unescape $_; } # fix missing attrs
 	   map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
 }
 

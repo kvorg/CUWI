@@ -13,11 +13,13 @@
    <span class="logo"><%= link_to '/' . $config->{root} => begin %><span>C</span><span>U</span><br /><span>W</span><span>I</span><% end %></span>
 % if($searchmode) {
   <div class="user">
-%  if($searchmode eq 'simple') {
- <%= link_to_here './search', {query => '+ ' . $result->query, ignoremeta => 0} => begin %>Advanced search<% end %>
+%  if (defined $corpus) {
+%   if($searchmode eq 'simple') {
+ <%= link_to_here '/' . $self->config->{root} . '/' . $corpus->name . "/search", {query => defined $result ? '+ ' . $result->query : '', ignoremeta => 0} => begin %>Advanced search<% end %>
 %  } else {
- <%= link_to_here './simple', {simple_query => ''} => begin %>Simple search<% end %>
+ <%= link_to_here '/' . $self->config->{root} . '/' . $corpus->name . "/simple", {simple_query => ''} => begin %>Simple search<% end %>
 %  }
+% }
   </div>
 % }
   <div class="langselect">

@@ -5,54 +5,7 @@
 % } else {
   <%== l('result_msg_wordlist_x_distinct_out_of_y_for', $result->distinct, $result->hitno) %>
 % }
-<%= link_to_here % layout 'main', title=>'Form';
-% $self->languages($self->session('language')) if $self->session('language');
-
-% my $blurb;
-% if ($config->{blurb}) {
-%  if (ref $config->{blurb} eq 'HASH') {
-%   $blurb = exists $config->{blurb}{langugages} ? $config->{blurb}{langugages} : '';
-%   $blurb //= exists $config->{blurb}{'en'} ? $config->{blurb}{en} : '';
-%  } else {
-%   $blurb //= $config->{blurb} if not ref $config->{blurb};
-%  }
-% }
-% $blurb //= l('blurb', $config->{root} . '/doc/');
-<div class="description">
- <p><%== $blurb %></p>
-</div>
-
-% if (stash('cwbexception')) {
-<div class="exception">
-%= join(' ', @{stash('cwbexception')});
-</div>
-% }
-
-<div class="corpora">
- <h3><%= l('Available Corpora') %>:</h3>
- <ul>
-% my $corpora = $model->corpora;
-% foreach my $corpusname ( sort keys %{$corpora} ) {
-%   next if exists $config->{corpora}{OPTIONS}{no_browse}
-%	    and grep { $_ eq $corpusname } @{$config->{corpora}{OPTIONS}{no_browse}} ;
-   <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a> </li>
-% }
- </ul>
-
-<h3><%= l 'Statistics' %></h2>
-<ul>
-%  if (${$model->stats}{tokens}) {
-  <li><%= l 'Number of corpora' %>: <%= scalar keys %{$model->corpora}  %></li>
-  <li><%= l 'Total size (tokens)' %>: <%= printnum ${$model->stats}{tokens}  %></li>
-  <li><%= l 'Total size (disk)' %>: <%= sprintf('%.3f', ${$model->stats}{size} / (1024 ** 2))  %> Mb</li>
-  <li><%= l 'Languages' %>: <%= join (', ', keys %{$model->stats->{languages}}) %></li>
-  <li><%= l 'Encodings' %>: <%= join (', ', keys %{$model->stats->{encodings}}) %></li>
-%  }
-</ul>
-</div>
-
-
-{query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
+<%= link_to_here {query => '+ ' . $result->query, ignoremeta => 0} => begin %><%= $result->query %><% end %></span>
   <%= l('result_msg_in_x_seconds',  sprintf('%0.3f', $result->time)) %>
     </p>
   </div>

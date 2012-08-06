@@ -85,7 +85,7 @@ is $c->printbyte(323452345) => '308.47 MB',
 is $c->printbyte(1024 * 1024 * 1024) => '1.00 GB',
   'Cuwi helper printbyte: 1 GB';
 
-is $c->printbyte(3234534542345) => '3,012.40 MB',
+is $c->printbyte(3234534542345) => '3,012.40 GB',
   'Cuwi helper printbyte: high GB';
 
 #fails on negative!

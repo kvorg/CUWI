@@ -82,12 +82,9 @@
 
 * Web interface
 
+** config option: simple search attribute candidates, general and per corpus
 ** index stats: human readable output
-** simple search form (word+lemma, configurable, with alignement
-   configuration file sets: possible contraint, attributes to search and to show
-   defaults are: ignore case, in s, lemma/word, show word
-   general align button, display = kwic
-   default, menu to select
+** simple search form - add align
 ** change navigation line to use |< < > >|
 ** document config, switch config to general config
 ** corpus groups -> by default no_browse, home as with top list, description
