@@ -157,6 +157,8 @@ sub startup {
 				  );
       $corpus->description($config->{corpora}{VIRTUALS}{$virtual}{description})
 	if $config->{corpora}{VIRTUALS}{$virtual}{description};
+      $corpus->title($config->{corpora}{VIRTUALS}{$virtual}{title})
+	if $config->{corpora}{VIRTUALS}{$virtual}{title};
       $corpus->peers($config->{corpora}{VIRTUALS}{$virtual}{peers})
 	if $config->{corpora}{VIRTUALS}{$virtual}{peers};
       $corpus->tooltips($config->{corpora}{VIRTUALS}{$virtual}{tooltips})

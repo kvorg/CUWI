@@ -44,6 +44,7 @@ sub new {
     return undef;
   }
 
+  # yes, info files are in corpus encoding, with the rest of the directory
   my $iENC = 'utf8';
   $iENC = $self->encoding
     if $self->encoding and not $self->encoding =~ m/utf-?8/i;
