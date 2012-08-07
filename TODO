@@ -82,18 +82,16 @@
 
 * Web interface
 
-** config option: simple search attribute candidates, general and per corpus
-** index stats: human readable output
-** simple search form - add align
-** change navigation line to use |< < > >|
-** document config, switch config to general config
-** corpus groups -> by default no_browse, home as with top list, description
-** change export formats to et spec
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)
 ** running text context: (with visible structural tags)
-** add options to ignore structural tags (urls, strings, regexes)
+** config option: simple search attribute candidates, general and per corpus
+** simple search form - add align
+** change navigation line to use |< < > >|
+** corpus groups -> by default no_browse, home as with top list, description
+** change export formats to et spec
 ** change wordlist exporting to divide matches into multiple fields
+** add options to ignore structural tags (urls, strings, regexes)
 ** when more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
 ** documentation

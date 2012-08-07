@@ -588,7 +588,8 @@ sub run {
 }
 
 sub _tokens {
-  return [ map { push @$_, "∅" while scalar @$_ < $_[1]; html_unescape $_; } # fix missing attrs
+  return [ map { push @$_, "∅" while scalar @$_ < $_[1]; $_ } # fix missing attrs
+	   map { [ map { html_unescape $_ } @$_ ] }
 	   map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
 }
 
