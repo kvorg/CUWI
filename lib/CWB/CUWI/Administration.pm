@@ -276,10 +276,68 @@ by declaring the new value under the C<corpora> configuration variable
 
 =head3 Corpus groups
 
-Multiple corpora can be joined in a group with the C<GROUPS>
-configuration variable. C<GROUPS> is a hash, where every key is the
-name of the group and its value is a list of strings, represetning
-lower-cased names of corpora.
+Corpus groups can be used to organize the presentation of the corpora
+so that only the group is listed on the index page and the corpora in
+the group can be accessed using the group index page, and to enable
+the corpus peer facility where the search forms permit the user to
+send the same query to another corpus in the same group.
+
+This facility is intedned to support the cases where you need a common
+interface for different similar corpora, for example to support a
+project or working group.
+
+Note that group names can not be identical to a lower-cased corpus
+names, but are not restricted to lower case.
+
+A single corpus can be a member of multiple groups, but such a set-up
+can be confusing for users unless the corpus peer facility is
+disabled, since members of all the groups will show-up as peers in the
+search forms for such a corpus.
+
+Corpus groups are configured with the C<GROUPS> configuration
+variable. C<GROUPS> is a hash where group names are keys and values
+are configuration hashes with the following members:
+
+=item C<title>
+
+Value: a hash where keys are langauge tags and values strings. Used
+for the long title of the virtual corpus.
+
+=item C<description>
+
+Value: a hash where keys are langauge tags and values HTML description
+strings. Used for the description of the virtual corpus.
+
+=item C<members>
+
+Value: an array of strings. Lists corpora (non-virtual or virtual) to
+be included in the group by their lower-cased names.
+
+=item C<nopeers>
+
+Value: boolean. Default: C<0>. By default, all group members
+become peer corpora of other members and will show up in search forms,
+enabling the user to send a query to another member of the group. This
+feature is enabled regardless of how you access the corpus. A true
+value will disable this feature.
+
+=item C<nobrowse>
+
+Value: boolean. Default: C<1>. By default, all group members get the
+C<nobrowse> flag, which prevents them to be listed on the CUWI index
+page. In this way, groups members are only listed in the group
+listing. Set C<nobrowse> to undef to disable this feature.
+
+=item C<hidden>
+
+Value: boolean. Default: C<0>. If set to a true value, the group
+will not be listed on the index page. If you only use the group to get
+the peer corpus feature, you should also set C<nobrowse> to a false
+value.
+
+=back
+
+An example configuration file for a group:
 
   {
     registry => '/usr/local/share/cwb/registry:/usr/local/cwb/registry',
@@ -288,22 +346,37 @@ lower-cased names of corpora.
     root => "cuwi",           # available under http://*/cuwi
     corpora => {
       GROUPS => {
-        testing => [ "cuwi-sl", "cuwi-fr" ]
+        testing => {
+          title => 'CUWI testing corpora',
+          description =>
+            '<p>This is a toy group, showing the <i>CUWI grouping facility</i>
+            with a tiny corpus group made from CUWI testing corpora.</p>'
+          nobrowse => 0, #show members also on index page
+          members => [ "cuwi-sl", "cuwi-fr" ],
+        }
       },
   }
 
-*** Missing: Description of group facility ***
 
 =head3 Virtual Corpora
 
-Virtual corpora are corpora, entirely created and cofigured form the
-config file (or directly in your program using the L<CWB::Model> API).
+A virtual corpus is entirely created and cofigured form the config
+file (or directly in your program using the L<CWB::Model> API), using
+existing CWB-encoded corpora to perform actual queries. This mechanism
+is intedned for those cases when you need to present a corpus with
+different characteristics from those in the actual encoding or perform
+queries on multiple corpora at the same time.
 
 A virtual corpus is defined with an entry under the C<VIRTUALS>
 configuration variable (a hash). The key is the lowercased name of the
 new corpus, its value is a hash of cration options:
 
 =over
+
+=item C<title>
+
+Value: a hash where keys are langauge tags and values strings. Used
+for the long title of the virtual corpus.
 
 =item C<description>
 
@@ -431,17 +504,20 @@ Example:
 
 =head2 Additional Configuration Options
 
-Additional configuration options are set under the filed
-C<OPTIONS>. They include the following options:
+Additional configuration options are set under the configuration
+variable C<OPTIONS> in the corpora hash configuration variable.b They
+include the following options:
 
 =over 4
 
-=item C<no_browse
+=item C<no_browse>
 
 Value: an array of strings, containging lowercased corpus names. The
-corpora specified will not be visible in the main listing of available corpora.
+corpora specified will not be visible in the main listing of available
+corpora. If any of the corpora is included in a corpus group, they
+will be listed there.
 
-=item C<frequencies
+=item C<frequencies>
 
 Value: an array of strings, containging lowercased corpus names. CUWI
 will try to generate frequenciy lists for these corpora if none are
@@ -451,9 +527,24 @@ page. The frequency files are stored in the cache directory specified
 with the C<var> configuration variable, and frequency generation is
 not attempted if no C<var> is specified.
 
-=item C<maxfreq
+=item C<maxfreq>
 
 Value: integer. Limits the maximal size of frequency lists.
+
+=item C<bigcontext>
+
+Value: string or integer. Default: C<p>. Sets the default context for
+a cpos (detailed match) view.
+
+String values should be C<p>, C<s> or another structural tag. If the
+structural tag is available in the current corpus, it will be used as
+the context for the detailed match view. If not, C<p> and C<s> tags
+will be tried, in this order.
+
+Integer values are used as left and right token context. I.e. a value
+of C<15> will display the match corpus position with 15 tokens before
+and after the position.
+
 
 =back
 

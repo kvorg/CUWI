@@ -140,6 +140,9 @@ sub search {
 
     $params{cpos} = $self->param('cpos')
       if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
+    $params{bigcontext} = $config->{corpora}{OPTIONS}{bigcontext} || 'x'
+      and $self->app->log->debug("Context set to $params{bigcontext}\n")
+      if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
     $params{query} = $self->param('query');
     $params{search} = ( $self->param('search')
 			&& $c_attributes{$self->param('search')}
@@ -259,7 +262,7 @@ sub search {
 	    foreach my $hit (@{$result->hits}) {
 	      #warn Dumper($result->attributes);
 	      my @rows = $self->tabspreader($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
-	      $h->addrow( map { {content => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
+	      $h->addrow( map { {contnet => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
 									 (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
 									 (map {$_ . ': ' . $hit->{data}{$_} } keys %{$hit->{data}} )),
 			  @{shift @rows});

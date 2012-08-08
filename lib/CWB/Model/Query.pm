@@ -33,6 +33,7 @@ has maxhits     => 20000;
 has maxfreq     => 50000000;
 has context     => 25;
 has display     => 'kwic';
+has bigcontext  => 'p';
 has result      => sub { CWB::Model::Result->new };
 has subcorpus   => 0;
 
@@ -315,16 +316,26 @@ sub run {
     }
   }
 
+  # big context for cpos queries
   my $bc; my $bigcontext;
-    if (grep { $_ } map { $_ eq 'p' }
+  if ( grep { $_ } map { $_ eq $self->bigcontext }
+       @{$self->corpus->structures}) {
+    $bc = $bigcontext = $self->bigcontext;
+    $bigcontext = 'paragraphs' if $bc eq 'p';
+    $bigcontext = 'sentences' if $bc eq 's';
+  }
+  if (not $bc and $self->bigcontext =~ m/^\d+$/) {
+    $bc = $bigcontext = $self->bigcontext . ' words';
+  }
+  if (not $bc and grep { $_ } map { $_ eq 'p' }
+      @{$self->corpus->structures}) {
+    $bc = 'p'; $bigcontext = 'paragraphs';
+  }
+  if (not $bc and grep { $_ } map { $_ eq 's' }
 	@{$self->corpus->structures}) {
-      $bc = 'p'; $bigcontext = 'paragraphs';
-    }
-    if (not $bc and grep { $_ } map { $_ eq 's' }
-	@{$self->corpus->structures}) {
-      $bc = 's';
-      $bigcontext = 'sentences';
-    }
+    $bc = 's';
+    $bigcontext = 'sentences';
+  }
 
   if ($self->display ne 'wordlist') {
     $self->exec('set Context ' . $self->context . ';',
