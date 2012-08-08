@@ -40,7 +40,7 @@
 <%= link_to_here $m->{subcorpus_name} ? '../' . $m->{subcorpus_name} . '/search' : './search', {cpos=>$m->{'cpos'}, ignoremeta => 0}, (class=>"infobox") => begin %>[<%= $nr++ %>]<% end %></span>
      <%= infotip $m, l('Structural Info') => begin %>
       <b>cpos:</b> <%= $m->{'cpos'} %>
-%   foreach my $struct (keys %{$m->{data}}) {
+%   foreach my $struct (sort keys %{$m->{data}}) {
       <br /><b><%= $struct . ':' %></b>  <%= $m->{data}{$struct} %>
 %   }
      <br /><i><%= l('Click result number for detailed view.') %></i>

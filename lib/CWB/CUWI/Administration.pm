@@ -298,6 +298,8 @@ Corpus groups are configured with the C<GROUPS> configuration
 variable. C<GROUPS> is a hash where group names are keys and values
 are configuration hashes with the following members:
 
+=over 4
+
 =item C<title>
 
 Value: a hash where keys are langauge tags and values strings. Used
@@ -350,7 +352,7 @@ An example configuration file for a group:
           title => 'CUWI testing corpora',
           description =>
             '<p>This is a toy group, showing the <i>CUWI grouping facility</i>
-            with a tiny corpus group made from CUWI testing corpora.</p>'
+            with a tiny corpus group made from CUWI testing corpora.</p>',
           nobrowse => 0, #show members also on index page
           members => [ "cuwi-sl", "cuwi-fr" ],
         }
@@ -545,6 +547,14 @@ Integer values are used as left and right token context. I.e. a value
 of C<15> will display the match corpus position with 15 tokens before
 and after the position.
 
+=item C<simple_search_attributes>
+
+Value: an array of strings. Default: C<[qw(word lemma)]>. The strings
+enumerate positional attributes names that are used as candidates for
+the simple search interface. Any candidates that do not exist in a
+given corpus are discarded in the simple search query. It is
+recommended to name at least C<word>, since this is the only attribute
+that is gauranteed in all corpora.
 
 =back
 

@@ -56,6 +56,7 @@
 
 * Web interface BUGS
 
+** fix error with a full query but nonexisting corpus
 ** fix missing display mode before logging on line 65
 ** escapes for ?, *, |, handling for single "
 ** format info tags, links
@@ -84,13 +85,14 @@
 
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)
-** running text context: (with visible structural tags)
-** config option: simple search attribute candidates, general and per corpus
-** simple search form - add align
-** change navigation line to use |< < > >|
-** corpus groups -> by default no_browse, home as with top list, description
+** corpus groups -> b
+cy default no_browse, home as with top list, description
 ** change export formats to et spec
 ** change wordlist exporting to divide matches into multiple fields
+** visible structural tags, default in cpos context
+** config option: simple search attribute candidates per corpus
+** simple search form - add align
+** change navigation line to use |< < > >|
 ** add options to ignore structural tags (urls, strings, regexes)
 ** when more than 7 attributes are present, switch display to 4 drop-down lists 
    (possibly list selection performs a direct query redirect)
@@ -111,9 +113,6 @@
    better implementation
 ** spook: sub-searches (based on existing search), possibly with caching
 ** add config file support for ID for structural attribute in result
-** spook: home page info:
-   navodila za uporabo v slovenščini s čimveč primeri različnih tipov
-   iskanj - use a link
 ** do not use url-like attributes and *_id attributes in search forms*
 * additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html

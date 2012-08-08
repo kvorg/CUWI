@@ -113,7 +113,7 @@ sub search {
   $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
 
   if ($opts{simple}) {
-    my @candidates = (qw( word lemma nform mform ));
+    my @candidates = (qw( word lemma ));
       @candidates = @{$config->{corpora}{OPTIONS}{simple_search_attributes}}
 	if exists $config->{corpora}{OPTIONS}{simple_search_attributes};
     @candidates = grep { $c_attributes{$_} } @candidates;

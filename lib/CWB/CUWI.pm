@@ -89,6 +89,7 @@ sub startup {
   $self->defaults->{result} = undef;
   $self->defaults->{corpus} = undef;
   $self->defaults->{searchtype} = undef;
+  $self->defaults->{groups} = {};
 
   # check http root path
   $config->{root} =~ s{/?^(.*)/$}{$1};
@@ -133,9 +134,10 @@ sub startup {
   # peers from config groups
   if ($config->{corpora}{GROUPS} #BUG: optimize traversal
       and ref $config->{corpora}{GROUPS} eq 'HASH') {
-    $self->log->info('Adding groups from config file to CWB Model.');
+    $self->log->info('Adding groups from config file to CUWI and CWB Model.');
+    $self->defaults->{groups} = $config->{corpora}{GROUPS};
     foreach my $group (keys %{$config->{corpora}{GROUPS}}) {
-      my @members = @{$config->{corpora}{GROUPS}{$group}};
+      my @members = @{$config->{corpora}{GROUPS}{$group}{members}};
       foreach my $m (@members) {
 	$self->log->error("Configuration file error: Group $group includes corpus $m, but no such corpus is present in the registry.")
 	  and next unless exists $model->corpora->{$m};
