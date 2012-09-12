@@ -47,7 +47,7 @@
  % if (param('corpus')) {
    &#x2022;
    <%= link_to '/' . $config->{root} . '/' . param('corpus') => begin %>
-     <%= ${$model->{corpora}}{param('corpus')}->title %>
+     <%= exists ${$model->{corpora}}{param('corpus')}  ? ${$model->{corpora}}{param('corpus')}->title : param('corpus') %>
    <% end %>
  %}
   </h1>

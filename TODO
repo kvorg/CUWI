@@ -86,7 +86,7 @@
 ** handle corpus groups with top-level entries, hide members in top list
    (just like virtual copora)
 ** corpus groups -> b
-cy default no_browse, home as with top list, description
+   default no_browse, home as with top list, description
 ** change export formats to et spec
 ** change wordlist exporting to divide matches into multiple fields
 ** visible structural tags, default in cpos context

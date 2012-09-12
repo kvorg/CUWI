@@ -1,5 +1,6 @@
 package CWB::CUWI::Controller;
 use Mojo::Base 'Mojolicious::Controller';
+use CWB::CUWI::Group;
 use File::Temp qw( :mktemp);
 use File::Spec::Functions 'catdir';
 use Mojo::Asset::File;
@@ -7,8 +8,20 @@ use Data::Dumper;
 
 sub corpus {
   my $self = shift;
+  my $config = $self->app->config;
   $self->app->log->debug("Got to controller.");
   return 0 unless $self->auth;
+
+  # handle groups
+  if ($self->param('corpus') and exists $config->{corpora}{GROUPS}{$self->param('corpus')}) {
+  $self->app->log->debug("Rendering group index for " .
+			 $self->param('corpus') . '.' );
+  my $group = CWB::CUWI::Group->new(name => $self->param('corpus'), %{$config->{corpora}{GROUPS}{$self->param('corpus')}});
+  $self->render( template=>'controller/group',
+		 group=>$group,
+		);
+  return 1;
+  }
 
   my $corpus = ${$self->stash('model')->corpora}{$self->param('corpus')};
 
