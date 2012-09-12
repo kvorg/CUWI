@@ -55,12 +55,11 @@ table.tokens tr td { padding: 0em; white-space: nowrap; }
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.exception { margin: 3em; color: Red; }
 
-div.exports {
-  font-size: 80%;
-  margin-bottom: 2ex;
+span.exports {
+  margin-right: 3em;
 }
-div.exports > a {
-  font-size: 80%;
+span.exports > a {
+  /* font-size: 80%; */
   font-family: sans-serif;
   text-decoration: none;
   color: white;

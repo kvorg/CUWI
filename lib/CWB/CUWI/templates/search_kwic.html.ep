@@ -18,10 +18,6 @@
 </div>
 % }
 
-% if ($result->hitno) {
-<%= include 'search_exports' %>
-% }
-
 <%= include 'nav' %>
 
  <div class="matches">
