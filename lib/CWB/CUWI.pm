@@ -137,7 +137,17 @@ sub startup {
     $self->log->info('Adding groups from config file to CUWI and CWB Model.');
     $self->defaults->{groups} = $config->{corpora}{GROUPS};
     foreach my $group (keys %{$config->{corpora}{GROUPS}}) {
-      my @members = @{$config->{corpora}{GROUPS}{$group}{members}};
+      my @members;
+      if (ref $config->{corpora}{GROUPS}{$group} eq 'ARRAY') {
+	@members = @{$config->{corpora}{GROUPS}{$group}}
+      } elsif (ref $config->{corpora}{GROUPS}{$group} eq 'HASH' and
+	       exists $config->{corpora}{GROUPS}{$group}{members} and
+	       ref $config->{corpora}{GROUPS}{$group}{members} eq 'ARRAY' ) {
+	@members = @{$config->{corpora}{GROUPS}{$group}{members}};
+      } else {
+	$self->log->info("Dropping group $group: illegal format.");
+	next;
+      }
       foreach my $m (@members) {
 	$self->log->error("Configuration file error: Group $group includes corpus $m, but no such corpus is present in the registry.")
 	  and next unless exists $model->corpora->{$m};
