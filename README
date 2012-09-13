@@ -1,6 +1,11 @@
                CUWI - Corpus Users' Web Interface
                ----------------------------------
 
+WARNING: latest versions have changed the format and syntax of the
+configuration file (from .json to perl-formatted .conf). Please
+consult the documentation. Most installations will be able to simply
+change the formatting, but some features now have a different syntax.
+
 CUWI is a full-featured web front-end for corpora prepared with CWB -
 the IMS Corpus WorkBench (http://cwb.sourceforge.net/). It uses its
 own back-end layer, CWB::Model. CWB::Modle is a CWB registry, corpus,
@@ -81,10 +86,10 @@ A number of additional features are in the pipeline:
 Additional info:
 ----------------
 
-Documentation can be found in cuwi and CWB::Model pods or man pages
-(in progress).
+Documentation can be found in CWB::CUWI and CWB::Model pods or man pages.
 
-For deployment information, see Mojolicious::Guides::Cookbook and INSTALL.
+For deployment information, see Mojolicious::Guides::Cookbook and
+INSTALL. Full documentation is in CWB::CUWI::Administration.
 
 For customization, see Mojolicious::Guides::Rendering and cuwi help inflate.
 

@@ -25,11 +25,12 @@ $t->get_ok('/cuwi')
   ->element_exists('html head title', 'Cuwi main: title')
   ->element_exists('html body h1', 'Cuwi main: header')
   ->text_like('h1 > a' => qr/CUWI Search/, 'Cuwi main: header contents')
-;
+  or print $t->_get_content($t->tx);
 
 # corpora
 my @corpora = $t->tx->res->dom->at('div.corpora ul')->find('li b')->each;
-cmp_ok(scalar @corpora, '==', 2, 'Cuwi main: number of corpora');
-is($corpora[0]->text, 'CUWI-FR', 'Cuwi main: first corpus name');
+cmp_ok(scalar @corpora, '==', 4, 'Cuwi main: number of corpora');
+is($corpora[0]->text, 'cuwi', 'Cuwi main: first corpus name');
+is($corpora[1]->text, 'CUWI-FR', 'Cuwi main: first corpus name');
 
 done_testing;

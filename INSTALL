@@ -61,8 +61,8 @@ See Module::Build for more info.
 
 If you wish to deploy cuwi without installation, you can:
 
- * copy the lib/ directory, cuwi script, and config
-   file to your deployment location
+ * copy the lib/ directory, cuwi script, and config file (from examples/)
+   to your deployment location
  * copy Mojolicious lib directory in the same location as lib-extra
  * adjust PERL5LIB env variable to help cuwi script find its modules
  * copy Mojolicious' hypnotoad script for preforking server support,
@@ -74,8 +74,8 @@ CONFIGURATION
 
 CUWI uses the CWB::Model module, which needs to be able to find your
 registries. You can rely on CWB::Config, use CORPUS_REGISTRY
-environment variable or set the value in cuwi.json (see
-examples/cuwi.json). The latter two options expect a colon-delimited
+environment variable or set the value in cuwi.conf (see
+examples/cuwi.conf). The latter two options expect a colon-delimited
 list of registry directories. Unlike CWB itself, cuwi will ignore
 registry files that look like editor backups and will try to parse
 corpus info files for additional information to deduce corpus encoding
@@ -83,7 +83,7 @@ and generate help/tool-tip information. However, you should use the
 standard CWB way of statint corpus encoding and language to help CQP
 3.2.*.
 
-See CWB::CUWI::Manual pod/man and CWB::Model pod/man for details.
+See CWB::CUWI::Administration pod/man and CWB::Model pod/man for details.
 
 
 CUSTOMIZATION AND DEPLOYMENT
@@ -97,9 +97,9 @@ inflate.
 See also: cuwi generate help, cuwi help daemon, Mojo::Server::Hypnotoad
 and Mojolicious or http://mojolicio.us/.
 
-See CWB::Model pod/man section on corpus info file information and
-cuwi pod/man's section on virtual corpora if you need to configure the
-behaviour of individual corpora
+See CWB::CUWI::Administration, CWB::Model pod/man section on corpus
+info file information and cuwi pod/man's section on virtual corpora if
+you need to configure the behaviour of individual corpora
 
 
 Examples:
@@ -116,7 +116,7 @@ Examples:
 Mojolicious::Guides::Cookbook/Hypnotoad for info on configuration,
 and Mojo::Server::Hypnotoad for more info:
 
-    # edit cuwi.json to your leisure to configure the server
+    # edit cuwi.conf to your leisure to configure the server
     mkdir log                              # enables logging
     # start pre-forking server:
     PERL5LIB=./lib path-to-mojolicious-bin/hypnotoad cuwi
@@ -130,5 +130,5 @@ apache), see Mojolicious::Guides::Cookbook. In most cases, you need to
 configure the environment and Mojolicious will figure out the rest to
 deploy CUWI inside.
 
-See doc/examples/cuwi-init.d-fedora for an example of a Fedora
-GNU/Linux init.d script for CUWI running on Hypnotoad.
+See doc/examples/cuwi-init.d-fedora for an example of a traditional
+Fedora GNU/Linux init.d script for CUWI running on Hypnotoad.

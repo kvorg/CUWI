@@ -21,7 +21,7 @@ use CWB::CUWI;
 use CWB::CUWI::Controller;
 use CWB::CUWI::Plugin::CI18N;
 my $app = CWB::CUWI->new;
-$app->log->level('error');
+$app->log->level('error'); #BUG: still getting info messages
 my $c = CWB::CUWI::Controller->new(app=>$app);
 my $l = CWB::CUWI::Plugin::CI18N::_Handler->new(namespace => 'CWB::CUWI::I18N');
 $c->stash->{i18n} = $l;

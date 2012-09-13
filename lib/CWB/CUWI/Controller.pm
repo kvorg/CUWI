@@ -76,7 +76,7 @@ sub search {
   if ($self->param('cpos')) {
     $self->app->log->info('Received cpos query: ' . $self->param('cpos') . " from $chost.");
   } else {
-    $self->app->log->info('Received ' . $self->param('display') . ' query: \'' . $self->param('query')  . "' from $chost on " . $self->param('corpus') . '.');
+    $self->app->log->info('Received ' . ($self->param('display') || 'UNDEF') . ' query: \'' . $self->param('query')  . "' from $chost on " . $self->param('corpus') . '.');
   }
   $self->app->log->debug('CWB::Model::Corpus init on "' . $self->param('corpus') . '".');
   my $corpus = ${$self->stash->{model}->corpora}{$self->param('corpus')};

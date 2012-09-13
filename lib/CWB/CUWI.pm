@@ -154,6 +154,12 @@ sub startup {
 	push (@{$model->corpora->{$m}->peers}, grep { $_ ne $m } @members);
       }
     }
+    # remove duplicates from peers - should be moved to corpus?
+    foreach (keys %{$model->corpora}) {
+      $model->corpora->{$_}->peers(
+	[ sort keys %{{ map { $_ => 1 } @{$model->corpora->{$_}->peers} }} ]
+				  );
+    }
   }
 
   # virtauls from config

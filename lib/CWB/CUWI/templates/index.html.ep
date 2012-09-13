@@ -34,7 +34,7 @@
 % if (exists $corpora->{$name}) {
 %  $cname = $corpora->{$name}->NAME; $title = $corpora->{$name}->title;
 % } else {
-%  $cname = $name; $title = $groups->{$name}{title} || '';
+%  $cname = $name; $title = ref $groups->{$name} eq 'HASH' ? $groups->{$name}{title} || '' : $name;
 % }
    <li><a href="/<%= $config->{root} . '/' . $name %>"><b><%= $cname %></b>: <%= $title %></a> </li>
 % }

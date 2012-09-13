@@ -512,6 +512,11 @@ include the following options:
 
 =over 4
 
+=item C<searchmode>
+
+Value: a string. Default: 'advanced'. 'simple' will set Simple Search
+form as the default.
+
 =item C<no_browse>
 
 Value: an array of strings, containging lowercased corpus names. The

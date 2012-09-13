@@ -83,21 +83,20 @@
 
 * Web interface
 
-** corpus groups -> b
-   default no_browse, home as with top list, description
+** implement shuffle (random sort order) with fixed seeds
+** corpus groups ->
+   default no_browse
+** config option: simple search attribute candidates per corpus
+** simple search form -> always show alignements (optional with config)
 ** change wordlist exporting to divide matches into multiple fields
 ** visible structural tags, default in cpos context
-** config option: simple search attribute candidates per corpus
-** simple search form - add align
-** change navigation line to use |< < > >|
 ** add options to ignore structural tags (urls, strings, regexes)
-** when more than 7 attributes are present, switch display to 4 drop-down lists 
-   (possibly list selection performs a direct query redirect)
-** documentation
 ** more logging: paging, sorting, shows, tx->query
 
 ** structural attribute filters from tooltips (possibly use subqueries or such)
 ** add progress and redirect for result exports
+** when more than 7 attributes are present, switch display to 4 drop-down lists 
+   (possibly list selection performs a direct query redirect)
 ** use chunked transfer encoding for results?
 ** konrad, imp, spook: multiple sort and multiple structure constraint
 ** finish frequency support with cwb-scan-corpus
