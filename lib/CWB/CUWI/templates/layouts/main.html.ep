@@ -10,7 +10,7 @@
  </head>
  <body>
  <div class="optionbar">
-   <span class="logo"><%= link_to '/' . $config->{root} => begin %><span>C</span><span>U</span><br /><span>W</span><span>I</span><% end %></span>
+   <span class="logo"><%= link_to '/' . $config->{root} => begin %><span>CUWI</span><% end %></span>
 % if($searchmode) {
   <div class="user">
 %  if (defined $corpus and defined $result and $result->hitno) {
@@ -27,7 +27,7 @@
   </div>
 % }
   <div class="langselect">
-   <ul class="langselect" id="navbar">
+   <ul class="langselect navbar">
      <li><%= image ('/' . $config->{root} . '/lib/images/cog-white.png', alt => 'Select languages', class => 'options', width => 12, height => 12) %> <%= l('Languages') %></a>
        <ul>
    %   foreach ( sort @{$langs} ) {

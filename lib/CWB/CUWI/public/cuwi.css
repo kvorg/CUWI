@@ -18,22 +18,18 @@ span.logo {
     font-weight: bold;
     font-family: sans-serif;
     letter-spacing: .3em;
-    line-height: 110%;
     padding: .4em; 
-    padding-right: 0px; 
     display: block;
     float: left;
-    font-size: 220%;
+    font-size: 210%;
     color: white;
     background: black;
-    border-bottom-right-radius: 1em;
+    border-bottom-right-radius: .5em;
 }
-span.logo a { display: block; width: .4em; }
-span.logo span:nth-child(4n+5) { color: red; }
-span.logo span:nth-child(4n+2) { color: green; }
-span.logo span:nth-child(4n+3) { color: purple; }
-span.logo span:nth-child(4n+4) { color: blue; }
-div.user, div.langselect { display: inline; margin-left: 1em; margin-right: 1em;  }
+span.logo a {
+    margin-right: -1em;
+}
+div.user, div.langselect, div.exports { display: inline; margin-left: 1em; margin-right: 1em;  }
 img.options { width: 12px; height: 12px; margin-top: 4px; margin-bottom: -2px; }
 
 div.search, div.show { margin-left: 3.5em; }
@@ -54,20 +50,6 @@ table.tokens tr td { padding: 0em; white-space: nowrap; }
 
 span.querytext { font-family: monospace; font-size: 110%; font-weight: bold; }
 div.exception { margin: 3em; color: Red; }
-
-span.exports {
-  margin-right: 3em;
-}
-span.exports > a {
-  /* font-size: 80%; */
-  font-family: sans-serif;
-  text-decoration: none;
-  color: white;
-  background: orange;
-  padding: .35em;
-  margin: .4em;
-  border-radius: .4em;
-}
 
 div.nav   { font-weight: bold; font-size: 80%; }
 div.nav > a.prev   { float: left; }
@@ -168,14 +150,11 @@ h1 {
     margin-right: 0px;
     margin-top: -.05em;
     margin-bottom: .7em;
-    margin-left: 2.78em;
-    padding-left: 1em;
-    border-left: thick solid black;
-    border-top: thick solid black;
+    margin-left: 0em;
+    padding-left: 8.5em;
     padding-bottom: .15em;
     background: #FAFAFA;
     text-align: left ;
-    border-top-left-radius: 12px;
    }
 h1 a { color: gray; text-decoration: none }
 h1 a.hover { text-decoration: underline }
@@ -234,7 +213,7 @@ table.examples tr td.t { font-family: serf; font-size: 70%; }
 
 /* Menubar from Rob Glazebrook, hacked */
 
-#navbar {
+ul.navbar {
 /*   font-size: 120%; !!! */
    margin: 0;
    margin-right: 1em;
@@ -243,21 +222,23 @@ table.examples tr td.t { font-family: serf; font-size: 70%; }
    height: 1em;
    display: inline-block
 }
-#navbar li {
+ul.navbar li {
    vertical-align: middle;
    list-style: none;
-   ; }
-#navbar li a {
+}
+ul.navbar li a {
    display: block;
    padding: 3px 8px;
    background-color: red;
    color: #fff;
    text-decoration: none; }
-#navbar li ul {
+ul.navbar li ul {
    display: none; 
    width: 6em; /* Width to help Opera out */
-   background-color: white;}
-#navbar li:hover ul, #navbar li.hover ul {
+   background-color: white;
+   text-align: left;
+}
+ul.navbar li:hover ul, ul.navbar li.hover ul {
    display: block;
    position: absolute;
    margin: 0;
@@ -265,13 +246,13 @@ table.examples tr td.t { font-family: serf; font-size: 70%; }
    border-right: thin solid black;
    border-bottom: thin solid black;
    padding: 0; }
-#navbar li:hover li, #navbar li.hover li {
+ul.navbar li:hover li, ul.navbar li.hover li {
    float: none; }
-#navbar li:hover li a, #navbar li.hover li a {
+ul.navbar li:hover li a, ul.navbar li.hover li a {
    background-color: white;
    border-bottom: 1px solid #fff;
    color: #000; }
-#navbar li li a:hover {
+ul.navbar li li a:hover {
    background-color: gray; }
 
 /* css tabs six, from http://css-tricks.com/examples/CSSTabs/ by Chris Coyier*/

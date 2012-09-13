@@ -1,9 +1,14 @@
-<span class="exports">
- <%= l('Export results') %>:
- <%= link_to_here { format=>'json', start_from=>1, size=>50000 } => begin %><span> JSON </span><% end %>
- <%= link_to_here { format=>'perl', start_from=>1, size=>50000 } => begin %><span> Perl </span><% end %>
+<div class="exports">
+   <ul class="exports navbar">
+     <li><%= l('Export results') %>
+       <ul>
+	 <li><%= link_to_here { format=>'json', start_from=>1, size=>50000 } => begin %>JSON<% end %></li>
+	 <li><%= link_to_here { format=>'perl', start_from=>1, size=>50000 } => begin %>Perl<% end %></li>
 % if ($table_export) {
- <%= link_to_here { format=>'csv', start_from=>1, size=>50000 } => begin %><span> CSV </span><% end %>
- <%= link_to_here { format=>'xls', start_from=>1, size=>50000 } => begin %><span> Excel </span><% end %>
+	 <li><%= link_to_here { format=>'csv', start_from=>1, size=>50000 } => begin %>CSV<% end %></li>
+	 <li><%= link_to_here { format=>'xls', start_from=>1, size=>50000 } => begin %>Excel<% end %></li>
 % }
-</span>
+       </ul>
+     </li>
+   </ul>
+</div>
