@@ -1,0 +1,21 @@
+% $self->languages($self->session('language')) if $self->session('language');
+% layout 'main', title=>$group->givetitle( languages () );
+
+<div class="description">
+  <%== $group->describe( languages() ) %>
+</div>
+
+% my @members = @{$group->members};
+% my $corpora = $model->corpora;
+% if (@members) {
+<div class="corpora">
+  <h2><%= l 'Member Corpora' %></h2>
+  <ul>
+%   foreach my $p (@members) {
+    <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->NAME %></b>: <%= $corpora->{$p}->title %></a></li>
+%   }
+  </ul>
+% } else {
+  No members!
+% }
+</div>

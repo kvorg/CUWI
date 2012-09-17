@@ -106,6 +106,7 @@ sub new {
     }
     }
    unless( exists ${$self->stats}{tokens} and ${$self->stats}{tokens} )  {
+     # should use CWB::Model::exception_handler and support the carp case
      carp "CWB::Model::Corpus Exception: $datahome exists but does not contain a valid corpus, aborted: " . $self->name . " dropped from the registry.\n";
      return undef;
    }
