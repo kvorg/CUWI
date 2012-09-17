@@ -144,6 +144,12 @@ sub startup {
 	       exists $config->{corpora}{GROUPS}{$group}{members} and
 	       ref $config->{corpora}{GROUPS}{$group}{members} eq 'ARRAY' ) {
 	@members = @{$config->{corpora}{GROUPS}{$group}{members}};
+	unless ( exists $config->{corpora}{GROUPS}{$group}{nobrowse} and not $config->{corpora}{GROUPS}{$group}{nobrowse}) {
+	  $config->{corpora}{OPTIONS}{no_browse} = []
+	    unless exists $config->{corpora}{OPTIONS}{no_browse}
+	      and ref $config->{corpora}{OPTIONS}{no_browse} eq 'ARRAY';
+	  push @{$config->{corpora}{OPTIONS}{no_browse} }, @members;
+	}
       } else {
 	$self->log->info("Dropping group $group: illegal format.");
 	next;
@@ -151,14 +157,19 @@ sub startup {
       foreach my $m (@members) {
 	$self->log->error("Configuration file error: Group $group includes corpus $m, but no such corpus is present in the registry.")
 	  and next unless exists $model->corpora->{$m};
-	push (@{$model->corpora->{$m}->peers}, grep { $_ ne $m } @members);
+	push (@{$model->corpora->{$m}->peers}, grep { $_ ne $m } @members)
+	  unless $config->{corpora}{GROUPS}{$group}{nopeers};
       }
     }
-    # remove duplicates from peers - should be moved to corpus?
+    # remove duplicates from peers and no_browse - should be moved to corpus?
     foreach (keys %{$model->corpora}) {
       $model->corpora->{$_}->peers(
 	[ sort keys %{{ map { $_ => 1 } @{$model->corpora->{$_}->peers} }} ]
 				  );
+      $config->{corpora}{OPTIONS}{no_browse} = 
+	[ sort keys %{{ map { $_ => 1 } @{$config->{corpora}{OPTIONS}{no_browse}} }} ]
+	  if exists $config->{corpora}{OPTIONS}{no_browse}
+	    and ref $config->{corpora}{OPTIONS}{no_browse} eq 'ARRAY';
     }
   }
 
