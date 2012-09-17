@@ -16,7 +16,7 @@ sub corpus {
   if ($self->param('corpus') and exists $config->{corpora}{GROUPS}{$self->param('corpus')}) {
   $self->app->log->debug("Rendering group index for " .
 			 $self->param('corpus') . '.' );
-  my $group = CWB::CUWI::Group->new(name => $self->param('corpus'), %{$config->{corpora}{GROUPS}{$self->param('corpus')}});
+  my $group = CWB::CUWI::Group->new(model => $self->stash('model'), name => $self->param('corpus'), %{$config->{corpora}{GROUPS}{$self->param('corpus')}});
   $self->render( template=>'controller/group',
 		 group=>$group,
 		);

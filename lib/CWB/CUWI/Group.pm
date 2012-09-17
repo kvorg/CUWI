@@ -5,13 +5,24 @@ use Mojo::Base -base;
 use Carp qw(croak cluck);
 use Scalar::Util qw(weaken);
 
-has [qw(name nopeers nobrowse hidden)];
+has [qw(name nopeers nobrowse hidden model)];
 has [qw( title description )] => sub { return {} };
 has [qw( members )] => sub { return [] };
 has encoding => 'utf8';
 has Encoding => 'UTF-8';
 has language => undef;
 
+sub new {
+    my $self = shift->SUPER::new(@_);
+    if ($self->model and ref $self->model eq 'CWB::Model') {
+      # filter missing members
+      $self->members([
+		      grep { exists $self->model->corpora->{$_} } 
+		      @{$self->members}
+		     ]) ;
+    }
+      return $self;
+}
 
 sub describe {
   croak 'CWB::CUWI::Group syntax error: not called as $group->describe(<lang>);' unless @_ == 2;
