@@ -158,7 +158,7 @@ sub startup {
 	$self->log->error("Configuration file error: Group $group includes corpus $m, but no such corpus is present in the registry.")
 	  and next unless exists $model->corpora->{$m};
 	push (@{$model->corpora->{$m}->peers}, grep { $_ ne $m } @members)
-	  unless $config->{corpora}{GROUPS}{$group}{nopeers};
+	  unless ref $config->{corpora}{GROUPS}{$group} eq 'HASH' and $config->{corpora}{GROUPS}{$group}{nopeers};
       }
     }
     # remove duplicates from peers and no_browse - should be moved to corpus?
