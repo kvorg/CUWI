@@ -45,11 +45,13 @@ $t->get_ok("/cuwi/$corpus/search" . bq(query => 'a*', display=>'kwic', show=>'wo
 		   'Cuwi results: form div')
   ->element_exists('html body div[class="report"]',
 		   'Cuwi results: report div')
-  ->element_exists('html body div[class="optionbar"] span[class="exports"]',
-		   'Cuwi results: export span (in option bar)')
+  ->element_exists('html body div[class="optionbar"] div[class="exports"] ul[class="exports navbar"]',
+		   'Cuwi results: export ul menu (in option bar)')
   ->element_exists('html body div[class="matches"]',
 		   'Cuwi results: matches div')
 ;
+#diag("Page was:\n" . $t->_get_content($t->tx));
+
 
 is(@{$t->tx->res->dom->at('html body')->find('div[class="nav"]')}, 2,
   'Cuwi results: nav divs');
@@ -61,7 +63,7 @@ $elt = $t->tx->res->dom->at('html body div[class="report"]');
 like($elt->at('p')->all_text, qr/Matches 1 to 51 out of \d+ retrieved for query \Q[word="a.*"]\E in \d+(.\d+)? s\./,
    'Cuwi results: report text');
 
-$elt = $t->tx->res->dom->at('html body div[class="optionbar"] span[class="exports"]');
+$elt = $t->tx->res->dom->at('html body div[class="optionbar"] ul[class="exports navbar"]');
 like($elt->all_text, qr/Export results.*/,
    'Cuwi results: export text');
 cmp_ok(scalar @{$elt->find('a')}, '>=', 2,

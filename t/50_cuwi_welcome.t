@@ -16,7 +16,7 @@ $ENV{MOJO_HOME} = "$FindBin::Bin/../";
 #$ENV{MOJO_CONFIG} = "$FindBin::Bin/cuwi.testing.json";
 
 my $t = Test::Mojo->new('CWB::CUWI');
-$t->app->log->level('error');
+#$t->app->log->level('error');
 
 # welcome page
 $t->get_ok('/cuwi')
@@ -26,11 +26,12 @@ $t->get_ok('/cuwi')
   ->element_exists('html body h1', 'Cuwi main: header')
   ->text_like('h1 > a' => qr/CUWI Search/, 'Cuwi main: header contents')
   or print $t->_get_content($t->tx);
-
 # corpora
 my @corpora = $t->tx->res->dom->at('div.corpora ul')->find('li b')->each;
 cmp_ok(scalar @corpora, '==', 4, 'Cuwi main: number of corpora');
-is($corpora[0]->text, 'cuwi', 'Cuwi main: first corpus name');
-is($corpora[1]->text, 'CUWI-FR', 'Cuwi main: first corpus name');
+is($corpora[0]->text, 'cuwi', 'Cuwi main: first corpus name')
+  or diag("First corpus name wrong, page was:\n" . $t->_get_content($t->tx));
+is($corpora[1]->text, 'CUWI-FR', 'Cuwi main: second corpus name')
+  or diag("Second corpus name wrong, page was:\n" . $t->_get_content($t->tx));
 
 done_testing;
