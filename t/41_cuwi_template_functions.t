@@ -42,7 +42,7 @@ is $c->l('generic message with bracket arg [_1]', 'abcdef' )
 $c->languages('en');
 is $c->printnum(59) => '59',
   "Cuwi 'printnum' helper as controller operator with lang 'en'";
-is $c->l('result_msg_x_matches_retrieved_for', $c->printnum(59) )
+is $c->l('result_msg_x_matches_retrieved_for', $c->printnum(59)) 
   => '<b>59</b> matches for query ' ,
   "Cuwi 'l' l18n operator with 'en'";
 

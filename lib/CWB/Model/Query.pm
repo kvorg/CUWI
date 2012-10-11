@@ -151,10 +151,10 @@ sub _check_options {
 sub _mangle_query {
   my ($self, $query, $noatt) = @_;
   my $org = $query;
+  $query =~ s{^\s*}{}; $query =~ s{\s*$}{}; #remove surrounding white space
   if ( $query =~ m{^\s*[~=]}
        or (not $query =~ m{"} and not $query =~ m{^\s*[+]}) ) {
     # simple or mixed query - transform into CQP query
-    $query =~ s{^\s*}{};           #remove leading white space
     my $qtype = 'mixed';
     $query =~ s{^~\s*}{};
     $qtype = 'simple' if $query =~ s{^=\s*}{};
