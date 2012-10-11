@@ -26,7 +26,35 @@ my $c = CWB::CUWI::Controller->new(app=>$app);
 my $l = CWB::CUWI::Plugin::CI18N::_Handler->new(namespace => 'CWB::CUWI::I18N');
 $c->stash->{i18n} = $l;
 #warn ref $c->stash->{i18n};
-#$c->stash->{i18n}->localize;
+
+
+$c->languages('en');
+is $c->l('generic message with args [_*]', 1, 33, 'abc', 2.5 )
+  => 'generic message with args 133abc2.5' ,
+  "Cuwi 'l' bracket notation consistency with 'en' and AUTO";
+is $c->l('generic message ~escapes with args ~[_1~]')
+  => 'generic message ~escapes with args [_1]' ,
+  "Cuwi 'l' bracket notation escape consistency with 'en' and AUTO";
+is $c->l('generic message with bracket arg [_1]', 'abcdef' )
+  => 'generic message with bracket arg abcdef' ,
+  "Cuwi 'l' l18n operator with a generic message and argument";
+
+$c->languages('en');
+is $c->printnum(59) => '59',
+  "Cuwi 'printnum' helper as controller operator with lang 'en'";
+is $c->l('result_msg_x_matches_retrieved_for', $c->printnum(59) )
+  => '<b>59</b> matches for query ' ,
+  "Cuwi 'l' l18n operator with 'en'";
+
+$c->languages('sl');
+is $c->printnum(59) => '59',
+  "Cuwi 'printnum' helper as controller operator with lang 'sl'";
+is $c->l('result_msg_x_matches_retrieved_for', $c->printnum(59) )
+  => '<b>59</b> zadetkov za poizvedovanje ' ,
+  "Cuwi 'l' l18n operator with 'sl'";
+
+done_testing;
+__END__
 
 # printnum
 

@@ -216,7 +216,7 @@ sub { #$c is controller, means generate contex links
 		 $input =~ s<^(\d+)\.><${1}D>;
 		 $input =~ s<(\d\d\d)(?=\d)(?!\d*\.)><$1$t>g;
 		 $input =~ s<^(\d+)D><$1$d>;
-		 return reverse $input;
+		 return '' . reverse $input;
 	       }
 	      );
 
