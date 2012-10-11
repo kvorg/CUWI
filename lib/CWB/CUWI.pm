@@ -154,9 +154,11 @@ sub startup {
 	$self->log->info("Dropping group $group: illegal format.");
 	next;
       }
+      @members = grep { exists $model->corpora->{$_}
+			  or do {$self->log->error("Configuration file error: Group $group includes corpus $_, but no such corpus is present in the registry.");
+				 undef }
+			} @members;
       foreach my $m (@members) {
-	$self->log->error("Configuration file error: Group $group includes corpus $m, but no such corpus is present in the registry.")
-	  and next unless exists $model->corpora->{$m};
 	push (@{$model->corpora->{$m}->peers}, grep { $_ ne $m } @members)
 	  unless ref $config->{corpora}{GROUPS}{$group} eq 'HASH' and $config->{corpora}{GROUPS}{$group}{nopeers};
       }
