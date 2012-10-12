@@ -72,6 +72,9 @@ FNORD
    # corpus.html.ep
    'No matches for query ' => 'Ni zadetkov za poizvedovanje ',
 
+   # form_simple.html.ep
+   'Simple query' => 'Preprosto iskanje',
+
    # form.html.ep
    'Query' => 'Poizvedba',
    ttip_query => <<FNORD,
