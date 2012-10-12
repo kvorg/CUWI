@@ -86,9 +86,10 @@ sub startup {
 
   # placeholders
   $self->defaults->{searchmode} = undef;
+  $self->defaults->{searchtype} = undef;
   $self->defaults->{result} = undef;
   $self->defaults->{corpus} = undef;
-  $self->defaults->{searchtype} = undef;
+  $self->defaults->{rnd} = int(rand(65535));
   $self->defaults->{groups} = {};
 
   # check http root path

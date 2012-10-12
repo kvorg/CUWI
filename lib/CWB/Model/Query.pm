@@ -24,6 +24,7 @@ has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
 has align       =>  sub { return [] };
 has sort        =>  sub { return {} };
+has rnd         =>  sub { return int(rand(65535)) };
 has ignorecase  => 1;
 has ignorediacritics => 0;
 has ignoremeta  => 0;
@@ -214,8 +215,6 @@ sub run {
   my $query = $self->_mangle_query($self->query);
   my $querymods = '';
 
-  $DB::single = 2;
-
   # handle additional constraints
   my @warnings;
   if ($cqpquery) {
@@ -299,6 +298,7 @@ sub run {
   }
 
   # set new CQP settings
+  $self->exec("randomize " . $self->rnd . ";", "Can't set random seed to " . $self->rnd);
   foreach my $att (@{$self->show}) {
     $self->exec("show +$att;", "Can't set show for attribute $att");
   }

@@ -90,6 +90,7 @@
     <span class="label"><%= tooltip( l('Results per page'), l('ttip_results') ) %>: <%= select_field 'size', [50, 100, 200, 500, 1000, 5000] %></span>
     <br />
     <%= hidden_field startfrom => 1 %>
+    <%= hidden_field rnd => $self->stash('rnd') %>
     <%= tooltip( l('Sort'), l('Sorting'), l('ttip_sort') ) %>:
     <div class="sort">
     <%= select_field 'sort_a',           [lselect(qw(order match left right))] %>

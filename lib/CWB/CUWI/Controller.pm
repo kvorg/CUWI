@@ -124,6 +124,7 @@ sub search {
       and ${$corpus->classes}{$self->param('class')};
   #warn "Class param set to $params{class}\n";
   $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
+  $params{rnd} = $self->stash('rnd') if $self->stash('rnd') =~ /^\d+$/;
 
   if ($opts{simple}) {
     my @candidates = (qw( word lemma ));
