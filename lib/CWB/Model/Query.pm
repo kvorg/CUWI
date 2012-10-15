@@ -23,6 +23,7 @@ has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
 has showtags    =>  sub { return [] }; #full tag names for inline display
+has omit_tags   =>  'seg';
 has align       =>  sub { return [] };
 has sort        =>  sub { return {} };
 has rnd         =>  sub { return int(rand(65535)) };
@@ -174,7 +175,7 @@ sub _mangle_query {
 		      s/(?<!\\)[?]/./g;
 		      s/(\[|\])/\\$1/g;
 		    }
-			  (m{^\[}) ? $_ :
+			  (m{^[<[]}) ? $_ :
 			    '['
 			      . (defined $self->search ?
 				 $self->search : 'word')
@@ -304,7 +305,9 @@ sub run {
   foreach my $att (@{$self->show}) {
     $self->exec("show +$att;", "Can't set show for attribute $att");
   }
-  if ($self->showtags and not ref $self->showtags or scalar @{$self->showtags} ) {
+  if (( defined $self->showtags and not ref $self->showtags)
+      or
+      (ref $self->showtags and scalar @{$self->showtags} )) {
     my @showtags;
     if (not ref $self->showtags) {
       @showtags = @{$self->corpus->structures}; # show all tags with everything
@@ -314,10 +317,12 @@ sub run {
       # this is short and readable
       my %showtags = map { $_ => 1 } @{$self->showtags};
       @showtags = grep {
-	m{^([^_])+}; exists $showtags{$1};
+	m{^([^_]+)}; exists $showtags{$1};
       } @{$self->corpus->structures};
     }
-    warn ">>>>>>>>>>> FOUND SHOWTAGS: " . join(', ', @showtags) . "\n";
+    # TODO: deduce toplevel tag and omit it, too (cumbersome metainformation)
+    my $omits = $self->omit_tags;
+    @showtags = grep { not m{$omits} } @showtags if $omits; # omit some alignement tags
     $self->exec("show +" . join(' +', @showtags),
 		"Can't show structures: " . join(', ', @showtags));
   }
@@ -561,7 +566,7 @@ sub run {
 		   (.*?)              # match
 		   [<]/MATCH[>]\s*    # separator
 		   .*?              # right
-		   \s*[<]/CONTENT[>]
+		   \s*(?:[<]/CONTENT[>])?
 		   [<]/LINE[>]\s*$}x  # tail
 		     or $self->exception("Can't parse CQP kwic output for wordlist, line:", $kwic);
 	my $match = decode($self->corpus->encoding, $1);
@@ -619,16 +624,38 @@ sub run {
 }
 
 sub _tokens {
-# add structural tag processing - apparently 
-# m{&lt;/?[a-zA-Z-_]+&gt;} at token start and end should do it
-# - apply before att split
-  return [ map { push @$_, "∅" while scalar @$_ < $_[1]; $_ } # fix missing attrs
-	   map { [ map { html_unescape $_ } @$_ ] }
+  return [ map { push @$_, "_" while scalar @$_ < $_[1] and $_->[0] and not $_->[0] =~ m{^[<]} ; $_ } # fix missing attrs
 	   map { m{^((?:&lt;/?[^&]+&gt;)*)(.*?)((?:&lt;/?[^&]+&gt;)*)$};
-		 ($1 ? [ $1 ] : ()),
-		   [ split '/', $_ ],
-		     ($3 ? [ $3 ] : ())
+		 ($1 ? [ _tags($1) ] : ()),
+		   [ map { html_unescape $_ } split '/', $2 ],
+		     ($3 ? [ _tags($3) ] : ())
 	   } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
+}
+
+# structural tag processing: deduce attributes from xx_yy form tags
+sub _tags {
+  my $segment = shift;
+  my @sects; my %tags; my @tags = ();
+  while ( $segment =~ m{&lt;(/?[^&]+)&gt;}g ) {
+    push @sects, $1;
+  }
+
+  foreach (@sects) {
+    m{^(?<close>/)?(?<tag>[^_ ]+)(?:_(?<att>\S+)(?:\s+(?<val>.+))?)?$};
+    unless ($+{att}) {
+    } else {
+    }
+    push @tags, ($+{close} ? $+{close} : '') . $+{tag} unless $+{att};
+    next if $+{close};
+    $tags{$+{tag}} = {} unless exists $tags{$+{tag}};
+    $tags{$+{tag}}{$+{att}} = $+{val} if $+{att};
+  }
+  return '<' . join ('><', map {
+    my $atts = $tags{$_};
+    ( scalar keys %$atts ?
+      "$_ " . join(' ', map { $_ . '="' . $atts->{$_} . '"' } keys %$atts ) :
+      $_ )
+  } @tags ) . '>' ;
 }
 
 sub exec {

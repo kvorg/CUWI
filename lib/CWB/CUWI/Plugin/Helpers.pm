@@ -5,6 +5,7 @@ use warnings;
 use base 'Mojolicious::Plugin';
 
 use Mojo::ByteStream 'b';
+use Mojo::Util qw(html_escape html_unescape);
 
 sub register {
   my ($self, $app) = @_;
@@ -64,11 +65,16 @@ sub { #$c is controller, means generate contex links
   my $st = '<span class="part">'; my $et = '</span>';
   my @attrs; @attrs = $c->param('show') if $link;
 
+  # escape tags
+  foreach (@$tokens) {
+    $_->[0] = html_escape $_->[0] if $_->[0] =~ m/^</;
+  }
+
   if ($link) {
     #process lines like: [ [ je, V ] [ bil, K ] ]  [ word, POS ]
     my %query; my $i = 0;
     foreach my $attr (@attrs) {
-      my $query = join(' ', map {$_->[$i]} @$tokens ) ;
+      my $query = join(' ', map {html_unescape $_->[$i]} @$tokens ) ;
       foreach my $j (0 .. scalar @$tokens - 1) {
 	$tokens->[$j][$i] = $c->link_to_here({query=>$query,
 					      search=>$attr,
@@ -81,7 +87,8 @@ sub { #$c is controller, means generate contex links
   }
   return join(' ',
 	      map {
-		'<span class="token">' . 
+		my $class = $_->[0] =~ m/^&LT;/ ? 'tag' : 'token';
+		"<span class=\"$class\">" .
 		  $st . join("$et$st", @$_) . $et 
 		    . '</span>';
 	      } @$tokens

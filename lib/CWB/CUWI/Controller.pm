@@ -73,7 +73,7 @@ sub search {
     $self->redirect_to($url . $query);
   }
 
-  if ($self->param('cpos')) {
+  if (defined $self->param('cpos')) {
     $self->app->log->info('Received cpos query: ' . $self->param('cpos') . " from $chost.");
   } else {
     $self->app->log->info('Received ' . ($self->param('display') || 'UNDEF') . ' query: \'' . $self->param('query')  . "' from $chost on " . $self->param('corpus') . '.');
@@ -125,6 +125,8 @@ sub search {
   #warn "Class param set to $params{class}\n";
   $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
   $params{rnd} = $self->stash('rnd') if $self->stash('rnd') =~ /^\d+$/;
+  $params{showtags} = $self->param('showtags');
+  $params{omit_tags} = join('|', @{$self->app->config->{'omit_tags'}});
 
   if ($opts{simple}) {
     my @candidates = (qw( word lemma ));
@@ -153,7 +155,8 @@ sub search {
     #         use ones or the others - cleanup
 
     $params{cpos} = $self->param('cpos')
-      if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
+      and  $params{showtags} = 1
+      if defined $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
     $params{bigcontext} = $config->{corpora}{OPTIONS}{bigcontext} || 'x'
       and $self->app->log->debug("Context set to $params{bigcontext}\n")
       if $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/;
@@ -247,7 +250,7 @@ sub search {
     return;
   }
 
-  if ($self->param('cpos') and $self->param('cpos') =~ m/^\d+$/) {
+  if (defined $self->param('cpos') and $self->param('cpos') =~ m/^\d+$/) {
     $self->render( template=>'cpos',
 		   result=>$result,
 		   corpus=>$corpus,

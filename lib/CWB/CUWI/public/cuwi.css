@@ -132,7 +132,8 @@ div.matches td.align { white-space: normal; }
 div.matches td.count  { text-align: right; padding-left: 1em;}
 div.matches tr.total  { font-weight: bold;}
 div.matches tr:nth-child(2n+1) { background-color: #F2F2F2; }
-span.token { display: inline-block }
+span.token, span.tag { display: inline-block }
+span.tag span { font-family: monospace; font-size: 80%; font-weight: bold; color: gray; }
 span.part { display: block; text-align: left; }
 span.token span.part:nth-child(4n+1) { color: black; }
 span.token span.part:nth-child(4n+2) { color: navy; }

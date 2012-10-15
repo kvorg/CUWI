@@ -65,6 +65,8 @@
 
 ** fix errors with result exports
 ** fix error with a full query but nonexisting corpus
+** fix encodings for frequency downloads
+** fix report message with samples
 ** fix missing display mode before logging on line 65
 ** escapes for ?, *, |, handling for single "
 ** format info tags, links
@@ -192,7 +194,6 @@
 
 * Future:
 ** corpus groups
-   - main list lists groups and non-grouped corpora
    - groups need special description files -> default corpus, links to members
    - grouped corpora have corpus selectors for corpora within group
    - alternatively, use SISTER_CORPORA in info files for the drop-down menu

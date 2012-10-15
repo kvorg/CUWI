@@ -9,6 +9,7 @@ binmode $builder->failure_output, ":utf8";
 binmode $builder->todo_output,    ":utf8";
 
 use Data::Dumper;
+use Mojo::Util qw(html_escape);
 $Data::Dumper::Indent = 2;
 
 
@@ -136,8 +137,24 @@ ok((scalar @{$r->hits->[0]{left}} == 0
 is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 
 $r = $sl->query(query=>'a', showtags=>1);
-is($r, 'onono', 'Query/Result: showtags - all')
-  or diag('Result data with showtags=>1 was: ' . Dumper($r) );
+is_deeply($r->hits->[1]{left}[3], ['</s>'], 'Query/Result: showtags - all')
+  or diag('Result fragment with showtags=>1 was: ' . Dumper($r->hits->[1]{left}) );
+
+$r = $sl->query(query=>'Mednarodno', showtags=>1);
+is_deeply($r->hits->[0]{match}[0], ["<text naslov=\"Mednarodno pravo prilagojeno boju proti terorizmu. Nasilje in upor v Guantanamu.\" jezika=\"fra_slv\" title=\"Le droit international sacrifi\x{e9} au combat contre le terrorisme. Violence et r\x{e9}sistances \x{e0} Guant\x{e1}namo.\" id=\"LMD298\"><p><s>"], 'Query/Result: showtags - all with attributes')
+  or diag('Result fragment with showtags=>1 was: ' . Dumper($r->hits->[0]{match}) );
+
+$r = $sl->query(query=>'Mednarodno', showtags=>[qw(text p s)]);
+is_deeply($r->hits->[0]{match}[0], ["<text naslov=\"Mednarodno pravo prilagojeno boju proti terorizmu. Nasilje in upor v Guantanamu.\" jezika=\"fra_slv\" title=\"Le droit international sacrifi\x{e9} au combat contre le terrorisme. Violence et r\x{e9}sistances \x{e0} Guant\x{e1}namo.\" id=\"LMD298\"><p><s>"], 'Query/Result: showtags - specific list with attributes')
+  or diag('Result fragment with showtags=>["text", "p", "s"] was: ' . Dumper($r->hits->[0]{match}) );
+
+$r = $sl->query(query=>'Minister', showtags=>1);
+is_deeply([$r->hits->[0]{left}[-1], $r->hits->[0]{match}], [ ['</s></p>'], [[ '<p><s>' ], [ 'Minister' ]] ], 'Query/Result: showtags - all with multiple start/end tags')
+  or diag('Result fragment with showtags=>1 was: ' . Dumper([$r->hits->[0]{left}[-1], $r->hits->[0]{match}] ));
+
+$r = $sl->query(query=>'Minister', showtags=>['text','p']);
+is_deeply([$r->hits->[0]{left}[-1], $r->hits->[0]{match}], [ ['</p>'], [[ '<p>' ], [ 'Minister' ]] ], 'Query/Result: showtags - specific')
+  or diag('Result fragment with showtags=>["text","p"] was: ' . Dumper([$r->hits->[0]{left}[-1], $r->hits->[0]{match}] ));
 
 # result: display tests (show, all/sample)
 # MISSING

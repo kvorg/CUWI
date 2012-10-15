@@ -40,7 +40,9 @@ FNORD
 
 The search query can contain simple words with optional <code>?</code>
 and <code>*</code> place-holders. You can separate alternatives with
-<code>|</code> and use ~[~] for 'any token'.<br />Your query will be
+<code>|</code>. In addition, you can use ~[~] for 'any token' and use
+xml tags (i.e. &lt;s&gt; for sentence) in places where structural
+attribute regions should start or end.<br />Your query will be
 converted into CQP query language, using the 'Search' attributes
 bellow to select the token attribute to searhc on. The search result
 page will display how the simple search is transformed into a CQP
@@ -64,6 +66,7 @@ for more info.<br />
 <tr><td>who|what has</td><td>~[word="who|what"~] ~[word="has"~]</td><td class="t">sequences of 'who' or 'what', followed by 'has'</td></tr>
 <tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
 <tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
+<tr><td>&lt;s&gt; I</td><td>&lt;s&gt; ~[word="I"~]</td><td class="t">instances of "I" at the start of a sentence</td></tr>
 </table>
 <h4>Advanced CQP Examples</h4>
 <table class="examples">
@@ -171,6 +174,10 @@ corpus.<br />
 for each hit - to be used with wildcards (\'?\' and \'*\') i.e. to
 find different word forms occurances. Note that multiple tokens and
 multiple attributes can be used.
+FNORD
+
+   ttip_include_tags => <<FNORD,
+Prints structural tags with attributes in the form of XML tags.<br />
 FNORD
 
    ttip_listing_mode => <<FNORD,

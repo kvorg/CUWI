@@ -84,6 +84,9 @@
 %  @{$corpus->structures};
      <%= select_field 'display', [lselect('kwic', @extras, 'wordlist')] %>
     </span>
+    <span class="label"><%= tooltip( l('Include tags'), l('Include Tags'), l('ttip_include_tags') ) %>: 
+     <%= check_box_x showtags => 1 %> 
+    </span>
     <br />
     <span class="label"><%= tooltip( l('Listing mode'), l('Listing Mode'), l('ttip_listing_mode') ) %>: <%= select_field 'listing', [lselect(qw/all sample/)] %></span>
     <span class="submit"><%= submit_button l('Run Query') %></span>

@@ -53,6 +53,7 @@ sub startup {
 					     tmp => $ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
 					     homedir => $homedir,
 					     searchmode => 'advanced',
+					     omit_tags => [ qw(seg text corpus) ], 
 					   },
 				    });
 
@@ -100,6 +101,12 @@ sub startup {
   # check tmp dir
   $config->{tmp} = File::Spec->tmpdir
     unless defined $config->{tmp} and -d $config->{tmp} and -w $config->{tmp};
+
+  # check config values #TODO
+  $self->app->config->{omit_tags} = []
+    and $self->log->error('Configuration variable "omit_tags" should be a reference to an array, not "' . ref $config->{omit_tags} . '" ignoring.')
+    unless ref $config->{omit_tags} eq 'ARRAY';
+
 
   # report critical config values
   $self->log->info("App web root: '$config->{root}'.");
@@ -176,7 +183,7 @@ sub startup {
     }
   }
 
-  # virtauls from config
+  # virtuals from config
   if ($config->{corpora}{VIRTUALS} #BUG: optimize traversal
       and ref $config->{corpora}{VIRTUALS} eq 'HASH') {
     $self->log->info('Adding virtual corpora from config file to CWB Model.');

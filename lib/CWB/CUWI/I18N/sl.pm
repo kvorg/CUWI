@@ -105,6 +105,7 @@ for more info.<br />
 <tr><td>who|what has</td><td>~[word="who|what"~] ~[word="has"~]</td><td class="t">sequences of 'who' or 'what', followed by 'has'</td></tr>
 <tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
 <tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
+<tr><td>&lt;s&gt; I</td><td>&lt;s&gt; ~[word="I"~]</td><td class="t">instances of "I" at the start of a sentence</td></tr>
 </table>
 <h4>Advanced CQP Examples</h4>
 <table class="examples">
@@ -236,6 +237,12 @@ corpus.<br />
 for each hit - to be used with wildcards (\'?\' and \'*\') i.e. to
 find different word forms occurances. Note that multiple tokens and
 multiple attributes can be used.
+FNORD
+
+   'Include tags' => 'Vključi oznake',
+   'Include Tags' => 'Vključi oznake',
+   ttip_include_tags => <<FNORD,
+Vključi strukturne oznake in njihove atribute v obliki oznak XML.<br />
 FNORD
 
    'Listing mode' => 'Način izpisa',
