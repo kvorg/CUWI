@@ -1,9 +1,10 @@
 This file documents the revision history for CWB::CUWI package.
 
 0.42 2012-08-07
+  - Added structural attribute printout as XML tags with attributes
   - Unescape HTML in corpus text
   - Switched to perlish conf format
-  - More configuration options
+  - Many more configuration options
   - Split up search templates, cleanup
   - Printout cleanups
   - Localization framework, Slovene localization
@@ -23,6 +24,7 @@ This file documents the revision history for CWB::CUWI package.
   - Fixed css breakege in form
   - Fixed repeated drop-down menu entries in form
   - Fixed problems when default max frequencies when not defined in config
+  - Fixed bug with cpos=0 detailed view
   - Added warnings for query constraints with CQP queries
   - Added top level statistics
   - More resilient model: skips missing/broken corpora, subcorpora

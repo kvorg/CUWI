@@ -100,7 +100,6 @@
 ** config option: simple search attribute candidates per corpus
 ** simple search form -> always show alignements (optional with config)
 ** change wordlist exporting to divide matches into multiple fields
-** visible structural tags, default in cpos context
 ** add options to ignore structural tags (urls, strings, regexes)
 ** more logging: paging, sorting, shows, tx->query
 
