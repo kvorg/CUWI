@@ -208,4 +208,10 @@ sub sort {
   return $self;
 }
 
+sub cposlist {
+  my $self = shift;
+  return undef if $self->table;
+  return [ map { $_->{cpos} } @{$self->hits} ];
+}
+
 1;

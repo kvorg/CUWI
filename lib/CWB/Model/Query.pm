@@ -22,6 +22,7 @@ has [ qw(corpus model cqp
 has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
+has showtags    =>  sub { return [] }; #full tag names for inline display
 has align       =>  sub { return [] };
 has sort        =>  sub { return {} };
 has rnd         =>  sub { return int(rand(65535)) };
@@ -51,7 +52,8 @@ sub _firstidx (&@) {
 sub new {
   my $this = shift;
   my %args = @_;
-  my $structures;
+
+  my $structures; #NO IDEA: is this an interface to hide some structures?
   if ($args{showstructs}) {
     $structures = $args{showstructs};
     delete $args{showstructs};
@@ -302,7 +304,25 @@ sub run {
   foreach my $att (@{$self->show}) {
     $self->exec("show +$att;", "Can't set show for attribute $att");
   }
-  $self->exec("set DefaultNonbrackAttr " . $self->search, "Can't set DefaultNonbrackAttr to " . $self->search);
+  if ($self->showtags and not ref $self->showtags or scalar @{$self->showtags} ) {
+    my @showtags;
+    if (not ref $self->showtags) {
+      @showtags = @{$self->corpus->structures}; # show all tags with everything
+    } else {
+      # this is fast and perly
+      # my %showtags; @showtags{@{$self->showtags}} = (1) x @{$self->showtags};
+      # this is short and readable
+      my %showtags = map { $_ => 1 } @{$self->showtags};
+      @showtags = grep {
+	m{^([^_])+}; exists $showtags{$1};
+      } @{$self->corpus->structures};
+    }
+    warn ">>>>>>>>>>> FOUND SHOWTAGS: " . join(', ', @showtags) . "\n";
+    $self->exec("show +" . join(' +', @showtags),
+		"Can't show structures: " . join(', ', @showtags));
+  }
+  $self->exec("set DefaultNonbrackAttr " . $self->search,
+	      "Can't set DefaultNonbrackAttr to " . $self->search);
 
   my @aligns = grep { my $align = $_;
 		      scalar grep { $_ eq $align }
@@ -599,9 +619,16 @@ sub run {
 }
 
 sub _tokens {
+# add structural tag processing - apparently 
+# m{&lt;/?[a-zA-Z-_]+&gt;} at token start and end should do it
+# - apply before att split
   return [ map { push @$_, "∅" while scalar @$_ < $_[1]; $_ } # fix missing attrs
 	   map { [ map { html_unescape $_ } @$_ ] }
-	   map { [ split '/' ] } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
+	   map { m{^((?:&lt;/?[^&]+&gt;)*)(.*?)((?:&lt;/?[^&]+&gt;)*)$};
+		 ($1 ? [ $1 ] : ()),
+		   [ split '/', $_ ],
+		     ($3 ? [ $3 ] : ())
+	   } $_[0] =~ m{<TOKEN>(.*?)</TOKEN>}g ];
 }
 
 sub exec {

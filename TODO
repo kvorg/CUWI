@@ -18,6 +18,11 @@
 
 * CWB::Model
 
+** Add Model::Result use classes:
+   Model::Result::Hits as a collection with an additional cpos interface
+   Model::Result::Hit and Model::Result::Frequency as instances
+   -> api: @words = $result->hits->each($_->match('word'));
+   -> clean up CUWI code
 ** Implement maxquerytime properly
 ** Multiple sorting and structural / alignement queries 
 ** Add ->next method to result for API, evolve result
@@ -31,6 +36,8 @@
    aka Support for chained query support -> store previous queries in link/params
 ** spook: any needed support for form-based alignement and structural queries
 ** Fix all file work to use IO::File and File::Spec
+** Make multicorpora use parallel fork or webapp subquery to other daemons
+   to implement parallel queries on commandline and in web interface, respectively
 ** Improve test coverage
 ** Colocation support (using cwb-corpus-scan?)
 ** Info files: translateable names/titles
@@ -44,7 +51,7 @@
    - also:
 *** cache cqp connections in queries (only hit if query in instance)
 *** cache small but complex results and subquery parents in cpos files
-** Add corpus positions dump as an export option
+** Add corpus positions dump and cposlist as an export option
 ** Support for list-oriented queries and macros, i.e. 
     /codist["whose", pos];
     /codist[lemma, "go", word];
@@ -56,7 +63,7 @@
 
 * Web interface BUGS
 
-** fix report message with samples
+** fix errors with result exports
 ** fix error with a full query but nonexisting corpus
 ** fix missing display mode before logging on line 65
 ** escapes for ?, *, |, handling for single "
@@ -85,8 +92,9 @@
 * Web interface
 
 ** implement shuffle (random sort order) with fixed seeds
-** corpus groups ->
-   default no_browse
+** make constraint args disappear after a full CQP querry, with a message
+** frequencies ->
+   when set to 1, make all and support no_frequencies
 ** config option: simple search attribute candidates per corpus
 ** simple search form -> always show alignements (optional with config)
 ** change wordlist exporting to divide matches into multiple fields
@@ -94,6 +102,7 @@
 ** add options to ignore structural tags (urls, strings, regexes)
 ** more logging: paging, sorting, shows, tx->query
 
+** add API for multiplexed multicorpus queries via interal http 
 ** structural attribute filters from tooltips (possibly use subqueries or such)
 ** add progress and redirect for result exports
 ** when more than 7 attributes are present, switch display to 4 drop-down lists 

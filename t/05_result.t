@@ -59,6 +59,13 @@ is_deeply($r,
 	   pages      => { single=>1, this=>1 },
 	  }, "Query/Result: default structure test")
   or diag("CWB::Model::Result structure was:\n" . Dumper($r));
+is(scalar @{$r->cposlist}, 5,
+	  "Query/Result: cpos list length consistency")
+  or diag("CWB::Model::Result->cposlist length was:" . scalar @{$r->cposlist});
+is_deeply($r->cposlist, [783, 899, 1043, 1119, 3157],
+	  "Query/Result: cpos list matches")
+  or diag("CWB::Model::Result->cposlist was:\n" . Dumper($r->cposlist));
+
 
 # result: search opts, ignore case/diacritics)
 $r = $sl->query(query=>'a', hitsonly=>1);
@@ -128,6 +135,10 @@ ok((scalar @{$r->hits->[0]{left}} == 0
        . '".' . "\n");
 is($r->bigcontext, 'paragraphs', 'Query/Result: bigcontext detection');
 
+$r = $sl->query(query=>'a', showtags=>1);
+is($r, 'onono', 'Query/Result: showtags - all')
+  or diag('Result data with showtags=>1 was: ' . Dumper($r) );
+
 # result: display tests (show, all/sample)
 # MISSING
 
@@ -158,6 +169,8 @@ is_deeply($r,
 	  },
  "Query/Result: display model wordlist - default structure test")
   or diag('Wordlist result data was: ' . Dumper($r) );
+is($r->cposlist, undef,
+   "Query/result: display model wordlist - cposlist: empty");
 $r = $sl->query(query=>"a*", search => 'word', show => [ qw (word tag) ], display=>'wordlist', ignorecase=>1);
 is_deeply($r,
 	  {
