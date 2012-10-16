@@ -38,15 +38,23 @@ div.search > span.first, div.show > span.first { margin-left: -3.5em;  }
 div.search > span.firs, div.show > span.first { width: 14em; }
 span.form-h-strut { margin-left: 2em; }
 a.button {
-    text-decoration: none; font: menu;
+    appearance: button;
+    -moz-appearance: button;
+    -webkit-appearance: button;
+    text-decoration: none; font: menu; color: ButtonText;
     display: inline-block; padding: 2px 8px;
-    background: ButtonFace; color: ButtonText;
-    border-style: solid; border-width: 2px;
-    border-color: ButtonHighlight ButtonShadow ButtonShadow ButtonHighlight;
 }
-a.button:active {
-    border-color: ButtonShadow ButtonHighlight ButtonHighlight ButtonShadow;
-}
+/* simpler version: */
+/* a.button { */
+/*     text-decoration: none; font: menu; */
+/*     display: inline-block; padding: 2px 8px; */
+/*     background: ButtonFace; color: ButtonText; */
+/*     border-style: solid; border-width: 2px; */
+/*     border-color: ButtonHighlight ButtonShadow ButtonShadow ButtonHighlight; */
+/* } */
+/* a.button:active { */
+/*     border-color: ButtonShadow ButtonHighlight ButtonHighlight ButtonShadow; */
+/* } */
 div.show { margin-top: 1ex; }
 div.sort { display: inline-block; vertical-align: text-top; }
 div.case { float: right; padding-left: 1em; }
