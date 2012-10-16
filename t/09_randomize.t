@@ -14,7 +14,6 @@ $Data::Dumper::Indent = 2;
 
 use CWB::Model;
 
-my $c_num = 2;
 my $rg = 't/corpora/registry';
 my $m = CWB::Model->new(registry => $rg);
 my $sl = ${$m->corpora}{'cuwi-sl'};
@@ -22,183 +21,42 @@ my $sl = ${$m->corpora}{'cuwi-sl'};
 
 my $q = CWB::Model::Query->new(corpus => $sl, model=> $sl->model, ignorecase=>0 );
 isa_ok($q, 'CWB::Model::Query', 'Query: direct instantiation');
+ok($q->can('rnd'), 'Query->rnd: exported accessor');
+
 my $r;
 
-#TODO sorting tests: cqp
-#TODO sorting tests: cqp + sort
-
-#TODO exceptions with result->sort
-
 #sorting with result->sort
-$r = $sl->query(query=>'????', show => [qw(word msd-en)],
-		   display => 'wordlist'  );
-is($r->QUERY,
-   '[word="...." %c]',
-   'Query: ? in query');
-is($r->language, 'sl_SI', 'Result->language property');
-ok($r->can('sort'), 'Result->sort: exported method');
+$r = $sl->query(query=>'????', show => [qw(word)],
+		reduce=>1, rnd=>1, pagesize=>10,
+		display => 'kwic', context => 0  );
+is_deeply($r->cposlist, [ 1130, 1213, 1323, 1495, 1575, 1905, 2273, 2373, 3071, 3339 ],
+ "Result->reduce: 10 fixed random results 1")
+  or diag('Wordlist result data first hit was: ' . Dumper($r->cposlist) );
 
-is_deeply($r->hits->[0],  [ [[ 'Leta', 'Ncnsg' ]], 14],
- "Result->sort: wordlist with no sort first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper($r->hits) );
-is_deeply($r->hits->[-1], [ [[ '1809', 'Mdc' ]], 1],
- "Result->sort: wordlist with no sort last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) ); 
-# Dumper($r->hits) );
-
-# $r->sort( target=>'match', order=>'ascending', direction=>'reversed', normalize=>1)
-$r->sort(target=>'order');
-is_deeply($r->hits->[0], [ [[ 'zanj', 'Pp3msa--b' ]], 1],
- "Result->sort: wordlist with default order sort first")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[0]) ); 
-# Dumper($r->hits) );
-is_deeply($r->hits->[-1],  [ [[ 'Leta', 'Ncnsg' ]], 14],
- "Result->sort: wordlist with default order sort last")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[-1]) );
-# Dumper($r->hits) );
-
-$r->sort(target=>'order', normalize=>1);
-is_deeply($r->hits->[0], [ [[ '1809', 'Mdc' ]], 1],
- "Result->sort: wordlist with default order, normalized sort first")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[0]) ); 
-# Dumper($r->hits) );
-is_deeply($r->hits->[-1],  [ [[ 'Leta', 'Ncnsg' ]], 14],
- "Result->sort: wordlist with default order normalized sort last")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[-1]) );
-# Dumper($r->hits) );
-
-$r->sort(target=>'order', order=>'descending');
-is_deeply($r->hits->[0],  [ [[ 'Leta', 'Ncnsg' ]], 14],
- "Result->sort: wordlist with descending order sort first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper($r->hits) );
-is_deeply($r->hits->[-1], [ [[ '1809', 'Mdc' ]], 1],
- "Result->sort: wordlist with descending order sort last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) ); 
-# Dumper($r->hits) );
-
-$r->sort(target=>'match', order=>'ascending');
-is_deeply($r->hits->[0],  [ [[ '1809', 'Mdc' ]], 1],
- "Result->sort: wordlist sort on match, default att first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper($r->hits) );
-is_deeply($r->hits->[-1], [ [[ 'Zelo', 'Rgp' ]], 3],
- "Result->sort: wordlist sort on match, default att last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) ); 
-# Dumper($r->hits) );
-
-$r->sort(target=>'match', att=>'msd-en', order=>'ascending');
-is_deeply($r->hits->[0],  [ [[ 'Bela', 'Agpfsn' ]], 1],
- "Result->sort: wordlist sort on match, att 'msd-en' first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper($r->hits) );
-is_deeply($r->hits->[-1], [ [[ 'nima', 'Vmpr3s-y' ]], 1],
- "Result->sort: wordlist sort on match, att 'msd-en' last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) ); 
-# Dumper($r->hits) );
-
-# result->sort with non-wordlist displays
-$r = $sl->query(query=>'????', show => [qw(word msd-en)],
-		context=>'3 words', display => 'kwic'  );
-
-$r->sort(target=>'match', att=>'word', order=>'ascending', normalize=>1);
-is_deeply($r->hits->[0]{match},  [ [ '1909', 'Mdc' ] ],
- "Result->sort: kwic sort on match, att 'word' first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper([ map { $_->{match} } @{$r->hits} ]) );
-is_deeply($r->hits->[-1]{match},  [ [ 'vsem', 'Pg-msl' ] ],
- "Result->sort: kwic sort on match, att 'word' last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
-# Dumper([ map { $_->{match} } @{$r->hits} ]) );
-
-$r->sort(target=>'match', att=>'msd-en', order=>'ascending', normalize=>1);
-is_deeply($r->hits->[0]{match},  [ [ '1909', 'Mdc' ] ],
- "Result->sort: kwic sort on match, att 'msd-en' first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper([ map { $_->{match} } @{$r->hits} ]) );
-is_deeply($r->hits->[-1]{match},  [ [ 'pred', 'Si' ] ],
- "Result->sort: kwic sort on match, att 'msd-en' last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
-# Dumper([ map { $_->{match} } @{$r->hits} ]) );
-
-$r->sort(target=>'match', att=>'msd-en', order=>'ascending',
-	 normalize=>1, direction=>'reversed');
-is_deeply($r->hits->[0]{match},  [ [ '1909', 'Mdc' ] ],
- "Result->sort: kwic sort on match, att 'msd-en' first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper([ map { $_->{match} } @{$r->hits} ]) );
-is_deeply($r->hits->[-1]{match},  [ [ 'ACLU', 'Npmsn' ] ],
- "Result->sort: kwic sort on match, att 'msd-en' last")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[-1]) );
-# Dumper([ map { $_->{match} } @{$r->hits} ]) );
-
-$r->sort(target=>'left', att=>'word', order=>'ascending', normalize=>1);
-is_deeply($r->hits->[0]{left},  [ [ '1981', 'Mdc' ], [ 'do', 'Sg' ], [ 'oseb', 'Ncfpg'] ],
- "Result->sort: kwic sort on left context, att 'word' first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-# Dumper([ map { $_->{left} } @{$r->hits} ]) );
-is_deeply($r->hits->[-1]{left},  [ [ '.', '.' ], [ 'V', 'Sl' ], [ 'začetku', 'Ncmsl'] ],
- "Result->sort: kwic sort on left context, att 'word' last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
-# Dumper([ map { [ map { $_->[0] } @{$_->{left}} ] } @{$r->hits} ]) );
-
-#query with wordlist sort
-$r = $sl->query(query=>'????', show => [qw(word msd-en)],
-		   display => 'wordlist',
-		 sort => { 
-			  a=> {
+$r = $sl->query(query=>'????', show => [qw(word)],
+		reduce=>1, rnd=>1, pagesize=>10,
+		display => 'kwic', context => 0,
+		sort => { a=> {
 			       target => 'match',
 			       att => 'word',
-			       order => 'descending'
-			      }
-			 }
-		   );
-#direction => 'reversed'
-
-is_deeply($r->hits->[0],  [ [[ 'Zelo', 'Rgp' ]], 3],
- "Sorting: wordlist with default attribute descending first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-is_deeply($r->hits->[-1], [ [[ '1809', 'Mdc' ]], 1],
- "Sorting: wordlist with default attribute descending last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
-
-$r = $sl->query(query=>'????', show => [qw(word msd-en)],
-		   display => 'wordlist',
-		 sort => { 
-			  a=> {
-			       target => 'match',
-			       att => 'msd-en',
 			       order => 'ascending'
-			      }
-			 }
-		   );
-is_deeply($r->hits->[0],  [ [[ 'Bela', 'Agpfsn' ]], 1],
- "Sorting: wordlist with selected attribute first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-is_deeply($r->hits->[-1], [ [[ 'nima', 'Vmpr3s-y' ]], 1],
- "Sorting: wordlist with selected attribute last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
+			      } } );
+is_deeply([sort @{$r->cposlist}], [sort (1130, 1213, 1323, 1495, 1575, 1905, 2273, 2373, 3071, 3339)] ,
+ "Result->reduce: 10 fixed random results 1 with sort on match")
+  or diag('Wordlist result data first hit was: ' . Dumper($r->cposlist) );
 
-$r = $sl->query(query=>'????', show => [qw(word msd-en)],
-		   display => 'wordlist',
-		 sort => { 
-			  a=> {
-			       target => 'match',
-			       att => 'msd-en',
-			       order => 'ascending',
-			       direction => 'reversed'
-			      }
-			 }
-		   );
-is_deeply($r->hits->[0],  [ [[ 'roke', 'Ncfpa' ]], 1],
- "Sorting: wordlist with selected attribute reversed (atergo) first")
-  or diag('Wordlist result data first hit was: ' . Dumper($r->hits->[0]) );
-is_deeply($r->hits->[-1], [ [[ 'nima', 'Vmpr3s-y' ]], 1],
- "Sorting: wordlist with selected attribute reversed (atergo) last")
-  or diag('Wordlist result data last hit was: ' . Dumper($r->hits->[-1]) );
+$r = $sl->query(query=>'????', show => [qw(word)],
+		reduce=>1, rnd=>2, pagesize=>10,
+		display => 'kwic', context => 0  );
+is_deeply($r->cposlist, [ 85, 869, 1130, 1213, 1575, 2193, 2299, 2373, 2794, 3339 ],
+ "Result->reduce: 10 fixed random results 2")
+  or diag('Wordlist result data first hit was: ' . Dumper($r->cposlist) );
 
-# MISSING: tests for virtual corpus result sorting
-# MISSING: tests stressing LC_COLLATE
+$r = $sl->query(query=>'????', show => [qw(word)],
+		reduce=>1, rnd=>875, pagesize=>10,
+		display => 'kwic', context => 0  );
+is_deeply($r->cposlist, [ 48, 52, 1002, 1579, 1905, 2273, 2642, 2813, 3321, 3502 ],
+ "Result->reduce: 10 fixed random results 3")
+  or diag('Wordlist result data first hit was: ' . Dumper($r->cposlist) );
 
 done_testing();

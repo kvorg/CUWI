@@ -132,8 +132,10 @@ div.matches td.align { white-space: normal; }
 div.matches td.count  { text-align: right; padding-left: 1em;}
 div.matches tr.total  { font-weight: bold;}
 div.matches tr:nth-child(2n+1) { background-color: #F2F2F2; }
+/* readability space around paragraph lines for multiple shown attributes: */
+div.matches p span.token, div.matches p span.tag { padding-top: .2em; padding-bottom: .2em; }
 span.token, span.tag { display: inline-block }
-span.tag span { font-family: monospace; font-size: 80%; font-weight: bold; }
+span.tag span { font-stretch: condensed; font-weight: bold; color: gray; }
 span.part { display: block; text-align: left; }
 span.token span.part:nth-child(4n+1) { color: black; }
 span.token span.part:nth-child(4n+2) { color: navy; }
@@ -282,7 +284,7 @@ ul.navbar li li a:hover {
 }
 
 .searchtabs > div > a {
-    postion: absolute; top: 20px;
+    position: absolute; top: 20px;
     padding: 5px 10px;
     margin: 0px;
     margin-top: -4ex;
@@ -294,7 +296,7 @@ ul.navbar li li a:hover {
     color: black;
 }
 .searchtabs > div > a:visited {
-   c olor: black;
+   color: black;
 }
 
 .searchtabs > div.tabgroup > a {

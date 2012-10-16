@@ -2,7 +2,6 @@
 
 * CWB::Model BUGS:
 
-** Skip missing peers from info file
 ** Log errors from Model instantiation (handle exceptions)
 ** Paging: displays 1 match more than pagesize
 ** Check query mangling in detail
@@ -14,14 +13,15 @@
 ** Better tests/fails for failing/missing registry specifications
 ** Clean up newlines at the end of description
 ** Cleanup CQP query link situation with advanced query form options
-** _token split bug with / in token
+** _token split bug with / in token (could limit to no of atts and hope for the    best)
+
 
 * CWB::Model
 
 ** Add Model::Result use classes:
-   Model::Result::Hits as a collection with an additional cpos interface
-   Model::Result::Hit and Model::Result::Frequency as instances
-   -> api: @words = $result->hits->each($_->match('word'));
+   Model::Result::Hits as a collection with an additional cpos
+   interface Model::Result::Hit and Model::Result::Frequency as
+   instances -> api: @words = $result->hits->each($_->match('word'));
    -> clean up CUWI code
 ** Implement maxquerytime properly
 ** Multiple sorting and structural / alignement queries 
@@ -39,11 +39,10 @@
 ** Make multicorpora use parallel fork or webapp subquery to other daemons
    to implement parallel queries on commandline and in web interface, respectively
 ** Improve test coverage
-** Colocation support (using cwb-corpus-scan?)
+** Colocation support (using cwb-scan-corpus and scan grid intefrace?)
 ** Info files: translateable names/titles
 ** Add a handle for literal matching (no regexps) with %l
-** Test cwb beta release compatibiliy
-** Wordlist and sorting/prunning using CQP features better
+** Test cwb beta release compatibiliy - UTF-8
 ** Implement cached queries:
    - CWB::Model::Corpus keeps a pool of ageing Query objects, matched on query
    - queries are reused with different show options, paging etc.
@@ -51,6 +50,7 @@
    - also:
 *** cache cqp connections in queries (only hit if query in instance)
 *** cache small but complex results and subquery parents in cpos files
+*** possibly use fork in Model, but use HTTP subquery in CUWI
 ** Add corpus positions dump and cposlist as an export option
 ** Support for list-oriented queries and macros, i.e. 
     /codist["whose", pos];
@@ -68,9 +68,11 @@
 ** fix encodings for frequency downloads
 ** fix report message with samples
 ** fix missing display mode before logging on line 65
-** escapes for ?, *, |, handling for single "
+** escapes for ?, *, |, handling for single ", whaterver ~ is for
 ** format info tags, links
+** samples (reduce) with frequency lists?
 
+** algnement and links on info tags
 ** missing "not" for structural constraint
 ** wordlist -> ignoremeta in links disables ignorecase
 ** wordlist: quote metacharacters in string links: check/test
@@ -94,7 +96,7 @@
 * Web interface
 
 ** implement shuffle (random sort order) with fixed seeds
-** make constraint args disappear after a full CQP querry, with a message
+** make constraint args disappear after a full CQP query, with a discreet note
 ** frequencies ->
    when set to 1, make all and support no_frequencies
 ** config option: simple search attribute candidates per corpus
@@ -103,6 +105,8 @@
 ** add options to ignore structural tags (urls, strings, regexes)
 ** more logging: paging, sorting, shows, tx->query
 
+** config upgrade: most general options also per corpus, corpus overrides
+** config reporting via API
 ** add API for multiplexed multicorpus queries via interal http 
 ** structural attribute filters from tooltips (possibly use subqueries or such)
 ** add progress and redirect for result exports
@@ -113,15 +117,13 @@
 ** finish frequency support with cwb-scan-corpus
      and disk-related long-polled results, see CWB::Model TODO
 ** split display modes into simple search, detail, frequencies, collocations
-** switch to cwb-scancorups for frequency lists
 ** spook: missing templates for query result exports
    oocalc, tab-delmited, corpus position dump, tei/xml, latex, yaml
-** spook: password protected groups
-   better implementation
+** spook: password protected groups: better implementation
 ** spook: sub-searches (based on existing search), possibly with caching
 ** add config file support for ID for structural attribute in result
 ** do not use url-like attributes and *_id attributes in search forms*
-* additional grid query compositing interface
+** additional grid query compositing interface
    as per http://nl.ijs.si/jos/cqp/uni and http://nl2.ijs.si/fpj.html
 ** add sample implementation with redirect to a fixed sample seeed
    [check status and add tests]

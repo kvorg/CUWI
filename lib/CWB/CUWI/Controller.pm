@@ -124,7 +124,7 @@ sub search {
       and ${$corpus->classes}{$self->param('class')};
   #warn "Class param set to $params{class}\n";
   $params{context} = $self->param('contextsize') ? $self->param('contextsize') . ' words' : '5 words';
-  $params{rnd} = $self->stash('rnd') if $self->stash('rnd') =~ /^\d+$/;
+  $params{rnd} = $self->param('rnd') =~ /^\d+$/ ? $self->param('rnd') : $self->stash('rnd'); 
   $params{showtags} = $self->param('showtags');
   $params{omit_tags} = join('|', @{$self->app->config->{'omit_tags'}});
 
@@ -241,9 +241,15 @@ sub search {
 			   ' by ' . $self->session('username') : '') .
 			   " from $chost" .
 			   ' on ' . $corpus->name .
-			   ' with cqp query \'' . $result->query . '\' in ' .
-			  sprintf('%0.3f', $result->time) . ' s ' .
-			  'with ' . $result->hitno . ' hits.' );
+			   ' with cqp query \'' . $result->query . '\' ' . 
+			   ( exists $params{sort}{a}{target} ?
+			     "sorted on $params{sort}{a}{target}" : '') .
+			   ' in ' . sprintf('%0.3f', $result->time) . ' s ' .
+			  'with ' . $result->hitno . ' hits' .
+			   ( $params{reduce} ?
+			     " reduced to $params{pagesize} with rnd $params{rnd}" : '') .
+			   '.'
+			 );
   } else {
     $self->app->log->error("Query failed: $result."); #handle fail
     $self->render( text=>"Query failed: $result" );

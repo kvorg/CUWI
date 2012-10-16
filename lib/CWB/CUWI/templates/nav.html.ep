@@ -15,4 +15,9 @@
    </span>
   </div>
 % }
+% if ($result->hitno and ${$result->pages}{single} and param('listing') eq 'sample' and param('display') ne 'wordlist') {
+  <div class="nav">
+    <%= link_to_here { rnd => int(rand(65535)) }, (class=>'next') => begin %><%= l('New sample') %><% end %>
+  </div>
+% }
 

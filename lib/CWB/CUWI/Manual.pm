@@ -174,9 +174,30 @@ modes display the results as flowing text, with multiple interleaving
 lines when mulitple attributes are being displayed. Any aligned text
 will be shown next to the results if so desired.
 
+C<Wordlist> display mode constructs a frequency list from the result
+matches and (which is a time-consuming operation and can be long on
+large result sets) and provides you with links from frequencies to the
+actual matches. See also L</WORDLISTS>.
+
+=item * B<Include tags>
+
+C<Include tags>, when set, enables the display of structural
+attributes as XML tags (with attributes). Please not that some
+attributes may not be displayed (by default, these are C<seg>,
+C<align>, C<text>, C<corpus>). This can be controlled in the CUWI
+configuration file, see L<CWB::CUWI::Administration/Additional
+Configuration Options>.
+
+When C<Wordlist> display mode is selected, structural attributes are
+taken into account wiht the frequency count and with the context
+search links.
+
+In the detailed display for a match (link from the match number),
+structural attributes are included automatically.
+
 =item * B<Listing mode>
 
-C<Listing mode> specifies wheather you wish to page throug the whole
+C<Listing mode> specifies wheather you wish to page througt the whole
 result set or, alternatively, see a random sample of the results. The
 latter is advisable when looking at linguistic texts from multiple
 sources to avoid first-in-corpus bias.

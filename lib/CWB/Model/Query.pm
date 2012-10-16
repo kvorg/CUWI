@@ -23,7 +23,7 @@ has search      => 'word';
 has show        =>  sub { return [] };
 has showstructs =>  sub { return [] };
 has showtags    =>  sub { return [] }; #full tag names for inline display
-has omit_tags   =>  'seg';
+has omit_tags   =>  'seg|align';
 has align       =>  sub { return [] };
 has sort        =>  sub { return {} };
 has rnd         =>  sub { return int(rand(65535)) };
@@ -444,8 +444,8 @@ sub run {
     # sort by attribute on start point .. end point ;
     $sort_cmd .= ' on matchend[1]' if ${$self->sort}{a}{target} eq 'right';
     $sort_cmd .= ' on match[-1]' if ${$self->sort}{a}{target} eq 'left';
-    $sort_cmd .= ' descending' if ${$self->sort}{a}{order} eq 'descending';
-    $sort_cmd .= ' reverse' if ${$self->sort}{a}{direction} eq 'reversed';
+    $sort_cmd .= ' descending' if exists ${$self->sort}{a}{order} and ${$self->sort}{a}{order} eq 'descending';
+    $sort_cmd .= ' reverse' if exists ${$self->sort}{a}{direction} and ${$self->sort}{a}{direction} eq 'reversed';
     warn "CQP sort engaged\n" if $self->debug;
 
     $self->exec($sort_cmd, 'Could not perform sort with ' . $sort_cmd);
@@ -624,7 +624,7 @@ sub run {
 }
 
 sub _tokens {
-  return [ map { push @$_, "_" while scalar @$_ < $_[1] and $_->[0] and not $_->[0] =~ m{^[<]} ; $_ } # fix missing attrs
+  return [ map { push @$_, "_" while scalar @$_ < $_[1] ; $_ } # fix missing attrs
 	   map { m{^((?:&lt;/?[^&]+&gt;)*)(.*?)((?:&lt;/?[^&]+&gt;)*)$};
 		 ($1 ? [ _tags($1) ] : ()),
 		   [ map { html_unescape $_ } split '/', $2 ],

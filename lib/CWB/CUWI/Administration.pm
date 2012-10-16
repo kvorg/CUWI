@@ -561,6 +561,15 @@ given corpus are discarded in the simple search query. It is
 recommended to name at least C<word>, since this is the only attribute
 that is gauranteed in all corpora.
 
+=item C<omit_tags>
+
+Value: an array of strings. Default: C<[qw(seg align text
+corpus)]>. The strings enumerate structural attributes that are to be
+omitted frmo the display when structural attributes are
+displayed. This applies both to the search interfaces (where
+structural attribute display is optional) and the context view, where
+structural attributes are dsipalayed by default.
+
 =back
 
 =head1 DEPLOYMENT

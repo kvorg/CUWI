@@ -53,7 +53,7 @@ sub startup {
 					     tmp => $ENV{MOJO_TMPDIR} || File::Spec->tmpdir,
 					     homedir => $homedir,
 					     searchmode => 'advanced',
-					     omit_tags => [ qw(seg text corpus) ], 
+					     omit_tags => [ qw(seg align text corpus) ], 
 					   },
 				    });
 
