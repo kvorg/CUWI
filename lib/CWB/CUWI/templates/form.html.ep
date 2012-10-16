@@ -100,7 +100,7 @@
     <%= select_field 'sort_a_att',       $corpus->attributes %>
     <%= select_field 'sort_a_order',     [lselect(qw(ascending descending))] %>
     <%= select_field 'sort_a_direction', [lselect(qw(natural reversed))] %>
-    % if (param('sort_a') eq 'shuffle') {
+    % if (param('sort_a') eq 'shuffle' and param('listing') ne 'sample') {
     <%= link_to_here { rnd => int(rand(65535)) }, (class=>'button') => begin %><%= l('Reshuffle') %><% end %>
     % }
     </div>

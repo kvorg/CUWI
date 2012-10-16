@@ -63,6 +63,7 @@
 
 * Web interface BUGS
 
+** missing si translations: query, serach etc.
 ** fix errors with result exports
 ** fix error with a full query but nonexisting corpus
 ** fix encodings for frequency downloads
@@ -95,7 +96,6 @@
 
 * Web interface
 
-** implement shuffle (random sort order) with fixed seeds
 ** make constraint args disappear after a full CQP query, with a discreet note
 ** frequencies ->
    when set to 1, make all and support no_frequencies
