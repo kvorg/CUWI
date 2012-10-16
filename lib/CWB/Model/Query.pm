@@ -438,17 +438,22 @@ sub run {
 
   # sorting
   if ($self->sort and exists ${$self->sort}{a} and not $self->cpos and not $self->display eq 'wordlist') {
-    $self->exec("set ExternalSort on", 'Could not enable ExternalSort');
-    my $sort_cmd = 'sort by ' . ${$self->sort}{a}{att};
-    $sort_cmd .= ' %c';
-    # sort by attribute on start point .. end point ;
-    $sort_cmd .= ' on matchend[1]' if ${$self->sort}{a}{target} eq 'right';
-    $sort_cmd .= ' on match[-1]' if ${$self->sort}{a}{target} eq 'left';
-    $sort_cmd .= ' descending' if exists ${$self->sort}{a}{order} and ${$self->sort}{a}{order} eq 'descending';
-    $sort_cmd .= ' reverse' if exists ${$self->sort}{a}{direction} and ${$self->sort}{a}{direction} eq 'reversed';
-    warn "CQP sort engaged\n" if $self->debug;
-
-    $self->exec($sort_cmd, 'Could not perform sort with ' . $sort_cmd);
+    if (${$self->sort}{a}{target} eq 'shuffle') {
+      $self->exec("set ExternalSort off", 'Could not disable ExternalSort');
+      $self->exec('sort randomize ' . $self->rnd);
+      warn "CQP shuffle engaged with " . $self->rnd . "\n" if $self->debug;
+    } else {
+      $self->exec("set ExternalSort on", 'Could not enable ExternalSort');
+      my $sort_cmd = 'sort by ' . ${$self->sort}{a}{att};
+      $sort_cmd .= ' %c';
+      # sort by attribute on start point .. end point ;
+      $sort_cmd .= ' on matchend[1]' if ${$self->sort}{a}{target} eq 'right';
+      $sort_cmd .= ' on match[-1]' if ${$self->sort}{a}{target} eq 'left';
+      $sort_cmd .= ' descending' if exists ${$self->sort}{a}{order} and ${$self->sort}{a}{order} eq 'descending';
+      $sort_cmd .= ' reverse' if exists ${$self->sort}{a}{direction} and ${$self->sort}{a}{direction} eq 'reversed';
+      warn "CQP sort engaged\n" if $self->debug;
+      $self->exec($sort_cmd, 'Could not perform sort with ' . $sort_cmd);
+    }
   } else {
     # set natural sort order
     $self->exec("set ExternalSort off", 'Could not disable ExternalSort');

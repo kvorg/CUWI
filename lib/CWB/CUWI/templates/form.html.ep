@@ -96,10 +96,13 @@
     <%= hidden_field rnd => $self->stash('rnd') %>
     <%= tooltip( l('Sort'), l('Sorting'), l('ttip_sort') ) %>:
     <div class="sort">
-    <%= select_field 'sort_a',           [lselect(qw(order match left right))] %>
+    <%= select_field 'sort_a',           [lselect(qw(shuffle order match left right))] %>
     <%= select_field 'sort_a_att',       $corpus->attributes %>
     <%= select_field 'sort_a_order',     [lselect(qw(ascending descending))] %>
     <%= select_field 'sort_a_direction', [lselect(qw(natural reversed))] %>
+    % if (param('sort_a') eq 'shuffle') {
+    <%= link_to_here { rnd => int(rand(65535)) }, (class=>'button') => begin %><%= l('Reshuffle') %><% end %>
+    % }
     </div>
   <% end %>
   </div>

@@ -281,6 +281,7 @@ FNORD
    wordlist => 'besedni seznam',
    sample => 'vzorec',
    all => 'vse',
+   shuffle => 'naključno',
    order => 'po vrsti',
    match => 'zadetek',
    left => 'levo',
@@ -289,6 +290,8 @@ FNORD
    descending => 'padajoče',
    natural => 'navadno',
    reversed => 'a tergo',
+
+   Reshuffle => 'Premešaj',
 
    #nav.html.ep
    'Prev' => 'Nazaj',

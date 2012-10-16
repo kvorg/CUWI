@@ -228,6 +228,8 @@ sub search {
 	$params{sort}{a}{att} = $params{show}[0];
 	$self->param('sort_a_att', $params{show}[0]);
       }
+    } elsif ($self->param('sort_a') =~ m{shuffle}) {
+      $params{sort}{a}{target} = 'shuffle';
     }
   #$self->app->log->debug("Calling query with " . $self->dumper(\%params));
 
@@ -242,8 +244,10 @@ sub search {
 			   " from $chost" .
 			   ' on ' . $corpus->name .
 			   ' with cqp query \'' . $result->query . '\' ' . 
-			   ( exists $params{sort}{a}{target} ?
+			   ( exists($params{sort}{a}{target}) && $params{sort}{a}{target} ne 'shuffle' ?
 			     "sorted on $params{sort}{a}{target}" : '') .
+			   ( exists($params{sort}{a}{target}) && $params{sort}{a}{target} eq 'shuffle' ?
+			     "shuffled with rnd $params{rnd}" : '') .
 			   ' in ' . sprintf('%0.3f', $result->time) . ' s ' .
 			  'with ' . $result->hitno . ' hits' .
 			   ( $params{reduce} ?
