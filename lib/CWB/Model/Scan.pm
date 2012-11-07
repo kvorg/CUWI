@@ -12,7 +12,7 @@ use Time::HiRes;
 use POSIX qw(locale_h);
 
 has [ qw(corpus model tokens debug from to freqlimit
-	 rangefile outfile subcorpus ) ] ;
+	 rangefile outfile subcorpus ffor ) ] ;
 has sort        =>  sub { return {} };
 has ignorecase  => 1;
 has ignorediacritics => 0;
@@ -61,7 +61,8 @@ sub run {
     # handle ?
     next unless $token->{query};
     $token->{query} =~ s/^\s*(.*?)\s*$/$1/;
-    $keys .= ' ' . ($token->{token} || 'word');
+    $keys .= ' ' . ($token->{const} ? '?' : '');
+    $keys .= ($token->{token} || 'word');
     $keys .= '+' . ($token->{pos} || '0'); #TODO: allow natural order for API?
     $keys .= '=/' . $self->_mangle_search($token->{query}) . '/'
       . ($token->{case} ?       'c' : '')
@@ -107,7 +108,7 @@ sub run {
 
   $result->distinct(scalar @results);
 
-  my %atts = map { $_->{token} => 1 } grep { $_->{query} } @{$self->tokens};
+  my %atts = map { $_->{token} => 1 } grep { $_->{query} and not $_->{const} } @{$self->tokens};
   my @atts = grep { exists $atts{$_} } @{$self->corpus->attributes};
   my $i = 0;
   my %attpos = map { $_ => $i++ } @atts;

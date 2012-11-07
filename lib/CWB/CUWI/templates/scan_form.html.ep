@@ -12,10 +12,12 @@
      <td><%= select_field "f${row}_$column", [ @atts, @structs ]  %></td>
 %   }
 %   when ('pos')   { 
-     <td><%= select_field "f${row}_$column", [ 0 .. 20 ]  %></td>
+% param("f${row}_$column", $column) unless defined param("f${row}_$column");
+     <td><%= select_field "f${row}_$column", [ 0 .. 20 ]  %> \
+<%= tooltip( '?', l('ttip_constraint_only') ) %>: <%= check_box_x "fconst_$column" => 1 %></td>
 %   }
 %   when ('ignore')   { 
-     <td>c: <%= check_box_x "fcase_$column" => 1 %> d: <%= check_box_x "fdiacritics_$column" => 1 %></td>
+     <td><%= tooltip( 'c', l('ttip_ignore_case') ) %>: <%= check_box_x "fcase_$column" => 1 %> <%= tooltip( 'd', l('ttip_ignore_diacritics') ) %>: <%= check_box_x "fdiacritics_$column" => 1 %></td>
 %   }
 % }
 % end

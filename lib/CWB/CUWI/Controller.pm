@@ -349,6 +349,7 @@ sub scan {
   my %fields = ( query => '',
 		 token => 'word',
 		 pos => 0,
+		 const => 0,
 		 case => 0,
 		 diacritics => 0,
 	       );

@@ -63,15 +63,17 @@
 
 * Web interface BUGS
 
-** missing si translations: query, serach etc.
+** bigger blurb fonts, not centered
+** show corpus names in lowercase, boldened when possible
+** missing si translations: query, search etc.
 ** fix errors with result exports
 ** fix error with a full query but nonexisting corpus
 ** fix encodings for frequency downloads
-** fix report message with samples
 ** fix missing display mode before logging on line 65
 ** escapes for ?, *, |, handling for single ", whaterver ~ is for
 ** format info tags, links
 ** samples (reduce) with frequency lists?
+** fix warnings (with tests)
 
 ** algnement and links on info tags
 ** missing "not" for structural constraint
@@ -96,6 +98,7 @@
 
 * Web interface
 
+** document info file format
 ** make constraint args disappear after a full CQP query, with a discreet note
 ** frequencies ->
    when set to 1, make all and support no_frequencies
