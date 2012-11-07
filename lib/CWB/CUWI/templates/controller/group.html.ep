@@ -12,7 +12,7 @@
   <h2><%= l 'Member Corpora' %></h2>
   <ul>
 %   foreach my $p (@members) {
-    <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->NAME %></b>: <%= $corpora->{$p}->title %></a></li>
+    <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->name %></b>: <%= $corpora->{$p}->title %></a></li>
 %   }
   </ul>
 % } else {

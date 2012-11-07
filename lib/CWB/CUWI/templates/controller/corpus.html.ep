@@ -53,7 +53,7 @@
   <h2><%= l 'Peer Corpora' %></h2>
   <ul>
 %   foreach my $p (@peers) {
-    <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->NAME %></b>: <%= $corpora->{$p}->title %></a></li>
+    <li><a href="/<%= $config->{root} . '/' . $p %>"><b><%= $corpora->{$p}->name %></b>: <%= $corpora->{$p}->title %></a></li>
 %   }
   </ul>
 % }
@@ -95,7 +95,7 @@
  <ul>
 % my $corpora = $model->corpora;
 % foreach my $corpusname ( sort @{$corpus->subcorpora} ) {
-   <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->NAME %></b>: <%= $corpora->{$corpusname}->title %></a> </li>
+   <li><a href="/<%= $config->{root} . '/' . $corpusname %>"><b><%= $corpora->{$corpusname}->name %></b>: <%= $corpora->{$corpusname}->title %></a> </li>
 % }
  </ul>
 % }

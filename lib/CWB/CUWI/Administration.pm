@@ -568,7 +568,7 @@ corpus)]>. The strings enumerate structural attributes that are to be
 omitted frmo the display when structural attributes are
 displayed. This applies both to the search interfaces (where
 structural attribute display is optional) and the context view, where
-structural attributes are dsipalayed by default.
+structural attributes are displayed by default.
 
 =back
 

@@ -13,10 +13,10 @@ sub corpus {
   return 0 unless $self->auth;
 
   # handle groups
-  if ($self->param('corpus') and exists $config->{corpora}{GROUPS}{$self->param('corpus')}) {
+  if ($self->param('corpus') and exists $self->app->defaults->{groups}{$self->param('corpus')}) {
   $self->app->log->debug("Rendering group index for " .
 			 $self->param('corpus') . '.' );
-  my $group = CWB::CUWI::Group->new(model => $self->stash('model'), name => $self->param('corpus'), %{$config->{corpora}{GROUPS}{$self->param('corpus')}});
+  my $group = $self->app->defaults->{groups}{$self->param('corpus')};
   $self->render( template=>'controller/group',
 		 group=>$group,
 		);

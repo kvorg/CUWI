@@ -76,7 +76,7 @@ is(scalar @{$lists[3]->children('li')}, 1,
    'Cuwi corpus: peer corpora list members');
 is($lists[3]->at('li')->at('a')->{href}, '/cuwi/cuwi-sl',
    'Cuwi corpus: peer corpora list member link');
-is($lists[3]->at('li')->at('a')->at('b')->text, 'CUWI-SL',
+is($lists[3]->at('li')->at('a')->at('b')->text, 'cuwi-sl',
    'Cuwi corpus: peer corpora list member name');
 is($lists[3]->at('li')->at('a')->text, ': CUWI test corpus: UTF-8, Slovene, aligned',
    'Cuwi corpus: peer corpora list member description');
