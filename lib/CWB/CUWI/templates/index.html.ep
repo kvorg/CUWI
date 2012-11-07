@@ -1,18 +1,8 @@
 % layout 'main', title=>'Form';
 % $self->languages($self->session('language')) if $self->session('language');
 
-% my $blurb;
-% if ($config->{blurb}) {
-%  if (ref $config->{blurb} eq 'HASH') {
-%   $blurb = exists $config->{blurb}{langugages} ? $config->{blurb}{langugages} : '';
-%   $blurb //= exists $config->{blurb}{'en'} ? $config->{blurb}{en} : '';
-%  } else {
-%   $blurb //= $config->{blurb} if not ref $config->{blurb};
-%  }
-% }
-% $blurb //= l('blurb', $config->{root} . '/doc/');
 <div class="description">
- <p><%== $blurb %></p>
+ <p><%== giveblurb languages %></p>
 </div>
 
 % if (stash('cwbexception')) {

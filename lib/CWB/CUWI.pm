@@ -139,7 +139,7 @@ sub startup {
   $model->install_exception_handler(sub { $self->log->error(@_); return @_;} );
   $self->defaults->{model} = $model;
 
-  # peers from config groups
+  # config groups and peers
   if ($config->{corpora}{GROUPS} #BUG: optimize traversal
       and ref $config->{corpora}{GROUPS} eq 'HASH') {
     $self->log->info('Adding groups from config file to CUWI and CWB Model.');

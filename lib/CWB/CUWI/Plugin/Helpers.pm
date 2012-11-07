@@ -227,6 +227,24 @@ sub { #$c is controller, means generate contex links
 	       }
 	      );
 
+  $app->helper(giveblurb =>
+	       sub {
+		 my ($c, $l) = @_;
+		 my $blurb; my $config = $c->app->config;
+		 if ($config->{blurb}) {
+		   if (ref $config->{blurb} eq 'HASH') {
+		     $blurb = exists $config->{blurb}{$l} ? $config->{blurb}{$l} : undef;
+		     $blurb //= exists $config->{blurb}{en} ? $config->{blurb}{en} : undef;
+		   } elsif ( not ref $config->{blurb} ) {
+		     $blurb //= $config->{blurb} ;
+		   }
+		 } else {
+		   $blurb //= $c->l('blurb', $config->{root} . '/doc/');
+		 }
+		 return $blurb // '';
+	       }
+	      );
+
 } #register
 
 1;
