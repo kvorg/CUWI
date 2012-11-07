@@ -7,6 +7,7 @@ use Mojo::Base 'Mojolicious';
 our $VERSION = '0.41';
 
 use CWB::Model;
+use CWB::CUWI::Group;
 
 use Mojo::Loader;
 use IO::File;
@@ -143,11 +144,11 @@ sub startup {
   if ($config->{corpora}{GROUPS} #BUG: optimize traversal
       and ref $config->{corpora}{GROUPS} eq 'HASH') {
     $self->log->info('Adding groups from config file to CUWI and CWB Model.');
-    $self->defaults->{groups} = $config->{corpora}{GROUPS};
     foreach my $group (keys %{$config->{corpora}{GROUPS}}) {
       my @members;
       if (ref $config->{corpora}{GROUPS}{$group} eq 'ARRAY') {
-	@members = @{$config->{corpora}{GROUPS}{$group}}
+	@members = @{$config->{corpora}{GROUPS}{$group}};
+	$config->{corpora}{GROUPS}{$group} = { members => [@{$config->{corpora}{GROUPS}{$group}}] };
       } elsif (ref $config->{corpora}{GROUPS}{$group} eq 'HASH' and
 	       exists $config->{corpora}{GROUPS}{$group}{members} and
 	       ref $config->{corpora}{GROUPS}{$group}{members} eq 'ARRAY' ) {
@@ -158,6 +159,9 @@ sub startup {
 	      and ref $config->{corpora}{OPTIONS}{no_browse} eq 'ARRAY';
 	  push @{$config->{corpora}{OPTIONS}{no_browse} }, @members;
 	}
+	$self->defaults->{groups}{$group} =
+	  CWB::CUWI::Group->new(model => $model, name => $group,
+				%{$config->{corpora}{GROUPS}{$group}});
       } else {
 	$self->log->info("Dropping group $group: illegal format.");
 	next;

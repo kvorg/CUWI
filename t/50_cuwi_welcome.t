@@ -28,10 +28,17 @@ $t->get_ok('/cuwi')
   or print $t->_get_content($t->tx);
 # corpora
 my @corpora = $t->tx->res->dom->at('div.corpora ul')->find('li b')->each;
-cmp_ok(scalar @corpora, '==', 4, 'Cuwi main: number of corpora');
-is($corpora[0]->text, 'cuwi', 'Cuwi main: first corpus name')
+cmp_ok(scalar @corpora, '==', 3, 'Cuwi main: number of entries');
+is($corpora[0]->text, 'cuwi-fr', 'Cuwi main: first corpus name')
   or diag("First corpus name wrong, page was:\n" . $t->_get_content($t->tx));
-is($corpora[1]->text, 'CUWI-FR', 'Cuwi main: second corpus name')
+is($corpora[1]->text, 'cuwi-sl', 'Cuwi main: second corpus name')
   or diag("Second corpus name wrong, page was:\n" . $t->_get_content($t->tx));
+is($corpora[-1]->text, 'cuwinew', 'Cuwi main: last corpus name')
+  or diag("Last corpus (well, entry) name wrong, page was:\n" . $t->_get_content($t->tx));
+
+# test statistics
+SKIP: {
+  skip "Missing index stats tests.", 1;
+};
 
 done_testing;

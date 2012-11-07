@@ -16,13 +16,13 @@
  <ul>
 % my $corpora = $model->corpora;
 % my @index = keys %{$model->corpora};
-% push @index, keys %$groups; @index = sort @index;
+% push @index, keys %$groups; @index = sort { $a cmp $b  } @index;
 % foreach my $name ( @index ) {
 %   next if exists $config->{corpora}{OPTIONS}{no_browse}
 %	    and grep { $_ eq $name } @{$config->{corpora}{OPTIONS}{no_browse}} ;
 % my $cname; my $title;
 % if (exists $corpora->{$name}) {
-%  $cname = $corpora->{$name}->NAME; $title = $corpora->{$name}->title;
+%  $cname = $corpora->{$name}->name; $title = $corpora->{$name}->title;
 % } else {
 %  $cname = $name; $title = ref $groups->{$name} eq 'HASH' ? $groups->{$name}{title} || '' : $name;
 % }
