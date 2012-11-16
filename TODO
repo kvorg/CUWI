@@ -63,6 +63,7 @@
 
 * Web interface BUGS
 
+** update boundled cluetip version
 ** bigger blurb fonts, not centered
 ** show corpus names in lowercase, boldened when possible
 ** missing si translations: query, search etc.
