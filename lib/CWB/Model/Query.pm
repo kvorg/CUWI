@@ -482,7 +482,7 @@ sub run {
 	next;
       }
       next if $kwic =~ m{^[<](attribute|/?CONCORDANCE)}; # SGML preamble & info
-      if ($kwic =~ m{^[<]align name="(.*?)">&lt;CONTENT&gt; (.*)&lt;/CONTENT&gt;$}) { #align - to previous hit
+      if ($kwic =~ m{^[<]align name="(.*?)">(?:[<]|&lt;)CONTENT(?:[>]|&gt;) (.*)(?:[<]|&lt;)/CONTENT(?:[>]|&gt;)$}) { #align - to previous hit
 	$self->exception("Found an aligned line without a previous hit:", $kwic)
 	  and next
 	    unless (scalar @{$result->hits});
