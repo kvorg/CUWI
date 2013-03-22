@@ -118,11 +118,13 @@ sub startup {
   my $loader = Mojo::Loader->new;
   my $e = $loader->load('Spreadsheet::Write');
   if (ref $e) {
-    $self->log->info("Module Spreadsheet::Write not available: $e. " .
-		     "Install Spreadsheet::Write if you need cvs and excel table result exports.")
+    $self->log->info("Module Spreadsheet::Write loading failed: loader said: $e." .
+		     "Csv and excel table result exports disabled.");
+  } elsif ($e) {
+    $self->log->info("Module Spreadsheet::Write not available in module path. " .
+		     "Install Spreadsheet::Write if you need csv and excel table result exports.")
   } else {
-    $self->log->info("Module Spreadsheet::Write loader said: $e.") if $e;
-    $self->log->info("Module Spreadsheet::Write loaded ok.") unless $e;
+    $self->log->info("Module Spreadsheet::Write loaded ok. Csv and excel table result exports enabled.");
     $self->defaults->{table_export} = 1;
   }
   my @langs = map { m/CWB::CUWI::I18N::(.*)/; $1 } 
