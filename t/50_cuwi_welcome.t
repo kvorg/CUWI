@@ -3,6 +3,8 @@ use strict; use warnings;
 use lib qw(./lib ../lib ./lib-extra ../lib-extra);
 use Test::More;
 use Test::Mojo;
+use Data::Dumper;
+$Data::Dumper::Indent = 2;
 
 BEGIN {
   $ENV{MOJO_NO_BONJOUR} = $ENV{MOJO_NO_IPV6} = 1;
@@ -28,13 +30,62 @@ $t->get_ok('/cuwi')
   or print $t->_get_content($t->tx);
 # corpora
 my @corpora = $t->tx->res->dom->at('div.corpora ul')->find('li b')->each;
-cmp_ok(scalar @corpora, '==', 3, 'Cuwi main: number of entries');
+cmp_ok(scalar @corpora, '==', 4, 'Cuwi main: number of entries');
 is($corpora[0]->text, 'cuwi-fr', 'Cuwi main: first corpus name')
   or diag("First corpus name wrong, page was:\n" . $t->_get_content($t->tx));
 is($corpora[1]->text, 'cuwi-sl', 'Cuwi main: second corpus name')
   or diag("Second corpus name wrong, page was:\n" . $t->_get_content($t->tx));
-is($corpora[-1]->text, 'cuwinew', 'Cuwi main: last corpus name')
-  or diag("Last corpus (well, entry) name wrong, page was:\n" . $t->_get_content($t->tx));
+is($corpora[-2]->text, 'cuwil10n', 'Cuwi main: one before last corpus entry')
+  or diag("One-before-last corpus entry wrong, page was:\n" . $t->_get_content($t->tx));
+is($corpora[-1]->text, 'cuwinew', 'Cuwi main: new style group as last entry')
+  or diag("New style group name as last entry wrong, page was:\n" . $t->_get_content($t->tx));
+
+my @titles = map { [$_->at('b')->text, $_->at('a')->text] }
+  $t->tx->res->dom->at('div.corpora ul')->find('li')->each;
+is_deeply(\@titles, [
+		     [ 'cuwi-fr' => ': CUWI test corpus: Latin 1, French, aligned' ],
+		     [ 'cuwi-sl' => ': CUWI test corpus: UTF-8, Slovene, aligned' ],
+		     [ 'cuwil10n' => ': l10n support in groups' ],
+		     [ 'cuwinew' => ': New-style group definition' ]
+		    ], 'Cuwi main: names and titles')
+  or diag("Mains and titles as an array:\n" . Dumper(\@titles));
+
+# # l10n with accept langauge
+# $t->tx($t->tx->req->headers->accept_language('sl'))->get_ok('/cuwi');
+# $t->text_like('h1 > a' => qr/Iskalnik CUWI/, 'Cuwi main: header contents accept-language l10n')
+#   or print $t->_get_content($t->tx);
+# @titles = map { [$_->at('b')->text, $_->at('a')->text] }
+#   $t->tx->res->dom->at('div.corpora ul')->find('li')->each;
+# is_deeply(\@titles, [
+# 		     [ 'cuwi-fr' => ': CUWI test corpus: Latin 1, French, aligned' ],
+# 		     [ 'cuwi-sl' => ': CUWI test corpus: UTF-8, Slovene, aligned' ],
+# 		     [ 'cuwil10n' => ': podpora za l10o skupin' ],
+# 		     [ 'cuwinew' => ': New-style group definition' ]
+# 		    ], 'Cuwi main: names and titles accept-language l10n')
+#   or diag("Mains and titles as an array:\n" . Dumper(\@titles));
+
+# l10n with session
+is(0, scalar($t->ua->cookie_jar->find(Mojo::URL->new('http://localhost:3000/')) ),
+   'Cuwi main: no session by default');
+$t->get_ok('/cuwi/setlang/sl');
+my @session = $t->ua->cookie_jar->find(Mojo::URL->new('http://localhost:3000/'));
+is(1, scalar @session, 'Cuwi main: session after set language' );
+ok($session [0] =~ m/mojolicious=.*---/, 'Cuwi main: session looks sane');
+#print 'JAR:' . join(', ', $t->ua->cookie_jar->find(Mojo::URL->new('http://localhost:3000/')));
+
+$t->get_ok('/cuwi');
+$t->text_like('h1 > a' => qr/Iskalnik CUWI/, 'Cuwi main: header contents session l10n')
+  or print $t->_get_content($t->tx);
+@titles = map { [$_->at('b')->text, $_->at('a')->text] }
+  $t->tx->res->dom->at('div.corpora ul')->find('li')->each;
+is_deeply(\@titles, [
+		     [ 'cuwi-fr' => ': CUWI test corpus: Latin 1, French, aligned' ],
+		     [ 'cuwi-sl' => ': CUWI test corpus: UTF-8, Slovene, aligned' ],
+		     [ 'cuwil10n' => ': podpora za l10o skupin' ],
+		     [ 'cuwinew' => ': New-style group definition' ]
+		    ], 'Cuwi main: names and titles session l10n')
+  or diag("Mains and titles as an array:\n" . Dumper(\@titles));
+
 
 # test statistics
 SKIP: {

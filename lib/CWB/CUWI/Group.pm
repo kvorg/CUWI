@@ -33,8 +33,9 @@ sub describe {
 }
 
 sub givetitle {
-  croak 'CWB::CUWI::Group syntax error: not called as $group->describe(<lang>);' unless @_ == 2;
+  croak 'CWB::CUWI::Group syntax error: not called as $group->givetitle(<lang>);' unless @_ == 2;
   my ($self, $lang) = @_;
+  return $self->name unless  $self->title;
   return $self->title unless ref $self->title;
   return ${$self->title}{$lang} ? ${$self->title}{$lang} : ${$self->title}{en};
 }

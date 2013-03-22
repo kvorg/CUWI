@@ -24,7 +24,8 @@
 % if (exists $corpora->{$name}) {
 %  $cname = $corpora->{$name}->name; $title = $corpora->{$name}->title;
 % } else {
-%  $cname = $name; $title = ref $groups->{$name} eq 'HASH' ? $groups->{$name}{title} || '' : $name;
+%  my $group = $self->app->defaults->{groups}{$name};
+%  $cname = $name; $title = $group->givetitle(languages ());
 % }
    <li><a href="/<%= $config->{root} . '/' . $name %>"><b><%= $cname %></b>: <%= $title %></a> </li>
 % }
