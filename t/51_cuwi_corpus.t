@@ -27,7 +27,9 @@ $t->get_ok("/cuwi/$corpus")
   ->content_like(qr/CUWI test corpus: Latin 1, French, aligned/i, 'Cuwi corpus: corpus name header')
   ->element_exists('html body div[class="form"]', 'Cuwi corpus: form div')
   ->element_exists('html body div[class="form"] form[method="get"][action="/cuwi/' . $corpus . '/search"]',
-		   'Cuwi corpus: form element')
+		   'Cuwi corpus: form element for advanced search')
+  ->element_exists('html body div[class="form"] form[method="get"][action="/cuwi/' . $corpus . '/simple"]',
+		   'Cuwi corpus: form element for simple search')
   ->element_exists('html body div[class="description"]',
 		   'Cuwi corpus: description div')
   ->element_exists('html body div[class="description"] p',

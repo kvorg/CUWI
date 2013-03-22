@@ -1,5 +1,6 @@
 % $self->languages($self->session('language')) if $self->session('language');
-% $searchtype = $searchtype ? $searchtype : $self->app->config->{searchmode} | 'advanced'  ;
+% my $orgsearchtype = $searchtype;
+% $searchtype = $searchtype ? $searchtype : $self->app->config->{searchmode} || 'advanced'  ;
 % layout 'main', title=>'Form', searchmode=> $searchtype;
 % if ($searchtype eq 'simple') {
 %= include 'form_simple', simple_query=>undef, corpus=>$corpus
