@@ -16,6 +16,8 @@ our %Lexicon =
    langtag => 'Slovensko', # preferred name for this language, in the language
    Logout => 'Odjavi',
    Help => 'Pomoč',
+   'Advanced search' => 'Zahtevno iskanje',
+   'Simple search' =>  'Preprosto iskanje',
 
    # index.html.ep
    blurb => <<"FNORD",
@@ -68,6 +70,7 @@ FNORD
    'tokens' => 'besed',
    'regions' => 'območij',
    'alignment blocks' => 'poravnanih segmentov',
+   'frequencies' => 'frekvenčni seznam',
 
    # corpus.html.ep
    'No matches for query ' => 'Ni zadetkov za poizvedovanje ',
@@ -120,6 +123,29 @@ for more info.<br />
 <tr><td>~[(lemma="go") & word!="went|gone"%c~]</td><td class="t">the same, shorter syntax</td></tr>
 </table>
 FNORD
+   ttip_simple_query => <<FNORD,
+
+Vnesite preprosto iskalno zaporedje.<br />
+Primeri: <code>beseda ka*koli
+m. "~[Rr~]egexp?" [] on|ona|ono</code><br />
+Iskalno zaporedje je sestavljeno iz ene ali več besed, ki jih ločijo
+presledki. Iskalnik bo iskal brez razlikovanja velikih in malih črt in
+bo iskal hkrati po pojavnici (zapisu besede v korpusu) in lemi
+(slovnično nevtralni obliki)<br />
+V zapisu besede lahko uporabite znak <code>?</code> za poljuben znak in 
+znak <code>*</code> za poljubno zaporedje (tudi nič) znakov.<br />
+Alternativne besede lahko navedete tako, da jih ločite z znakom <code>|</code>,
+npr. <code>on|ona|ono</code>.<br />
+
+Poleg tega lahko uporabite <code>~[~]</code> kot znak za poljubno besedo ter z oznakami XML (npr. <code>&lt;s&gt;</code> za poved) označite meje strukturnih atributov v korpusu.<br />
+Če besedo zaprete v navednice, vključite <a
+href="href="http://cwb.sourceforge.net/files/CQP_Tutorial/">sintakso
+CQP</a> in izključite pomagala iskalnika za to besedo. Če uporabite
+poizvedbo CQP med znakoma <code>~[~]</code>, za to besedo veljajo pravila za
+zahtevno iskanje.<br />
+Zahtevno iskanje lahko vkljčite s povezave na meniju ali povezavo na zapis iskanja v jeziku CQP.
+FNORD
+
    'Corpus' => 'Korpus',
    ttip_corpus_group => <<FNORD,
 In a corpus group, you can send the search to a different corpus in

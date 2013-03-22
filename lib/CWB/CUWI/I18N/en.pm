@@ -81,6 +81,27 @@ for more info.<br />
 <tr><td>~[(lemma="go") & word!="went|gone"%c~]</td><td class="t">the same, shorter syntax</td></tr>
 </table>
 FNORD
+   ttip_simple_query => <<FNORD,
+Insert a search query here, i.e.: <code>word any* m. "~[Rr~]egexp?" [] he|she|him|her</code>
+You can specify a sequence of multiple
+words, separated by whitespace. The system will search for your search
+terms regardless of case and will search both words and lemmas.<br />
+The search query can contain simple words with optional <code>?</code> (any character)
+and <code>*</code> (any charters, from 0 to many) place-holders.<br />
+You can separate alternatives with <code>|</code>,
+i.e. <code>him|her</code>.<br />
+In addition, you can use ~[~] for 'any
+token' and use xml tags (i.e. &lt;s&gt; for sentence) in places where
+structural attribute regions should start or end.<br />
+If <a
+href="href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP
+syntax</a> (triggered by any use of quoting in the search query) is
+detected, no conversion is applied. If you enclose the query in ~[~]
+and use CQP syntax, the rules for advanced queries will apply for that
+term.<br />
+You can switch to advanced query mode in the menu or by following the CQP
+query link on the result page.
+FNORD
    ttip_corpus_group => <<FNORD,
 In a corpus group, you can send the search to a different corpus in
 the group by selecting the name of the corpus here. Corpus groups can

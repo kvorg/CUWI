@@ -19,9 +19,9 @@
 
 %  if (defined $corpus) {
 %   if($searchmode eq 'simple') {
- <%= link_to_here '/' . $self->config->{root} . '/' . $corpus->name . "/search", {query => defined $result ? '+ ' . $result->query : '', ignoremeta => 0} => begin %>Advanced search<% end %>
+ <%= link_to_here '/' . $self->config->{root} . '/' . $corpus->name . "/search", {query => defined $result ? '+ ' . $result->query : '', ignoremeta => 0} => begin %><%= l('Advanced search') %><% end %>
 %  } else {
- <%= link_to_here '/' . $self->config->{root} . '/' . $corpus->name . "/simple", {simple_query => ''} => begin %>Simple search<% end %>
+ <%= link_to_here '/' . $self->config->{root} . '/' . $corpus->name . "/simple", {simple_query => ''} => begin %><%= l('Simple search') %><% end %>
 %  }
 % }
   </div>
