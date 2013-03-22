@@ -289,7 +289,8 @@ sub search {
 	    foreach my $hit (@{$result->hits}) {
 	      #warn Dumper($result->attributes);
 	      my @rows = $self->tabspreader($result->attributes, $hit->{left}, $hit->{match}, $hit->{right});
-	      $h->addrow( map { {contnet => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
+#	      $self->app->log->debug("Prepared rows:\n" , Dumper(\@rows));
+	      $h->addrow( map { {content => $_, type=>'string' } } join (', ', 'cpos: ' . $hit->{cpos} .
 									 (exists $hit->{subcorpus} ? '@' . $hit->{subcorpus} : ''),
 									 (map {$_ . ': ' . $hit->{data}{$_} } keys %{$hit->{data}} )),
 			  @{shift @rows});
