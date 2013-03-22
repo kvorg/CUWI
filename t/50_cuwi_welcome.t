@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use strict; use warnings;
+use strict; use warnings; use utf8;
 use lib qw(./lib ../lib ./lib-extra ../lib-extra);
 use Test::More;
 use Test::Mojo;
@@ -28,6 +28,16 @@ $t->get_ok('/cuwi')
   ->element_exists('html body h1', 'Cuwi main: header')
   ->text_like('h1 > a' => qr/CUWI Search/, 'Cuwi main: header contents')
   or print $t->_get_content($t->tx);
+
+# blurb
+is($t->tx->res->dom->at('div.description p')->text, 'english', 'Cuwi main: blurb');
+my $blurb = $t->app->config->{blurb};
+$t->app->config->{blurb} = 'simple';
+$t->get_ok('/cuwi')
+  ->status_is(200);
+is($t->tx->res->dom->at('div.description p')->text, 'simple', 'Cuwi main: blurb simple');
+$t->app->config->{blurb} = $blurb;
+
 # corpora
 my @corpora = $t->tx->res->dom->at('div.corpora ul')->find('li b')->each;
 cmp_ok(scalar @corpora, '==', 4, 'Cuwi main: number of entries');
@@ -54,6 +64,8 @@ is_deeply(\@titles, [
 # $t->tx($t->tx->req->headers->accept_language('sl'))->get_ok('/cuwi');
 # $t->text_like('h1 > a' => qr/Iskalnik CUWI/, 'Cuwi main: header contents accept-language l10n')
 #   or print $t->_get_content($t->tx);
+# is($t->tx->res->dom->at('div.description p')->text, 'slovenščina',
+#   'Cuwi main: blurb session l10n');
 # @titles = map { [$_->at('b')->text, $_->at('a')->text] }
 #   $t->tx->res->dom->at('div.corpora ul')->find('li')->each;
 # is_deeply(\@titles, [
@@ -72,10 +84,11 @@ my @session = $t->ua->cookie_jar->find(Mojo::URL->new('http://localhost:3000/'))
 is(1, scalar @session, 'Cuwi main: session after set language' );
 ok($session [0] =~ m/mojolicious=.*---/, 'Cuwi main: session looks sane');
 #print 'JAR:' . join(', ', $t->ua->cookie_jar->find(Mojo::URL->new('http://localhost:3000/')));
-
 $t->get_ok('/cuwi');
 $t->text_like('h1 > a' => qr/Iskalnik CUWI/, 'Cuwi main: header contents session l10n')
   or print $t->_get_content($t->tx);
+is($t->tx->res->dom->at('div.description p')->text, 'slovenščina',
+   'Cuwi main: blurb session l10n');
 @titles = map { [$_->at('b')->text, $_->at('a')->text] }
   $t->tx->res->dom->at('div.corpora ul')->find('li')->each;
 is_deeply(\@titles, [
