@@ -63,11 +63,12 @@
 
 * Web interface BUGS
 
+** fix page meta titles, localize
 ** update boundled cluetip version
 ** bigger blurb fonts, not centered
 ** show corpus names in lowercase, boldened when possible
 ** missing si translations: query, search etc.
-** fix errors with result exports
+** add test to check for errors with result exports
 ** fix error with a full query but nonexisting corpus
 ** fix encodings for frequency downloads
 ** fix missing display mode before logging on line 65
