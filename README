@@ -1,10 +1,18 @@
                CUWI - Corpus Users' Web Interface
                ----------------------------------
 
-WARNING: latest versions have changed the format and syntax of the
-configuration file (from .json to perl-formatted .conf). Please
-consult the documentation. Most installations will be able to simply
-change the formatting, but some features now have a different syntax.
+[[ WARNING: This version is unstable with newer CWB packages due to
+CWB::CQP encoding mismatches. If you have failures with perl
+t/05_result.t, try using an older non-developer version of CWB for the
+moment. ]]
+
+[[ WARNING: In additon the latest versions of CUWI have changed the format and
+syntax of the configuration file (from .json to perl-formatted
+.conf). Please consult the documentation. Most installations will be
+able to simply change the formatting, but some of the more advanced
+features (primaraly corpus groups etc.) now have a different
+syntax. Please consider the configuration file syntax API to be in
+beta stage. Suggestions are welcome. ]]
 
 CUWI is a full-featured web front-end for corpora prepared with CWB -
 the IMS Corpus WorkBench (http://cwb.sourceforge.net/). It uses its
