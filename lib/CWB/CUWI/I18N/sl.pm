@@ -82,45 +82,48 @@ FNORD
    'Query' => 'Poizvedba',
    ttip_query => <<FNORD,
 
-The search query can contain simple words with optional <code>?</code>
-and <code>*</code> place-holders. You can separate alternatives with
-<code>|</code> and use ~[~] for 'any token'.<br />Your query will be
-converted into CQP query language, using the 'Search' attributes
-bellow to select the token attribute to searhc on. The search result
-page will display how the simple search is transformed into a CQP
-query, and you can click on the CQP query to edit it further. If CQP
-syntax (triggered by any use of quoting in the search query) is
-detected, no conversion is applied and the 'Search' attributes are
-ignored for that term.<br />If you want full CQP syntax for the whole
-query, preceede the query with <code>+</code> followed by a space to
-disable all processing. See <a
-href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP Tutorial</a>
-for more info.<br />
+Iskalna poizvedba je lahko sestavljena iz preprostih besed (pojavnic),
+ki pa lahko vsebujejo tudi znaka <code>?</code> in <code>*</code>
+namesto enega ali poljubno poljbunih znakov. Posamezna celotna beseda
+ima lahko navedene tudi alternative, ki so med seboj ločene z
+<code>|</code>. Oznaka ~[~] pomeni 'katero koli pojavnico'.<br />To
+poizvedbo bo sistem prevedel v poizvedovalni jezik CQP. Spodaj v
+rubriki 'Išči' lahko izberete tipe oznak, ki naj bodo vključeni v
+poizvedovanje. Na strani z rezultati poizvedbe bo prikazan zapis v
+jeziku CQP, ki ga lahko uporabite kot povezavo in prilagodite za
+zahtevnejše poizvedbe. Če sistem zazna, da je poizvedba že v formatu
+CQP (ki v poizvedbi zahteva navednice), poizvedbe za posamezno besedo
+(pojavnico) ne pretvarja in tudi ne uporablja izbranih oznak v rubriki
+'Išči'.<br />Ubežna sekvenca <code>+ </code> (znak za seštevanje in
+presledek) na začetku poizvedbe izključi pretvorbe za celotno
+poizvedbo, da lahko prosto uporabljate jezik CQP. Uvodni napotki za
+CQP: <a href="http://cwb.sourceforge.net/files/CQP_Tutorial/">CQP
+Tutorial</a>.<br />
 
-<h4>Examples for search on <code>word</code></h4>
+<h4>Primeri poizvedb za pozicijski atribut <code>word</code> (pojavnica)</h4>
 <table class="examples">
-<tr><th>Simple</th><th>CQP</th><th>Explanation</th></tr>
-<tr><td>where</td><td>~[word="where"~]</td><td class="t">instances of word 'where'</td></tr>
-<tr><td>wher*</td><td>~[word="wher.*"~]</td><td class="t">words starting with 'wher'</td></tr>
-<tr><td>wh*e</td><td>~[word="wh.*e"~]</td><td class="t">words starting with 'wh' and ending with 'e'</td></tr>
-<tr><td>wh?</td><td>~[word="wh."~]</td><td class="t">3-letter words starting with 'wh'</td></tr>
-<tr><td>who|what|whom</td><td>~[word="who|what|whom"~]</td><td class="t">any of words 'who', 'what', 'whom'</td></tr>
-<tr><td>who|what has</td><td>~[word="who|what"~] ~[word="has"~]</td><td class="t">sequences of 'who' or 'what', followed by 'has'</td></tr>
-<tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by one token</td></tr>
-<tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">sequences of 'and' and 'has', separated by 0 to 3 tokens</td></tr>
-<tr><td>&lt;s&gt; I</td><td>&lt;s&gt; ~[word="I"~]</td><td class="t">instances of "I" at the start of a sentence</td></tr>
+<tr><th>Preprost način</th><th>CQP</th><th>Razlaga</th></tr>
+<tr><td>where</td><td>~[word="where"~]</td><td class="t">posamezne instance pojavnice 'where'</td></tr>
+<tr><td>wher*</td><td>~[word="wher.*"~]</td><td class="t">pojavnice, ki se začno na 'wher'</td></tr>
+<tr><td>wh*e</td><td>~[word="wh.*e"~]</td><td class="t">pojavnice na 'wh' s koncem na 'e'</td></tr>
+<tr><td>wh?</td><td>~[word="wh."~]</td><td class="t">pojavnice s 3 črkami na 'wh'</td></tr>
+<tr><td>who|what|whom</td><td>~[word="who|what|whom"~]</td><td class="t">ena od pojavnic 'who', 'what', 'whom'</td></tr>
+<tr><td>who|what has</td><td>~[word="who|what"~] ~[word="has"~]</td><td class="t">zaporedja, kjer 'who' ali 'what' sledi 'has'</td></tr>
+<tr><td>and ~[~] has</td><td>~[word="and"~] ~[~] ~[word="has"~]</td><td class="t">zaporedja 'and' in 'has', med katerima je ena beseda</td></tr>
+<tr><td>and ~[~]{0,3} has</td><td>~[word="and"~] ~[~]{0,3} ~[word="has"~]</td><td class="t">zaporedja 'and' in 'has', med katerima je od 0 do 3 besede</td></tr>
+<tr><td>&lt;s&gt; I</td><td>&lt;s&gt; ~[word="I"~]</td><td class="t">pojavnice "I" na začetku povedi</td></tr>
 </table>
-<h4>Advanced CQP Examples</h4>
+<h4>Zahtevni primeri v CQP</h4>
 <table class="examples">
-<tr><th>CQP</th><th>Explanation</th></tr>
-<tr><td>~[word=".*ies" & lemma=".*y"~]</td><td class="t">words ending on 'ies' with lemma ending on 'y'</td></tr>
-<tr><td>~[word=".*ies" & lemma!=".*y"~]</td><td class="t">words ending on 'ies' with lemma <b>not</b> ending on 'y'</td></tr>
-<tr><td>~[word="...*a" | lemma=".*um"~]</td><td class="t">3 or more letter words ending on 'a' or lemma ending on 'um'</td></tr>
-<tr><td>~[word="interest|interested"~]</td><td class="t">interest or interested</td></tr>
+<tr><th>CQP</th><th>Razlaga</th></tr>
+<tr><td>~[word=".*ies" & lemma=".*y"~]</td><td class="t">besede s koncem pojavnice na 'ies' in leme na 'y'</td></tr>
+<tr><td>~[word=".*ies" & lemma!=".*y"~]</td><td class="t">besede s koncem pojavnice na 'ies' in lemo, ki se <b>ne></b> konča na 'y'</td></tr>
+<tr><td>~[word="...*a" | lemma=".*um"~]</td><td class="t">3 ali več črk dolge besede s koncem na 'a' ali z lemoa, ki se konča na 'um'</td></tr>
+<tr><td>~[word="interest|interested"~]</td><td class="t">pojavnica 'interest' ali pojavnica 'interested'</td></tr>
 <tr><td>~[word="interest(s|(ed|ing)(ly)?)?"~]</td><td class="t">interest, interests, interested, interesting, interestedly, interestingly</td></tr>
-<tr><td>~[word="wh.+" & lemma!=word~]</td><td class="t">three or more letter words beginning with 'wh' which do not match their lemma</td></tr>
-<tr><td>~[(lemma="go") & !(word="went"%c | word="gone"%c)~]</td><td class="t">words with lemma 'go' except for 'went' and 'gone', case insensitive</td></tr>
-<tr><td>~[(lemma="go") & word!="went|gone"%c~]</td><td class="t">the same, shorter syntax</td></tr>
+<tr><td>~[word="wh.+" & lemma!=word~]</td><td class="t">besede s pojavnico, ki ima 3 črke ali več in se začne na 'wh', vendar pojavnica in lema nista enaki</td></tr>
+<tr><td>~[(lemma="go") & !(word="went"%c | word="gone"%c)~]</td><td class="t">besede z lemo 'go', razen besed s pojavnico 'went' ali 'gone', ne glede na velike ali male črke</td></tr>
+<tr><td>~[(lemma="go") & word!="went|gone"%c~]</td><td class="t">isto v bolj zgoščenem zapisu</td></tr>
 </table>
 FNORD
    ttip_simple_query => <<FNORD,

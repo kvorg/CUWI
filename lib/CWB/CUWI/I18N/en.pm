@@ -44,7 +44,7 @@ and <code>*</code> place-holders. You can separate alternatives with
 xml tags (i.e. &lt;s&gt; for sentence) in places where structural
 attribute regions should start or end.<br />Your query will be
 converted into CQP query language, using the 'Search' attributes
-bellow to select the token attribute to searhc on. The search result
+bellow to select the token attribute to search on. The search result
 page will display how the simple search is transformed into a CQP
 query, and you can click on the CQP query to edit it further. If CQP
 syntax (triggered by any use of quoting in the search query) is

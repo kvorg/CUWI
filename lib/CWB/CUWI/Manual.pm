@@ -4,8 +4,8 @@ CUWI Manual - Corpus Users' Web Interface Manual
 
 =head1 OVERVIEW
 
-CUWI - Corpus Users's Web Interface, provieds a web interface to the
-Corpus Workbench Toolkit corpus endocing and query system (see:
+CUWI - Corpus Users's Web Interface, provides a web interface to the
+Corpus Workbench Toolkit corpus encoding and query system (see:
 L<http://cwb.sourceforge.net>). It presents forms to allow you to
 specify your query, runs CWB binary command line tools (mostly CQP) in
 the background and formats the results in HTML.
