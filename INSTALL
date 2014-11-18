@@ -16,9 +16,9 @@ needed for CUWI and CWB::Model) from this page:
 Alternatively, you can install the developer branch (with UTF-8
 support), again only CWB::CQP perl module is needed:
 
-    svn co https://cwb.svn.sourceforge.net/svnroot/cwb/cwb/trunk cwb 
-    svn co https://cwb.svn.sourceforge.net/svnroot/cwb/perl/trunk cwb-perl
-
+    svn co https://svn.code.sf.net/p/cwb/code/cwb/trunk cwb 
+    svn co https://svn.code.sf.net/p/cwb/code/perl/trunk cwb-perl
+    
 See CWB Developer' page for more info:
 
     http://cwb.sourceforge.net/developers.php#svn
@@ -31,15 +31,11 @@ When CWB binaries and CWB::CQP module are installed, you can install
 CUWI. Note that the tests will warn you if the cqp executable,
 CWB::Config or CWB::CQP are not accessible.
 
-You can install CUWI using CPAN:
-
-    cpan install CWB::CUWI
-
-You can install manually by downloading the source from the repository
-and running the provided build stripts. (CUWI depends on Mojolicious,
+You should install CUWI manually by downloading the source from the repository
+and running the provided build scripts. (CUWI depends on Mojolicious,
 which has no out-of-core dependencies, and on CWB::CQP for backend
 communications. Please see the relevant documentation for both
-installation procedures: )
+installation procedures.)
 
      wget https://github.com/kvorg/CUWI/tarball/master -O cuwi.tar.gz
      tar xvf cuwi.tar.gz
